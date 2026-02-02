@@ -245,6 +245,22 @@ export interface TranslationKeys {
   welcomeDesc3: string;
   getStarted: string;
   skip: string;
+  
+  // Statistics Screen
+  statistics: string;
+  totalDhikr: string;
+  streakDays: string;
+  sessions: string;
+  dailyProgress: string;
+  dailyGoal: string;
+  completedDhikr: string;
+  quickStats: string;
+  days: string;
+  totalTarget: string;
+  favoritedhikr: string;
+  completedTimes: string;
+  times: string;
+  dhikrDetails: string;
 }
 
 // Arabic translations
@@ -257,6 +273,7 @@ const ar: TranslationKeys = {
   adhkar: 'أذكار',
   tasbih: 'التسبيح',
   settings: 'الإعدادات',
+  statistics: 'الإحصائيات',
   
   // Adhkar Screen
   morningAdhkar: 'أذكار الصباح',
@@ -486,6 +503,21 @@ const ar: TranslationKeys = {
   welcomeDesc3: 'Start your dhikr journey and share the blessings with loved ones',
   getStarted: 'Get Started',
   skip: 'Skip',
+  
+  // Statistics Screen
+  totalDhikr: 'إجمالي الذكر',
+  streakDays: 'أيام متتالية',
+  sessions: 'جلسات مكتملة',
+  dailyProgress: 'التقدم اليومي',
+  dailyGoal: 'الهدف اليومي',
+  completedDhikr: 'الأذكار المكتملة',
+  quickStats: 'إحصائيات سريعة',
+  days: 'أيام',
+  totalTarget: 'الهدف الكلي',
+  favoritedhikr: 'الذكر المفضل',
+  completedTimes: 'مكتمل',
+  times: 'مرات',
+  dhikrDetails: 'تفاصيل الأذكار',
 };
 
 // English translations
@@ -498,6 +530,7 @@ const en: TranslationKeys = {
   adhkar: 'Adhkar',
   tasbih: 'Tasbih',
   settings: 'Settings',
+  statistics: 'Statistics',
   
   // Adhkar Screen
   morningAdhkar: 'Morning Adhkar',
@@ -727,6 +760,21 @@ const en: TranslationKeys = {
   welcomeDesc3: 'Start your dhikr journey and share the blessings with loved ones',
   getStarted: 'Get Started',
   skip: 'Skip',
+  
+  // Statistics Screen
+  totalDhikr: 'Total Dhikr',
+  streakDays: 'Streak Days',
+  sessions: 'Completed Sessions',
+  dailyProgress: 'Daily Progress',
+  dailyGoal: 'Daily Goal',
+  completedDhikr: 'Completed Dhikr',
+  quickStats: 'Quick Stats',
+  days: 'days',
+  totalTarget: 'Total Target',
+  favoritedhikr: 'Favorite Dhikr',
+  completedTimes: 'Completed',
+  times: 'times',
+  dhikrDetails: 'Dhikr Details',
 };
 
 // French translations
@@ -739,8 +787,7 @@ const fr: TranslationKeys = {
   adhkar: 'Adhkar',
   tasbih: 'Tasbih',
   settings: 'Paramètres',
-  
-
+  statistics: 'Statistiques',
   
   // Adhkar Screen
   morningAdhkar: 'Adhkar du Matin',
@@ -971,6 +1018,21 @@ const fr: TranslationKeys = {
   welcomeDesc3: 'Commencez votre voyage de dhikr et partagez les bénédictions avec vos proches',
   getStarted: 'Commencer',
   skip: 'Passer',
+  
+  // Statistics Screen
+  totalDhikr: 'Total Dhikr',
+  streakDays: 'Jours consécutifs',
+  sessions: 'Sessions terminées',
+  dailyProgress: 'Progrès quotidien',
+  dailyGoal: 'Objectif quotidien',
+  completedDhikr: 'Dhikr terminés',
+  quickStats: 'Stats rapides',
+  days: 'jours',
+  totalTarget: 'Objectif total',
+  favoritedhikr: 'Dhikr favori',
+  completedTimes: 'Terminé',
+  times: 'fois',
+  dhikrDetails: 'Détails du Dhikr',
 };
 
 // Spanish translations
@@ -983,6 +1045,7 @@ const es: TranslationKeys = {
   adhkar: 'Adhkar',
   tasbih: 'Tasbih',
   settings: 'Configuración',
+  statistics: 'Estadísticas',
   
   // Adhkar Screen
   morningAdhkar: 'Adhkar de la Mañana',
@@ -1212,6 +1275,21 @@ const es: TranslationKeys = {
   welcomeDesc3: 'Comienza tu viaje de dhikr y comparte las bendiciones con tus seres queridos',
   getStarted: 'Comenzar',
   skip: 'Omitir',
+  
+  // Statistics Screen
+  totalDhikr: 'Total Dhikr',
+  streakDays: 'Días consecutivos',
+  sessions: 'Sesiones completadas',
+  dailyProgress: 'Progreso diario',
+  dailyGoal: 'Meta diaria',
+  completedDhikr: 'Dhikr completados',
+  quickStats: 'Estadísticas rápidas',
+  days: 'días',
+  totalTarget: 'Meta total',
+  favoritedhikr: 'Dhikr favorito',
+  completedTimes: 'Completado',
+  times: 'veces',
+  dhikrDetails: 'Detalles del Dhikr',
 };
 
 // Urdu translations
@@ -1224,6 +1302,7 @@ const ur: TranslationKeys = {
   adhkar: 'اذکار',
   tasbih: 'تسبیح',
   settings: 'سیٹنگز',
+  statistics: 'اعداد و شمار',
   
   // Adhkar Screen
   morningAdhkar: 'صبح کے اذکار',
@@ -1454,6 +1533,21 @@ const ur: TranslationKeys = {
   welcomeDesc3: 'اپنے ذکر کا سفر شروع کریں اور برکتوں کو اپنوں کے ساتھ بانٹیں',
   getStarted: 'شروع کریں',
   skip: 'چھوڑیں',
+  
+  // Statistics Screen
+  totalDhikr: 'کل ذکر',
+  streakDays: 'متواتر دن',
+  sessions: 'مکمل سیشنز',
+  dailyProgress: 'روزانہ پیش رفت',
+  dailyGoal: 'روزانہ ہدف',
+  completedDhikr: 'مکمل ذکر',
+  quickStats: 'فوری اعداد و شمار',
+  days: 'دن',
+  totalTarget: 'کل ہدف',
+  favoritedhikr: 'پسندیدہ ذکر',
+  completedTimes: 'مکمل',
+  times: 'بار',
+  dhikrDetails: 'ذکر کی تفصیلات',
 };
 
 // Indonesian translations
@@ -1466,6 +1560,7 @@ const id: TranslationKeys = {
   adhkar: 'Dzikir',
   tasbih: 'Tasbih',
   settings: 'Pengaturan',
+  statistics: 'Statistik',
   
   // Adhkar Screen
   morningAdhkar: 'Dzikir Pagi',
@@ -1695,6 +1790,21 @@ const id: TranslationKeys = {
   welcomeDesc3: 'Mulai perjalanan dzikir Anda dan bagikan berkah dengan orang-orang terkasih',
   getStarted: 'Mulai',
   skip: 'Lewati',
+  
+  // Statistics Screen
+  totalDhikr: 'Total Dzikir',
+  streakDays: 'Hari Berturut-turut',
+  sessions: 'Sesi Selesai',
+  dailyProgress: 'Kemajuan Harian',
+  dailyGoal: 'Target Harian',
+  completedDhikr: 'Dzikir Selesai',
+  quickStats: 'Statistik Cepat',
+  days: 'hari',
+  totalTarget: 'Target Total',
+  favoritedhikr: 'Dzikir Favorit',
+  completedTimes: 'Selesai',
+  times: 'kali',
+  dhikrDetails: 'Detail Dzikir',
 };
 
 // Turkish translations
@@ -1707,6 +1817,7 @@ const tr: TranslationKeys = {
   adhkar: 'Ezkar',
   tasbih: 'Tesbih',
   settings: 'Ayarlar',
+  statistics: 'İstatistikler',
   
   // Adhkar Screen
   morningAdhkar: 'Sabah Ezkarı',
@@ -1936,6 +2047,21 @@ const tr: TranslationKeys = {
   welcomeDesc3: 'Zikir yolculuğunuza başlayın ve berketleri sevdiklerinizle paylaşın',
   getStarted: 'Başla',
   skip: 'Geç',
+  
+  // Statistics Screen
+  totalDhikr: 'Toplam Zikir',
+  streakDays: 'Ardışık Günler',
+  sessions: 'Tamamlanan Oturumlar',
+  dailyProgress: 'Günlük İlerleme',
+  dailyGoal: 'Günlük Hedef',
+  completedDhikr: 'Tamamlanan Zikir',
+  quickStats: 'Hızlı İstatistikler',
+  days: 'gün',
+  totalTarget: 'Toplam Hedef',
+  favoritedhikr: 'Favori Zikir',
+  completedTimes: 'Tamamlandı',
+  times: 'kez',
+  dhikrDetails: 'Zikir Detayları',
 };
 
 // Malay translations
@@ -1948,6 +2074,7 @@ const ms: TranslationKeys = {
   adhkar: 'Zikir',
   tasbih: 'Tasbih',
   settings: 'Tetapan',
+  statistics: 'Statistik',
   
   // Adhkar Screen
   morningAdhkar: 'Zikir Pagi',
@@ -2177,6 +2304,21 @@ const ms: TranslationKeys = {
   welcomeDesc3: 'Mulakan perjalanan zikir anda dan kongsi berkat dengan orang tersayang',
   getStarted: 'Mula',
   skip: 'Langkau',
+  
+  // Statistics Screen
+  totalDhikr: 'Jumlah Zikir',
+  streakDays: 'Hari Berturut-turut',
+  sessions: 'Sesi Selesai',
+  dailyProgress: 'Kemajuan Harian',
+  dailyGoal: 'Sasaran Harian',
+  completedDhikr: 'Zikir Selesai',
+  quickStats: 'Statistik Pantas',
+  days: 'hari',
+  totalTarget: 'Sasaran Keseluruhan',
+  favoritedhikr: 'Zikir Kegemaran',
+  completedTimes: 'Selesai',
+  times: 'kali',
+  dhikrDetails: 'Butiran Zikir',
 };
 
 // Bengali translations
@@ -2187,6 +2329,7 @@ const bn: TranslationKeys = {
   
   // Navigation
   adhkar: 'আজকার',
+  statistics: 'পরিসংখ্যান',
   tasbih: 'তাসবিহ',
   settings: 'সেটিংস',
   
@@ -2418,6 +2561,19 @@ const bn: TranslationKeys = {
   welcomeDesc3: 'আপনার জিকিরের যাত্রা শুরু করুন এবং প্রিয়জনদের সাথে বরকত শেয়ার করুন',
   getStarted: 'শুরু করুন',
   skip: 'এড়িয়ে যান',
+  totalDhikr: 'মোট জিকির',
+  streakDays: 'ধারাবাহিক দিন',
+  sessions: 'সম্পন্ন সেশন',
+  dailyProgress: 'দৈনিক অগ্রগতি',
+  dailyGoal: 'দৈনিক লক্ষ্য',
+  completedDhikr: 'সম্পন্ন জিকির',
+  quickStats: 'দ্রুত পরিসংখ্যান',
+  days: 'দিন',
+  totalTarget: 'মোট লক্ষ্য',
+  favoritedhikr: 'প্রিয় জিকির',
+  completedTimes: 'সম্পন্ন',
+  times: 'বার',
+  dhikrDetails: 'জিকিরের বিবরণ',
 };
 
 // Setup i18n

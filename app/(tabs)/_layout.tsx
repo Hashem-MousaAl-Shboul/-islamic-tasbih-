@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { Book, Settings, Circle } from "lucide-react-native";
+import { Book, Settings, Circle, BarChart3 } from "lucide-react-native";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
 import { StyleSheet, Platform, View } from "react-native";
 import { Colors } from "@/constants/colors";
@@ -75,6 +75,13 @@ export default function TabLayout() {
             options={{
               title: t("adhkar") || "الأذكار",
               tabBarIcon: ({ color }) => <Book size={24} color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="statistics"
+            options={{
+              title: t("statistics") || "الإحصائيات",
+              tabBarIcon: ({ color }) => <BarChart3 size={24} color={color} />,
             }}
           />
           <Tabs.Screen
