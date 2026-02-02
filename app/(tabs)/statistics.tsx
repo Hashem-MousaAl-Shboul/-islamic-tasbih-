@@ -1,10 +1,8 @@
-import React, { memo, useMemo, useCallback } from 'react';
-import { StyleSheet, View, Text, ScrollView, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
+import React, { memo, useMemo, useCallback, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, StatusBar, TouchableOpacity, Dimensions, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import {
   BarChart3,
-  ChevronLeft,
   TrendingUp,
   Calendar,
   Target,
@@ -12,6 +10,7 @@ import {
   Flame,
   Star,
   RefreshCw,
+
 } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
@@ -96,11 +95,16 @@ const DhikrStatItem = memo(function DhikrStatItem({ arabicText, count, targetCou
 });
 
 const StatisticsScreen = memo(function StatisticsScreen() {
-  const { stats, tasbihItems, settings, resetStats } = useTasbihStore();
+  const { stats, tasbihItems, settings, resetStats, saveData } = useTasbihStore();
   const { currentLanguage } = useLanguageStore();
   const insets = useSafeAreaInsets();
 
   const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
+
+  useEffect(() => {
+    console.log('[StatisticsScreen] Screen mounted - Stats:', JSON.stringify(stats));
+    console.log('[StatisticsScreen] TasbihItems count:', tasbihItems.length);
+  }, [stats, tasbihItems]);
 
   const activeItems = useMemo(() => {
     return tasbihItems.filter(item => !item.isDeleted);
@@ -133,8 +137,41 @@ const StatisticsScreen = memo(function StatisticsScreen() {
   }, [activeItems]);
 
   const handleResetStats = useCallback(() => {
-    resetStats();
-  }, [resetStats]);
+    console.log('[StatisticsScreen] Reset stats button pressed');
+    
+    if (Platform.OS === 'web') {
+      const confirmed = confirm(i18n.t('resetStatsConfirm') || 'هل تريد إعادة تعيين جميع الإحصائيات؟');
+      if (confirmed) {
+        resetStats();
+        setTimeout(() => {
+          saveData();
+        }, 100);
+        alert(i18n.t('statsResetSuccess') || 'تم إعادة تعيين الإحصائيات بنجاح');
+      }
+    } else {
+      Alert.alert(
+        i18n.t('resetStats') || 'إعادة تعيين الإحصائيات',
+        i18n.t('resetStatsConfirm') || 'هل تريد إعادة تعيين جميع الإحصائيات؟',
+        [
+          { text: i18n.t('cancel') || 'إلغاء', style: 'cancel' },
+          {
+            text: i18n.t('delete') || 'حذف',
+            style: 'destructive',
+            onPress: () => {
+              resetStats();
+              setTimeout(() => {
+                saveData();
+              }, 100);
+              Alert.alert(
+                i18n.t('success') || 'نجاح',
+                i18n.t('statsResetSuccess') || 'تم إعادة تعيين الإحصائيات بنجاح'
+              );
+            },
+          },
+        ]
+      );
+    }
+  }, [resetStats, saveData]);
 
   return (
     <View style={styles.container} testID="statistics-screen">
@@ -146,13 +183,6 @@ const StatisticsScreen = memo(function StatisticsScreen() {
             <BarChart3 size={24} color="#fff" />
             <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
           </View>
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={styles.backButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <ChevronLeft size={28} color="#fff" />
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -325,9 +355,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#fff',
   },
-  backButton: {
-    padding: 4,
-  },
+
   scrollContainer: {
     flex: 1,
   },

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from '
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { RotateCcw, Plus, Minus, X, Check, Trash2 } from 'lucide-react-native';
+import { RotateCcw, Plus, Minus, X, Check } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCounter from '@/components/TasbihCounter';
@@ -16,7 +16,7 @@ import AdBanner from '@/components/AdBanner';
 import VideoAd from '@/components/VideoAd';
 
 // Memoized header component for better performance
-const TasbihHeader = memo<{ onResetStats: () => void }>(({ onResetStats }) => {
+const TasbihHeader = memo(() => {
   const { t } = useLanguageStore();
   const theme = useTheme();
 
@@ -25,15 +25,6 @@ const TasbihHeader = memo<{ onResetStats: () => void }>(({ onResetStats }) => {
       <View style={styles.headerLeft}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>{t('tasbih')}</Text>
       </View>
-      
-      {/* Delete Stats Button - Right */}
-      <TouchableOpacity 
-        style={styles.headerResetButton}
-        onPress={onResetStats}
-        testID="reset-stats-button-header"
-      >
-        <Trash2 size={20} color="#EF4444" />
-      </TouchableOpacity>
     </View>
   );
 });
@@ -94,23 +85,23 @@ export default function TasbihScreen() {
   const {
     tasbihItems,
     settings,
-    stats,
+
     selectedItemId,
     isLoading,
     updateTasbihCount,
     resetTasbih,
-    resetStats,
+
     setSelectedItem,
     getSelectedItem,
-    getTodayStats,
+
     addCustomTasbih,
     deleteTasbih,
     restoreTasbih,
-    saveData,
+
   } = useTasbihStore();
 
   const selectedItem = useMemo(() => getSelectedItem(), [getSelectedItem]);
-  const todayStats = useMemo(() => getTodayStats(), [getTodayStats]);
+
   const counterSize = useMemo(() => Math.min(screenWidth * 0.4, 140), [screenWidth]);
 
   const handleIncrement = useCallback(() => {
@@ -182,53 +173,7 @@ export default function TasbihScreen() {
 
 
 
-  const handleResetStats = useCallback(() => {
-    console.log('[TasbihScreen] Reset statistics clicked');
-    adTracker.trackClick('reset-stats', 'tasbih', 'reset-stats-button');
-    
-    if (Platform.OS === 'web') {
-      const confirmed = confirm(t('resetStatsConfirm'));
-      if (confirmed) {
-        resetStats();
-        setTimeout(() => {
-          saveData();
-        }, 100);
-        
-        alert(t('statsResetSuccess'));
-      }
-    } else {
-      Alert.alert(
-        t('resetStats'),
-        t('resetStatsConfirm'),
-        [
-          { text: t('cancel'), style: 'cancel' },
-          { 
-            text: t('delete'), 
-            style: 'destructive',
-            onPress: () => {
-              resetStats();
-              
-              setTimeout(() => {
-                saveData();
-              }, 100);
-              
-              if (settings.hapticFeedback) {
-                try {
-                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                } catch (error) {
-                  console.log('Haptic feedback error:', error);
-                }
-              }
-              
-              setTimeout(() => {
-                Alert.alert(t('success'), t('statsResetSuccess'));
-              }, 300);
-            }
-          }
-        ]
-      );
-    }
-  }, [resetStats, saveData, settings.hapticFeedback, t]);
+
 
   const handleSelectItem = useCallback(async (itemId: string) => {
     console.log(`[TasbihScreen] Selected item: ${itemId}`);
@@ -361,7 +306,7 @@ export default function TasbihScreen() {
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}>
       {/* Header with Dhikr Cards */}
       <View style={[styles.headerSection, { paddingTop: 0, backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-        <TasbihHeader onResetStats={handleResetStats} />
+        <TasbihHeader />
         
         {/* Tasbih Cards */}
         <FlatList
@@ -648,20 +593,7 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
   },
-  headerResetButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
+
 
   headerTitle: {
     fontSize: 18,
