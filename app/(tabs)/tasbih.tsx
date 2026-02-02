@@ -16,33 +16,14 @@ import AdBanner from '@/components/AdBanner';
 import VideoAd from '@/components/VideoAd';
 
 // Memoized header component for better performance
-const TasbihHeader = memo<{ stats: { totalCount: number; todayCount: number; streakDays: number }; todayStats: { completed: number; total: number }; onResetStats: () => void }>(({ stats, todayStats, onResetStats }) => {
+const TasbihHeader = memo<{ onResetStats: () => void }>(({ onResetStats }) => {
   const { t } = useLanguageStore();
   const theme = useTheme();
-  const completionPercentage = useMemo(() => {
-    return todayStats.total > 0 ? Math.round((todayStats.completed / todayStats.total) * 100) : 0;
-  }, [todayStats.completed, todayStats.total]);
 
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>{t('tasbih')}</Text>
-      </View>
-      
-      {/* Compact Daily Progress - Center */}
-      <View style={styles.compactStats}>
-        <View style={styles.compactStatItem}>
-          <Text style={[styles.compactStatValue, { color: theme.primary }]}>{stats.todayCount}</Text>
-          <Text style={[styles.compactStatLabel, { color: theme.textSecondary }]}>{t('today')}</Text>
-        </View>
-        <View style={styles.compactStatItem}>
-          <Text style={[styles.compactStatValue, { color: theme.primary }]}>{completionPercentage}%</Text>
-          <Text style={[styles.compactStatLabel, { color: theme.textSecondary }]}>{t('completed')}</Text>
-        </View>
-        <View style={styles.compactStatItem}>
-          <Text style={[styles.compactStatValue, { color: theme.primary }]}>{stats.streakDays}</Text>
-          <Text style={[styles.compactStatLabel, { color: theme.textSecondary }]}>{t('streak')}</Text>
-        </View>
       </View>
       
       {/* Delete Stats Button - Right */}
@@ -380,7 +361,7 @@ export default function TasbihScreen() {
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}>
       {/* Header with Dhikr Cards */}
       <View style={[styles.headerSection, { paddingTop: 0, backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-        <TasbihHeader stats={stats} todayStats={todayStats} onResetStats={handleResetStats} />
+        <TasbihHeader onResetStats={handleResetStats} />
         
         {/* Tasbih Cards */}
         <FlatList
@@ -681,28 +662,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  compactStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  compactStatItem: {
-    alignItems: 'center',
-    minWidth: 40,
-  },
-  compactStatValue: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    color: '#10B981',
-    textAlign: 'center',
-  },
-  compactStatLabel: {
-    fontSize: 8,
-    fontWeight: '500' as const,
-    color: '#94A3B8',
-    textAlign: 'center',
-    marginTop: 1,
-  },
+
   headerTitle: {
     fontSize: 18,
     fontWeight: '800' as const,
