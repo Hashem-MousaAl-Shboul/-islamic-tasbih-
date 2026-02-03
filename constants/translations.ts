@@ -1028,6 +1028,17 @@ const fr: TranslationKeys = {
   // Favorites
   favorites: 'Favoris',
   
+  // Authentication
+  signIn: 'Se connecter',
+  signInWithGoogle: 'Se connecter avec Google',
+  signOut: 'Se déconnecter',
+  signedInAs: 'Connecté en tant que',
+  account: 'Compte',
+  signInToContinue: 'Connectez-vous pour continuer',
+  signInDescription: 'Connectez-vous pour synchroniser vos données sur tous vos appareils',
+  welcomeBack: 'Bon retour',
+  notSignedIn: 'Non connecté',
+  
   // Ad Translations
   discoverIslamicApps: 'Découvrir des applications islamiques',
   learnMore: 'En savoir plus',
@@ -1286,6 +1297,17 @@ const es: TranslationKeys = {
   
   // Favorites
   favorites: 'Favoritos',
+  
+  // Authentication
+  signIn: 'Iniciar sesión',
+  signInWithGoogle: 'Iniciar sesión con Google',
+  signOut: 'Cerrar sesión',
+  signedInAs: 'Sesión iniciada como',
+  account: 'Cuenta',
+  signInToContinue: 'Inicia sesión para continuar',
+  signInDescription: 'Inicia sesión para sincronizar tus datos en todos tus dispositivos',
+  welcomeBack: 'Bienvenido de nuevo',
+  notSignedIn: 'No has iniciado sesión',
   
   // Ad Translations
   discoverIslamicApps: 'Descubre aplicaciones islámicas',
@@ -1547,6 +1569,17 @@ const ur: TranslationKeys = {
   // Favorites
   favorites: 'پسندیدہ',
   
+  // Authentication
+  signIn: 'سائن ان کریں',
+  signInWithGoogle: 'Google سے سائن ان کریں',
+  signOut: 'سائن آؤٹ',
+  signedInAs: 'سائن ان ہے بطور',
+  account: 'اکاؤنٹ',
+  signInToContinue: 'جاری رکھنے کے لیے سائن ان کریں',
+  signInDescription: 'اپنے ڈیٹا کو تمام ڈیوائسز پر ہم آہنگ کرنے کے لیے سائن ان کریں',
+  welcomeBack: 'خوش آمدید واپسی',
+  notSignedIn: 'سائن ان نہیں',
+  
   // Ad Translations
   discoverIslamicApps: 'اسلامی ایپس دریافت کریں',
   learnMore: 'مزید جانیں',
@@ -1805,6 +1838,17 @@ const id: TranslationKeys = {
   
   // Favorites
   favorites: 'Favorit',
+  
+  // Authentication
+  signIn: 'Masuk',
+  signInWithGoogle: 'Masuk dengan Google',
+  signOut: 'Keluar',
+  signedInAs: 'Masuk sebagai',
+  account: 'Akun',
+  signInToContinue: 'Masuk untuk melanjutkan',
+  signInDescription: 'Masuk untuk menyinkronkan data Anda di semua perangkat',
+  welcomeBack: 'Selamat datang kembali',
+  notSignedIn: 'Belum masuk',
   
   // Ad Translations
   discoverIslamicApps: 'Temukan Aplikasi Islami',
@@ -2065,6 +2109,17 @@ const tr: TranslationKeys = {
   // Favorites
   favorites: 'Favoriler',
   
+  // Authentication
+  signIn: 'Giriş Yap',
+  signInWithGoogle: 'Google ile Giriş Yap',
+  signOut: 'Çıkış Yap',
+  signedInAs: 'Giriş yapıldı',
+  account: 'Hesap',
+  signInToContinue: 'Devam etmek için giriş yapın',
+  signInDescription: 'Verilerinizi tüm cihazlarınızda senkronize etmek için giriş yapın',
+  welcomeBack: 'Tekrar hoş geldiniz',
+  notSignedIn: 'Giriş yapılmadı',
+  
   // Ad Translations
   discoverIslamicApps: 'İslami Uygulamaları Keşfedin',
   learnMore: 'Daha Fazla Bilgi',
@@ -2324,6 +2379,17 @@ const ms: TranslationKeys = {
   // Favorites
   favorites: 'Kegemaran',
   
+  // Authentication
+  signIn: 'Log Masuk',
+  signInWithGoogle: 'Log Masuk dengan Google',
+  signOut: 'Log Keluar',
+  signedInAs: 'Log masuk sebagai',
+  account: 'Akaun',
+  signInToContinue: 'Log masuk untuk meneruskan',
+  signInDescription: 'Log masuk untuk menyegerakkan data anda di semua peranti',
+  welcomeBack: 'Selamat kembali',
+  notSignedIn: 'Belum log masuk',
+  
   // Ad Translations
   discoverIslamicApps: 'Temui Aplikasi Islam',
   learnMore: 'Ketahui Lebih Lanjut',
@@ -2582,6 +2648,17 @@ const bn: TranslationKeys = {
   
   // Favorites
   favorites: 'প্রিয়',
+  
+  // Authentication
+  signIn: 'সাইন ইন',
+  signInWithGoogle: 'Google দিয়ে সাইন ইন',
+  signOut: 'সাইন আউট',
+  signedInAs: 'সাইন ইন করা হয়েছে',
+  account: 'অ্যাকাউন্ট',
+  signInToContinue: 'চালিয়ে যেতে সাইন ইন করুন',
+  signInDescription: 'সমস্ত ডিভাইসে আপনার ডেটা সিঙ্ক করতে সাইন ইন করুন',
+  welcomeBack: 'আবার স্বাগতম',
+  notSignedIn: 'সাইন ইন করা নেই',
   
   // Ad Translations
   discoverIslamicApps: 'ইসলামিক অ্যাপ আবিষ্কার করুন',

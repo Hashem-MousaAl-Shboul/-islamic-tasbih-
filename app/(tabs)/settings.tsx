@@ -29,7 +29,6 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 
 import { SettingsItem } from '@/components/SettingsItem';
 import i18n, { AVAILABLE_LANGUAGES } from '@/constants/translations';
-import { ColorThemeKey } from '@/theme/ThemeProvider';
 import { notificationService } from '@/utils/notificationService';
 import { adTracker } from '@/utils/adTracking';
 import { adStrategy } from '@/utils/adStrategy';
@@ -44,7 +43,7 @@ const SettingsScreen = memo(function SettingsScreen() {
   const { settings, updateSettings, resetAllData, tasbihItems, stats } = useTasbihStore();
   const { currentLanguage, t } = useLanguageStore();
   const { currentReciter, changeReciter, getCurrentReciterName } = useReciterStore();
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, isAuthenticated, signOut, signInWithGoogle } = useAuth();
   const insets = useSafeAreaInsets();
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
 
@@ -209,6 +208,27 @@ const SettingsScreen = memo(function SettingsScreen() {
       Alert.alert(i18n.t('error'), 'Failed to create backup');
     }
   }, [tasbihItems, settings, stats]);
+
+  const handleSignIn = useCallback(async () => {
+    console.log('[SettingsScreen] Sign in clicked');
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error('[SettingsScreen] Sign in error:', error);
+      Alert.alert(i18n.t('error'), 'Failed to sign in');
+    }
+  }, [signInWithGoogle]);
+
+  const handleSignOut = useCallback(async () => {
+    console.log('[SettingsScreen] Sign out clicked');
+    try {
+      await signOut();
+      Alert.alert(i18n.t('success'), i18n.t('signOut'));
+    } catch (error) {
+      console.error('[SettingsScreen] Sign out error:', error);
+      Alert.alert(i18n.t('error'), 'Failed to sign out');
+    }
+  }, [signOut]);
 
   const handleResetData = useCallback(() => {
     console.log('[SettingsScreen] Reset data clicked');
