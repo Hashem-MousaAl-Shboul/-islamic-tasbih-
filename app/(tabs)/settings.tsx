@@ -1,11 +1,11 @@
 import React, { memo, useCallback, useMemo, useState, useEffect } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, View, Text, ScrollView, Share, Linking, Alert, Platform, StatusBar, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Share, Linking, Alert, Platform, StatusBar } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Settings,
-  ChevronLeft,
   Vibrate,
   Bell,
   BellRing,
@@ -18,6 +18,8 @@ import {
   Shield,
   FileText,
   MessageCircle,
+  User,
+  Sparkles,
 } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
@@ -204,24 +206,39 @@ const SettingsScreen = memo(function SettingsScreen() {
   const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
 
   return (
-    <View style={[styles.container, { backgroundColor: '#f5f5f5' }]} testID="settings-screen">
-      <StatusBar barStyle="light-content" backgroundColor="#1a5c4c" />
+    <View style={styles.container} testID="settings-screen">
+      <StatusBar barStyle="light-content" backgroundColor="#0d4d3e" />
       
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <LinearGradient
+        colors={['#0d4d3e', '#1a5c4c', '#267261']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.headerGradient, { paddingTop: insets.top }]}
+      >
         <View style={styles.headerContent}>
           <View style={styles.headerTitleRow}>
-            <Settings size={24} color="#fff" />
+            <View style={styles.headerIconContainer}>
+              <Settings size={26} color="#fff" strokeWidth={2.5} />
+            </View>
             <Text style={styles.headerTitle}>{i18n.t('settings')}</Text>
           </View>
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={styles.backButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <ChevronLeft size={28} color="#fff" />
-          </TouchableOpacity>
         </View>
-      </View>
+        
+        <View style={styles.profileHeader}>
+          <View style={styles.profileAvatarContainer}>
+            <LinearGradient
+              colors={['#fff', '#f0f0f0']}
+              style={styles.profileAvatar}
+            >
+              <User size={32} color="#1a5c4c" strokeWidth={2.5} />
+            </LinearGradient>
+          </View>
+          <View style={styles.profileHeaderInfo}>
+            <Text style={styles.profileHeaderName}>مستخدم TasbeehCounter</Text>
+            <Text style={styles.profileHeaderEmail}>user@example.com</Text>
+          </View>
+        </View>
+      </LinearGradient>
 
       <ScrollView
         style={styles.scrollContainer}
@@ -229,18 +246,14 @@ const SettingsScreen = memo(function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         testID="settings-scroll"
       >
-        <View style={styles.profileCard}>
-          <View style={styles.profileAvatar}>
-            <Text style={styles.avatarText}>م</Text>
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>مستخدم TasbeehCounter</Text>
-            <Text style={styles.profileEmail}>user@example.com</Text>
-          </View>
-        </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('general') || 'عام'}</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Sparkles size={16} color="#1a5c4c" strokeWidth={2.5} />
+            </View>
+            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('general') || 'عام'}</Text>
+          </View>
           <View style={styles.settingsCard}>
             <SettingsItem
               icon={<Vibrate size={22} color="#fff" />}
@@ -278,7 +291,12 @@ const SettingsScreen = memo(function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('appearance') || 'المظهر'}</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Sparkles size={16} color="#1a5c4c" strokeWidth={2.5} />
+            </View>
+            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('appearance') || 'المظهر'}</Text>
+          </View>
           <View style={styles.settingsCard}>
             <SettingsItem
               icon={<Moon size={22} color="#fff" />}
@@ -303,7 +321,12 @@ const SettingsScreen = memo(function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('dataManagement') || 'البيانات والخصوصية'}</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Sparkles size={16} color="#1a5c4c" strokeWidth={2.5} />
+            </View>
+            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('dataManagement') || 'البيانات والخصوصية'}</Text>
+          </View>
           <View style={styles.settingsCard}>
             <SettingsItem
               icon={<Cloud size={22} color="#fff" />}
@@ -329,7 +352,12 @@ const SettingsScreen = memo(function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('contactSupport')}</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Sparkles size={16} color="#1a5c4c" strokeWidth={2.5} />
+            </View>
+            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('contactSupport')}</Text>
+          </View>
           <View style={styles.settingsCard}>
             <SettingsItem
               icon={<Share2 size={22} color="#fff" />}
@@ -364,7 +392,12 @@ const SettingsScreen = memo(function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('about')}</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Sparkles size={16} color="#1a5c4c" strokeWidth={2.5} />
+            </View>
+            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('about')}</Text>
+          </View>
           <View style={styles.settingsCard}>
             <SettingsItem
               icon={<Shield size={22} color="#fff" />}
@@ -425,97 +458,148 @@ export default SettingsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f8faf9',
   },
-  header: {
-    backgroundColor: '#1a5c4c',
-    paddingBottom: 20,
+  headerGradient: {
+    paddingBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: 20,
   },
   headerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+  },
+  headerIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: '700' as const,
     color: '#fff',
+    letterSpacing: 0.5,
   },
-  backButton: {
-    padding: 4,
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+  profileAvatarContainer: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  profileAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  profileHeaderInfo: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  profileHeaderName: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#fff',
+    marginBottom: 4,
+    letterSpacing: 0.3,
+  },
+  profileHeaderEmail: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.85)',
+    letterSpacing: 0.2,
   },
   scrollContainer: {
     flex: 1,
   },
   contentContainer: {
-    paddingTop: 16,
+    paddingTop: 24,
     paddingHorizontal: 16,
   },
-  profileCard: {
-    backgroundColor: '#d4ede5',
-    borderRadius: 16,
-    padding: 20,
+  section: {
+    marginBottom: 28,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
-  profileAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#1a5c4c',
+  sectionIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: 'rgba(26, 92, 76, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#fff',
-  },
-  profileInfo: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    color: '#1a5c4c',
-    marginBottom: 4,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: '#1a5c4c',
-    opacity: 0.7,
-  },
-  section: {
-    marginBottom: 24,
+    marginRight: 8,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#666',
-    marginBottom: 10,
-    marginLeft: 4,
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: '#1a5c4c',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   sectionTitleRTL: {
     textAlign: 'right',
-    marginLeft: 0,
-    marginRight: 4,
   },
   settingsCard: {
-    backgroundColor: '#d4ede5',
-    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 92, 76, 0.08)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(26, 92, 76, 0.15)',
+    height: 1,
+    backgroundColor: 'rgba(26, 92, 76, 0.08)',
     marginLeft: 76,
   },
 });
