@@ -226,6 +226,7 @@ export interface TranslationKeys {
   signInDescription: string;
   welcomeBack: string;
   notSignedIn: string;
+  continueAsGuest: string;
   
   // Ad Translations
   discoverIslamicApps: string;
@@ -258,6 +259,7 @@ export interface TranslationKeys {
   welcomeDesc3: string;
   getStarted: string;
   skip: string;
+  continueWithoutAccount: string;
   
   // Statistics Screen
   statistics: string;
@@ -497,6 +499,7 @@ const ar: TranslationKeys = {
   signInDescription: 'سجل الدخول لمزامنة بياناتك عبر جميع الأجهزة',
   welcomeBack: 'مرحباً بعودتك',
   notSignedIn: 'غير مسجل الدخول',
+  continueAsGuest: 'متابعة كزائر',
   
   // Ad Translations
   discoverIslamicApps: 'اكتشف تطبيقات إسلامية',
@@ -527,8 +530,9 @@ const ar: TranslationKeys = {
   welcomeDesc2: 'Morning, evening, and after-prayer adhkar made easy',
   welcomeTitle3: 'Begin Your Spiritual Journey',
   welcomeDesc3: 'Start your dhikr journey and share the blessings with loved ones',
-  getStarted: 'Get Started',
-  skip: 'Skip',
+  getStarted: 'ابدأ الآن',
+  skip: 'تخطي',
+  continueWithoutAccount: 'متابعة بدون حساب',
   
   // Statistics Screen
   totalDhikr: 'إجمالي الذكر',
@@ -767,6 +771,7 @@ const en: TranslationKeys = {
   signInDescription: 'Sign in to sync your data across all devices',
   welcomeBack: 'Welcome back',
   notSignedIn: 'Not signed in',
+  continueAsGuest: 'Continue as Guest',
   
   // Ad Translations
   discoverIslamicApps: 'Discover Islamic Apps',
@@ -799,6 +804,7 @@ const en: TranslationKeys = {
   welcomeDesc3: 'Start your dhikr journey and share the blessings with loved ones',
   getStarted: 'Get Started',
   skip: 'Skip',
+  continueWithoutAccount: 'Continue Without Account',
   
   // Statistics Screen
   totalDhikr: 'Total Dhikr',
@@ -1038,6 +1044,7 @@ const fr: TranslationKeys = {
   signInDescription: 'Connectez-vous pour synchroniser vos données sur tous vos appareils',
   welcomeBack: 'Bon retour',
   notSignedIn: 'Non connecté',
+  continueAsGuest: 'Continuer en tant qu\'invité',
   
   // Ad Translations
   discoverIslamicApps: 'Découvrir des applications islamiques',
@@ -1070,6 +1077,7 @@ const fr: TranslationKeys = {
   welcomeDesc3: 'Commencez votre voyage de dhikr et partagez les bénédictions avec vos proches',
   getStarted: 'Commencer',
   skip: 'Passer',
+  continueWithoutAccount: 'Continuer sans compte',
   
   // Statistics Screen
   totalDhikr: 'Total Dhikr',
@@ -1308,6 +1316,7 @@ const es: TranslationKeys = {
   signInDescription: 'Inicia sesión para sincronizar tus datos en todos tus dispositivos',
   welcomeBack: 'Bienvenido de nuevo',
   notSignedIn: 'No has iniciado sesión',
+  continueAsGuest: 'Continuar como invitado',
   
   // Ad Translations
   discoverIslamicApps: 'Descubre aplicaciones islámicas',
@@ -1340,6 +1349,7 @@ const es: TranslationKeys = {
   welcomeDesc3: 'Comienza tu viaje de dhikr y comparte las bendiciones con tus seres queridos',
   getStarted: 'Comenzar',
   skip: 'Omitir',
+  continueWithoutAccount: 'Continuar sin cuenta',
   
   // Statistics Screen
   totalDhikr: 'Total Dhikr',
@@ -1579,6 +1589,7 @@ const ur: TranslationKeys = {
   signInDescription: 'اپنے ڈیٹا کو تمام ڈیوائسز پر ہم آہنگ کرنے کے لیے سائن ان کریں',
   welcomeBack: 'خوش آمدید واپسی',
   notSignedIn: 'سائن ان نہیں',
+  continueAsGuest: 'مہمان کے طور پر جاری رکھیں',
   
   // Ad Translations
   discoverIslamicApps: 'اسلامی ایپس دریافت کریں',
@@ -1611,6 +1622,7 @@ const ur: TranslationKeys = {
   welcomeDesc3: 'اپنے ذکر کا سفر شروع کریں اور برکتوں کو اپنوں کے ساتھ بانٹیں',
   getStarted: 'شروع کریں',
   skip: 'چھوڑیں',
+  continueWithoutAccount: 'اکاؤنٹ کے بغیر جاری رکھیں',
   
   // Statistics Screen
   totalDhikr: 'کل ذکر',
@@ -1849,6 +1861,7 @@ const id: TranslationKeys = {
   signInDescription: 'Masuk untuk menyinkronkan data Anda di semua perangkat',
   welcomeBack: 'Selamat datang kembali',
   notSignedIn: 'Belum masuk',
+  continueAsGuest: 'Lanjutkan sebagai tamu',
   
   // Ad Translations
   discoverIslamicApps: 'Temukan Aplikasi Islami',
@@ -1881,6 +1894,7 @@ const id: TranslationKeys = {
   welcomeDesc3: 'Mulai perjalanan dzikir Anda dan bagikan berkah dengan orang-orang terkasih',
   getStarted: 'Mulai',
   skip: 'Lewati',
+  continueWithoutAccount: 'Lanjutkan tanpa akun',
   
   // Statistics Screen
   totalDhikr: 'Total Dzikir',
@@ -2119,6 +2133,7 @@ const tr: TranslationKeys = {
   signInDescription: 'Verilerinizi tüm cihazlarınızda senkronize etmek için giriş yapın',
   welcomeBack: 'Tekrar hoş geldiniz',
   notSignedIn: 'Giriş yapılmadı',
+  continueAsGuest: 'Misafir olarak devam et',
   
   // Ad Translations
   discoverIslamicApps: 'İslami Uygulamaları Keşfedin',
@@ -2151,6 +2166,7 @@ const tr: TranslationKeys = {
   welcomeDesc3: 'Zikir yolculuğunuza başlayın ve berketleri sevdiklerinizle paylaşın',
   getStarted: 'Başla',
   skip: 'Geç',
+  continueWithoutAccount: 'Hesap olmadan devam et',
   
   // Statistics Screen
   totalDhikr: 'Toplam Zikir',
@@ -2389,6 +2405,7 @@ const ms: TranslationKeys = {
   signInDescription: 'Log masuk untuk menyegerakkan data anda di semua peranti',
   welcomeBack: 'Selamat kembali',
   notSignedIn: 'Belum log masuk',
+  continueAsGuest: 'Teruskan sebagai tetamu',
   
   // Ad Translations
   discoverIslamicApps: 'Temui Aplikasi Islam',
@@ -2421,6 +2438,7 @@ const ms: TranslationKeys = {
   welcomeDesc3: 'Mulakan perjalanan zikir anda dan kongsi berkat dengan orang tersayang',
   getStarted: 'Mula',
   skip: 'Langkau',
+  continueWithoutAccount: 'Teruskan tanpa akaun',
   
   // Statistics Screen
   totalDhikr: 'Jumlah Zikir',
@@ -2659,6 +2677,7 @@ const bn: TranslationKeys = {
   signInDescription: 'সমস্ত ডিভাইসে আপনার ডেটা সিঙ্ক করতে সাইন ইন করুন',
   welcomeBack: 'আবার স্বাগতম',
   notSignedIn: 'সাইন ইন করা নেই',
+  continueAsGuest: 'অতিথি হিসেবে চালিয়ে যান',
   
   // Ad Translations
   discoverIslamicApps: 'ইসলামিক অ্যাপ আবিষ্কার করুন',
@@ -2691,6 +2710,9 @@ const bn: TranslationKeys = {
   welcomeDesc3: 'আপনার জিকিরের যাত্রা শুরু করুন এবং প্রিয়জনদের সাথে বরকত শেয়ার করুন',
   getStarted: 'শুরু করুন',
   skip: 'এড়িয়ে যান',
+  continueWithoutAccount: 'অ্যাকাউন্ট ছাড়া চালিয়ে যান',
+  
+  // Statistics Screen
   totalDhikr: 'মোট জিকির',
   streakDays: 'ধারাবাহিক দিন',
   sessions: 'সম্পন্ন সেশন',

@@ -1,32 +1,48 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
+import { useAuth } from '@/hooks/useAuthStore';
+import { LogIn } from 'lucide-react-native';
 
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const { t } = useLanguageStore();
+  const { signInWithGoogle, isLoading } = useAuth();
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
 
-  const handlePress = useCallback(async () => {
+  const handleContinue = useCallback(async () => {
     try {
+      setIsNavigating(true);
       await AsyncStorage.setItem(WELCOME_SEEN_KEY, 'true');
-      router.replace('/login');
+      router.replace('/(tabs)/tasbih');
     } catch (error) {
       console.error('Error saving welcome status:', error);
-      router.replace('/login');
+      router.replace('/(tabs)/tasbih');
     }
   }, [router]);
+
+  const handleGoogleSignIn = useCallback(async () => {
+    try {
+      await AsyncStorage.setItem(WELCOME_SEEN_KEY, 'true');
+      await signInWithGoogle();
+      router.replace('/(tabs)/tasbih');
+    } catch (error) {
+      console.error('Error during sign in:', error);
+    }
+  }, [router, signInWithGoogle]);
 
   return (
     <View style={styles.backgroundImage}>
@@ -46,13 +62,38 @@ export default function WelcomeScreen() {
           <Text style={styles.subtitle}>{t('welcomeDesc1')}</Text>
         </View>
 
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={handlePress}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.buttonText}>{t('getStarted')}</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonSection}>
+            <TouchableOpacity 
+              style={[styles.button, styles.googleButton]}
+              onPress={handleGoogleSignIn}
+              disabled={isLoading || isNavigating}
+              activeOpacity={0.7}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#128C7E" />
+              ) : (
+                <>
+                  <LogIn size={20} color="#128C7E" style={styles.buttonIcon} />
+                  <Text style={[styles.buttonText, styles.googleButtonText]}>
+                    {t('signInWithGoogle')}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.button, styles.continueButton]}
+              onPress={handleContinue}
+              disabled={isLoading || isNavigating}
+              activeOpacity={0.7}
+            >
+              {isNavigating ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>{t('continueWithoutAccount')}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     </View>
@@ -110,15 +151,31 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
+  buttonSection: {
+    gap: 12,
+  },
   button: {
-    backgroundColor: '#128C7E',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  googleButton: {
+    backgroundColor: '#FFFFFF',
+  },
+  continueButton: {
+    backgroundColor: '#128C7E',
+  },
+  buttonIcon: {
+    marginEnd: 8,
   },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '600',
+  },
+  googleButtonText: {
+    color: '#128C7E',
   },
 });

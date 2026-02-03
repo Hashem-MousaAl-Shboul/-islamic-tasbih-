@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useAuth } from '@/hooks/useAuthStore';
 
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
 
 export default function Index() {
   const router = useRouter();
   const tokens = useTheme();
-  const [isChecking, setIsChecking] = useState<boolean>(true);
+  const { isLoading: isAuthLoading } = useAuth();
 
   useEffect(() => {
     let mounted = true;
 
     const checkWelcomeStatus = async () => {
+      if (isAuthLoading) {
+        return;
+      }
+
       try {
         const hasSeenWelcome = await AsyncStorage.getItem(WELCOME_SEEN_KEY);
         
@@ -41,7 +46,7 @@ export default function Index() {
       mounted = false;
       clearTimeout(timer);
     };
-  }, [router]);
+  }, [router, isAuthLoading]);
 
   return (
     <View style={[styles.container, { backgroundColor: tokens.background }]}>
