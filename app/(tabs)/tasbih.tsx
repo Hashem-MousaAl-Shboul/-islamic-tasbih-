@@ -2,10 +2,10 @@ import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from '
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { RotateCcw, Plus, Minus, X, Check } from 'lucide-react-native';
+import { Plus, X, Check } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
-import TasbihCounter from '@/components/TasbihCounter';
+
 import TasbihCard from '@/components/TasbihCard';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -102,7 +102,7 @@ export default function TasbihScreen() {
 
   const selectedItem = useMemo(() => getSelectedItem(), [getSelectedItem]);
 
-  const counterSize = useMemo(() => Math.min(screenWidth * 0.4, 140), [screenWidth]);
+  
 
   const handleIncrement = useCallback(() => {
     if (selectedItem) {
@@ -373,55 +373,7 @@ export default function TasbihScreen() {
           )}
         </View>
 
-        {/* Counter with Undo and Reset Buttons */}
-        <View style={styles.counterContainer}>
-          <View style={styles.counterWithButtons}>
-            {/* Undo Button - Left of Counter */}
-            <TouchableOpacity 
-              style={styles.undoButtonLeft}
-              onPress={handleDecrement}
-              disabled={selectedItem.count === 0}
-              testID="undo-button-left"
-            >
-              <LinearGradient
-                colors={selectedItem.count === 0 
-                  ? ['rgba(100, 116, 139, 0.2)', 'rgba(100, 116, 139, 0.1)']
-                  : ['rgba(239, 68, 68, 0.2)', 'rgba(239, 68, 68, 0.1)']
-                }
-                style={styles.undoButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Minus size={20} color={selectedItem.count === 0 ? '#64748B' : '#EF4444'} />
-              </LinearGradient>
-            </TouchableOpacity>
-            
-            <TasbihCounter
-              item={selectedItem}
-              onIncrement={handleIncrement}
-              onDecrement={handleDecrement}
-              hapticEnabled={settings.hapticFeedback}
-              soundEnabled={settings.soundEnabled}
-              size={counterSize}
-            />
-            
-            {/* Reset Button - Right of Counter */}
-            <TouchableOpacity 
-              style={styles.resetButtonRight}
-              onPress={handleReset}
-              testID="reset-button-right"
-            >
-              <LinearGradient
-                colors={['rgba(245, 158, 11, 0.2)', 'rgba(245, 158, 11, 0.1)']}
-                style={styles.resetButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <RotateCcw size={20} color="#F59E0B" />
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
+
 
 
       </View>
