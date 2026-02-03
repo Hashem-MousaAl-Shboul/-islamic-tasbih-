@@ -37,12 +37,14 @@ import AdBanner from '@/components/AdBanner';
 import RewardedAd from '@/components/RewardedAd';
 import { ReciterPicker } from '@/components/ReciterPicker';
 import { useReciterStore } from '@/hooks/useReciterStore';
+import { useAuth } from '@/hooks/useAuthStore';
 import { ReciterId } from '@/utils/ttsService';
 
 const SettingsScreen = memo(function SettingsScreen() {
   const { settings, updateSettings, resetAllData, tasbihItems, stats } = useTasbihStore();
-  const { currentLanguage } = useLanguageStore();
+  const { currentLanguage, t } = useLanguageStore();
   const { currentReciter, changeReciter, getCurrentReciterName } = useReciterStore();
+  const { user, isAuthenticated, signOut } = useAuth();
   const insets = useSafeAreaInsets();
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
 
@@ -265,12 +267,24 @@ const SettingsScreen = memo(function SettingsScreen() {
               colors={['#fff', '#f0f0f0']}
               style={styles.profileAvatar}
             >
-              <User size={32} color="#1a5c4c" strokeWidth={2.5} />
+              {isAuthenticated && user?.picture ? (
+                <View style={styles.userImageContainer}>
+                  <Text style={styles.userInitial}>
+                    {user.name?.charAt(0).toUpperCase() || 'U'}
+                  </Text>
+                </View>
+              ) : (
+                <User size={32} color="#1a5c4c" strokeWidth={2.5} />
+              )}
             </LinearGradient>
           </View>
           <View style={styles.profileHeaderInfo}>
-            <Text style={styles.profileHeaderName}>مستخدم TasbeehCounter</Text>
-            <Text style={styles.profileHeaderEmail}>user@example.com</Text>
+            <Text style={styles.profileHeaderName}>
+              {isAuthenticated ? user?.name || t('account') : t('notSignedIn')}
+            </Text>
+            <Text style={styles.profileHeaderEmail}>
+              {isAuthenticated ? user?.email || '' : t('signInToContinue')}
+            </Text>
           </View>
         </View>
       </LinearGradient>
@@ -342,6 +356,39 @@ const SettingsScreen = memo(function SettingsScreen() {
               variant="grouped"
               iconBgColor="#8B5CF6"
             />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <User size={16} color="#1a5c4c" strokeWidth={2.5} />
+            </View>
+            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{t('account')}</Text>
+          </View>
+          <View style={styles.settingsCard}>
+            {isAuthenticated ? (
+              <SettingsItem
+                icon={<User size={22} color="#fff" />}
+                title={t('signOut')}
+                subtitle={t('signedInAs') + ' ' + (user?.email || '')}
+                type="action"
+                onPress={handleSignOut}
+                variant="grouped"
+                iconBgColor="#E74C3C"
+                danger
+              />
+            ) : (
+              <SettingsItem
+                icon={<User size={22} color="#fff" />}
+                title={t('signIn')}
+                subtitle={t('signInDescription')}
+                type="action"
+                onPress={handleSignIn}
+                variant="grouped"
+                iconBgColor="#27AE60"
+              />
+            )}
           </View>
         </View>
 
@@ -641,5 +688,16 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: 'rgba(26, 92, 76, 0.08)',
     marginStart: 76,
+  },
+  userImageContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userInitial: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#1a5c4c',
   },
 });

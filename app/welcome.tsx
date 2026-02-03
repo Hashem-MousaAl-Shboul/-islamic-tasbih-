@@ -21,10 +21,10 @@ export default function WelcomeScreen() {
   const handlePress = useCallback(async () => {
     try {
       await AsyncStorage.setItem(WELCOME_SEEN_KEY, 'true');
-      router.replace('/(tabs)/tasbih');
+      router.replace('/login');
     } catch (error) {
       console.error('Error saving welcome status:', error);
-      router.replace('/(tabs)/tasbih');
+      router.replace('/login');
     }
   }, [router]);
 

@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { TasbihProvider } from '@/hooks/useTasbihStore';
 import { FavoritesProvider } from '@/hooks/useFavoritesStore';
 import { ReciterProvider } from '@/hooks/useReciterStore';
+import { AuthProvider } from '@/hooks/useAuthStore';
 import { queryClient } from '@/utils/queryClient';
 
 interface AppProvidersProps { children: ReactNode }
@@ -27,17 +28,19 @@ export function AppProviders({ children }: AppProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
           <LanguageProvider>
-          <ReciterProvider>
-            <TasbihProvider>
-              <FavoritesProvider>
-                <ThemeProvider>
-                  <GestureRoot>
-                    {children}
-                  </GestureRoot>
-                </ThemeProvider>
-              </FavoritesProvider>
-            </TasbihProvider>
-          </ReciterProvider>
+            <AuthProvider>
+              <ReciterProvider>
+                <TasbihProvider>
+                  <FavoritesProvider>
+                    <ThemeProvider>
+                      <GestureRoot>
+                        {children}
+                      </GestureRoot>
+                    </ThemeProvider>
+                  </FavoritesProvider>
+                </TasbihProvider>
+              </ReciterProvider>
+            </AuthProvider>
           </LanguageProvider>
         </SafeAreaProvider>
       </QueryClientProvider>

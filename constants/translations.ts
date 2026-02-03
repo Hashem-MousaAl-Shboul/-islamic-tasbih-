@@ -216,6 +216,17 @@ export interface TranslationKeys {
   // Favorites
   favorites: string;
   
+  // Authentication
+  signIn: string;
+  signInWithGoogle: string;
+  signOut: string;
+  signedInAs: string;
+  account: string;
+  signInToContinue: string;
+  signInDescription: string;
+  welcomeBack: string;
+  notSignedIn: string;
+  
   // Ad Translations
   discoverIslamicApps: string;
   learnMore: string;
@@ -476,6 +487,17 @@ const ar: TranslationKeys = {
   // Favorites
   favorites: 'المفضلة',
   
+  // Authentication
+  signIn: 'تسجيل الدخول',
+  signInWithGoogle: 'تسجيل الدخول بواسطة Google',
+  signOut: 'تسجيل الخروج',
+  signedInAs: 'مسجل الدخول بإسم',
+  account: 'الحساب',
+  signInToContinue: 'قم بتسجيل الدخول للمتابعة',
+  signInDescription: 'سجل الدخول لمزامنة بياناتك عبر جميع الأجهزة',
+  welcomeBack: 'مرحباً بعودتك',
+  notSignedIn: 'غير مسجل الدخول',
+  
   // Ad Translations
   discoverIslamicApps: 'اكتشف تطبيقات إسلامية',
   learnMore: 'اعرف المزيد',
@@ -734,6 +756,17 @@ const en: TranslationKeys = {
   
   // Favorites
   favorites: 'Favorites',
+  
+  // Authentication
+  signIn: 'Sign In',
+  signInWithGoogle: 'Sign In with Google',
+  signOut: 'Sign Out',
+  signedInAs: 'Signed in as',
+  account: 'Account',
+  signInToContinue: 'Sign in to continue',
+  signInDescription: 'Sign in to sync your data across all devices',
+  welcomeBack: 'Welcome back',
+  notSignedIn: 'Not signed in',
   
   // Ad Translations
   discoverIslamicApps: 'Discover Islamic Apps',
