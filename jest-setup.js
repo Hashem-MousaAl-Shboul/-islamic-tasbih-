@@ -1,4 +1,5 @@
 import React from "react";
+/* eslint-disable */
 import '@testing-library/jest-native/extend-expect';
 
 // Mock AsyncStorage
