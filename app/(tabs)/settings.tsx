@@ -598,6 +598,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#fff',
     letterSpacing: 0.5,
+    writingDirection: 'rtl',
   },
   profileHeader: {
     flexDirection: 'row',
@@ -638,11 +639,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 4,
     letterSpacing: 0.3,
+    writingDirection: 'rtl',
   },
   profileHeaderEmail: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.85)',
     letterSpacing: 0.2,
+    writingDirection: 'rtl',
   },
   scrollContainer: {
     flex: 1,

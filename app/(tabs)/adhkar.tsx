@@ -915,8 +915,8 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   adhkarArabicText: {
-    fontSize: 10,
-    lineHeight: 18,
+    fontSize: 16,
+    lineHeight: 28,
     color: '#FFFFFF',
     textAlign: 'right',
     fontWeight: '700' as const,
@@ -930,8 +930,8 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   adhkarArabicTextExpanded: {
-    fontSize: 12,
-    lineHeight: 20,
+    fontSize: 20,
+    lineHeight: 34,
     paddingVertical: 8,
   },
   transliterationContainer: {

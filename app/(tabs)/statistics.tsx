@@ -354,6 +354,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700' as const,
     color: '#fff',
+    writingDirection: 'rtl',
   },
 
   scrollContainer: {
@@ -391,6 +392,7 @@ const styles = StyleSheet.create({
     color: '#1a5c4c',
     opacity: 0.8,
     marginBottom: 4,
+    writingDirection: 'rtl',
   },
   summaryValue: {
     fontSize: 32,
@@ -538,6 +540,8 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: '#1a5c4c',
     marginBottom: 4,
+    writingDirection: 'rtl',
+    textAlign: 'right',
   },
   favoriteStats: {
     fontSize: 14,
@@ -563,6 +567,8 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: '#1a5c4c',
     flex: 1,
+    writingDirection: 'rtl',
+    textAlign: 'right',
   },
   completionBadge: {
     paddingHorizontal: 10,

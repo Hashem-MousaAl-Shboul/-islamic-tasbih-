@@ -156,7 +156,7 @@ export default function TasbihScreen() {
         }
       }
     }
-  }, [selectedItem, updateTasbihCount]);
+  }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled]);
 
   const handleDecrement = useCallback(() => {
     if (selectedItem && selectedItem.count > 0) {
@@ -733,30 +733,31 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   mainArabicText: {
-    fontSize: 12,
-    fontWeight: '600' as const,
+    fontSize: 18,
+    fontWeight: '700' as const,
     color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 2,
-    lineHeight: 18,
+    lineHeight: 28,
     paddingHorizontal: 8,
     alignSelf: 'stretch',
+    writingDirection: 'rtl',
   },
   transliterationText: {
-    fontSize: 10,
+    fontSize: 13,
     fontWeight: '500' as const,
     color: '#94A3B8',
     textAlign: 'center',
     marginTop: 2,
-    lineHeight: 14,
+    lineHeight: 20,
   },
   translationText: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '400' as const,
     color: '#64748B',
     textAlign: 'center',
-    marginTop: 2,
-    lineHeight: 12,
+    marginTop: 4,
+    lineHeight: 18,
   },
 
   counterContainer: {
