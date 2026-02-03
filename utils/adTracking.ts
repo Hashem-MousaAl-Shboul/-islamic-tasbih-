@@ -173,6 +173,49 @@ class AdTracker {
     return bannerRevenue + videoRevenue + rewardedRevenue + clickRevenue;
   }
 
+  getRevenueBreakdown(): {
+    cpm: { banner: number; video: number; rewarded: number; total: number };
+    cpc: { clicks: number; revenue: number };
+    total: number;
+  } {
+    let totalImpressions = 0;
+    let totalClicks = 0;
+    let totalVideoCompletes = 0;
+    let totalRewardedClaims = 0;
+    
+    this.impressions.forEach(count => totalImpressions += count);
+    this.clicks.forEach(count => totalClicks += count);
+    this.videoCompletes.forEach(count => totalVideoCompletes += count);
+    this.rewardedClaims.forEach(count => totalRewardedClaims += count);
+    
+    const bannerCPM = 5;
+    const videoCPM = 15;
+    const rewardedCPM = 25;
+    const cpc = 0.5;
+    
+    const bannerImpressions = totalImpressions - totalVideoCompletes - totalRewardedClaims;
+    const bannerRevenue = (bannerImpressions / 1000) * bannerCPM;
+    const videoRevenue = (totalVideoCompletes / 1000) * videoCPM;
+    const rewardedRevenue = (totalRewardedClaims / 1000) * rewardedCPM;
+    const clickRevenue = totalClicks * cpc;
+    
+    const cpmTotal = bannerRevenue + videoRevenue + rewardedRevenue;
+    
+    return {
+      cpm: {
+        banner: bannerRevenue,
+        video: videoRevenue,
+        rewarded: rewardedRevenue,
+        total: cpmTotal,
+      },
+      cpc: {
+        clicks: totalClicks,
+        revenue: clickRevenue,
+      },
+      total: cpmTotal + clickRevenue,
+    };
+  }
+
   getMonthlyProjection(): number {
     const metrics = this.getMetrics();
     const dailyRevenue = metrics.revenue;
@@ -183,15 +226,16 @@ class AdTracker {
     const metrics = this.getMetrics();
     const monthlyProjection = this.getMonthlyProjection();
     const yearlyProjection = monthlyProjection * 12;
+    const breakdown = this.getRevenueBreakdown();
     
     let totalVideoCompletes = 0;
     let totalRewardedClaims = 0;
     this.videoCompletes.forEach(count => totalVideoCompletes += count);
     this.rewardedClaims.forEach(count => totalRewardedClaims += count);
     
-    console.log('\n╔═════════════���═════════════════════════════════════════════╗');
-    console.log('║          📊 ADVANCED AD PERFORMANCE REPORT 📊             ║');
-    console.log('╚═══════════════════════════════════════════════════════════╝\n');
+    console.log('\n========================================================');
+    console.log('       📊 AD PERFORMANCE REPORT (CPM + CPC) 📊        ');
+    console.log('========================================================\n');
     
     console.log('🎯 KEY METRICS:');
     console.log(`   Total Impressions: ${metrics.impressions.toLocaleString()}`);
@@ -199,34 +243,49 @@ class AdTracker {
     console.log(`   Video Completes: ${totalVideoCompletes.toLocaleString()}`);
     console.log(`   Rewarded Claims: ${totalRewardedClaims.toLocaleString()}`);
     console.log(`   CTR: ${metrics.ctr.toFixed(2)}%`);
-    console.log(`   eCPM: ${metrics.ecpm.toFixed(2)}`);
+    console.log(`   eCPM: $${metrics.ecpm.toFixed(2)}`);
     console.log(`   Fill Rate: ${metrics.fillRate.toFixed(2)}%`);
     console.log(`   Viewability: ${metrics.viewability.toFixed(2)}%\n`);
     
-    console.log('💰 REVENUE PROJECTIONS:');
-    console.log(`   Daily Revenue: ${metrics.revenue.toFixed(2)}`);
-    console.log(`   Monthly Revenue: ${monthlyProjection.toFixed(2)}`);
-    console.log(`   Yearly Revenue: ${yearlyProjection.toFixed(2)}\n`);
+    console.log('💰 REVENUE BREAKDOWN (CPM vs CPC):');
+    console.log('   ------------------------------------------------');
+    console.log('   📊 CPM Revenue (Cost Per 1000 Impressions):');
+    console.log(`      • Banner Ads (CPM $5): $${breakdown.cpm.banner.toFixed(2)}`);
+    console.log(`      • Video Ads (CPM $15): $${breakdown.cpm.video.toFixed(2)}`);
+    console.log(`      • Rewarded Ads (CPM $25): $${breakdown.cpm.rewarded.toFixed(2)}`);
+    console.log(`      • CPM Subtotal: $${breakdown.cpm.total.toFixed(2)} (${breakdown.total > 0 ? ((breakdown.cpm.total / breakdown.total) * 100).toFixed(1) : '0'}%)`);
+    console.log('   ------------------------------------------------');
+    console.log('   🖱️  CPC Revenue (Cost Per Click):');
+    console.log(`      • Total Clicks: ${breakdown.cpc.clicks.toLocaleString()}`);
+    console.log(`      • CPC Rate: $0.50 per click`);
+    console.log(`      • CPC Subtotal: $${breakdown.cpc.revenue.toFixed(2)} (${breakdown.total > 0 ? ((breakdown.cpc.revenue / breakdown.total) * 100).toFixed(1) : '0'}%)`);
+    console.log('   ------------------------------------------------');
+    console.log(`   💎 TOTAL REVENUE: $${breakdown.total.toFixed(2)}\n`);
+    
+    console.log('💵 REVENUE PROJECTIONS:');
+    console.log(`   Daily Revenue: $${metrics.revenue.toFixed(2)}`);
+    console.log(`   Monthly Revenue: $${monthlyProjection.toFixed(2)}`);
+    console.log(`   Yearly Revenue: $${yearlyProjection.toFixed(2)}\n`);
     
     console.log('📈 GROWTH SCENARIOS (If you scale to):');
-    console.log(`   10K DAU:  ${(monthlyProjection * 10).toFixed(0)}/mo`);
-    console.log(`   50K DAU:  ${(monthlyProjection * 50).toFixed(0)}/mo`);
-    console.log(`   100K DAU: ${(monthlyProjection * 100).toFixed(0)}/mo`);
-    console.log(`   500K DAU: ${(monthlyProjection * 500).toFixed(0)}/mo\n`);
+    console.log(`   10K DAU:  $${(monthlyProjection * 10).toFixed(0)}/mo`);
+    console.log(`   50K DAU:  $${(monthlyProjection * 50).toFixed(0)}/mo`);
+    console.log(`   100K DAU: $${(monthlyProjection * 100).toFixed(0)}/mo`);
+    console.log(`   500K DAU: $${(monthlyProjection * 500).toFixed(0)}/mo\n`);
     
     console.log('📊 Ad Performance by ID:');
-    console.log('─'.repeat(60));
+    console.log('--------------------------------------------------------');
     this.impressions.forEach((_, adId) => {
       const adMetrics = this.getMetrics(adId);
       console.log(`\n🎯 ${adId}:`);
       console.log(`   Impressions: ${adMetrics.impressions.toLocaleString()}`);
       console.log(`   Clicks: ${adMetrics.clicks.toLocaleString()}`);
       console.log(`   CTR: ${adMetrics.ctr.toFixed(2)}%`);
-      console.log(`   eCPM: ${adMetrics.ecpm.toFixed(2)}`);
-      console.log(`   Revenue: ${adMetrics.revenue.toFixed(2)}`);
+      console.log(`   eCPM: $${adMetrics.ecpm.toFixed(2)}`);
+      console.log(`   Revenue: $${adMetrics.revenue.toFixed(2)}`);
     });
     
-    console.log('\n' + '═'.repeat(60) + '\n');
+    console.log('\n========================================================\n');
   }
 
   getOptimizationSuggestions(): string[] {
@@ -283,4 +342,7 @@ if (typeof window !== 'undefined') {
   (window as any).adTracker = adTracker;
   console.log('[AdTracker] Available globally as window.adTracker');
   console.log('[AdTracker] Use adTracker.printReport() to see metrics');
+  console.log('[AdTracker] CPC & CPM tracking activated! 🚀');
+  console.log('[AdTracker] - CPM: Banner ($5), Video ($15), Rewarded ($25)');
+  console.log('[AdTracker] - CPC: $0.50 per click');
 }
