@@ -74,7 +74,9 @@ export interface TranslationKeys {
   
   // Tasbih Screen Additional
   today: string;
+  total: string;
   completed: string;
+  tapToCount: string;
   streak: string;
   resetCounter: string;
   resetCounterConfirm: string;
@@ -336,7 +338,9 @@ const ar: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'اليوم',
+  total: 'الإجمالي',
   completed: 'مكتمل',
+  tapToCount: 'اضغط للعد',
   streak: 'متتالية',
   resetCounter: 'إعادة تعيين العداد',
   resetCounterConfirm: 'هل تريد إعادة تعيين عداد "{{dhikr}}"؟',
@@ -593,7 +597,9 @@ const en: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'Today',
+  total: 'Total',
   completed: 'Completed',
+  tapToCount: 'Tap to count',
   streak: 'Streak',
   resetCounter: 'Reset Counter',
   resetCounterConfirm: 'Do you want to reset counter "{{dhikr}}"?',
@@ -810,7 +816,9 @@ const fr: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'Aujourd\'hui',
+  total: 'Total',
   completed: 'Terminé',
+  tapToCount: 'Appuyez pour compter',
   streak: 'Série',
   resetCounter: 'Réinitialiser le compteur',
   resetCounterConfirm: 'Voulez-vous réinitialiser le compteur "{{dhikr}}"?',
@@ -1068,7 +1076,9 @@ const es: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'Hoy',
+  total: 'Total',
   completed: 'Completado',
+  tapToCount: 'Toca para contar',
   streak: 'Racha',
   resetCounter: 'Reiniciar contador',
   resetCounterConfirm: '¿Quieres reiniciar el contador "{{dhikr}}"?',
@@ -1366,7 +1376,9 @@ const ur: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'آج',
+  total: 'کل',
   completed: 'مکمل',
+  tapToCount: 'گننے کے لیے ٹیپ کریں',
   streak: 'سلسلہ',
   resetCounter: 'کاؤنٹر ری سیٹ کریں',
   resetCounterConfirm: 'کیا آپ "{{dhikr}}" کاؤنٹر ری سیٹ کرنا چاہتے ہیں؟',
@@ -1623,7 +1635,9 @@ const id: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'Hari ini',
+  total: 'Total',
   completed: 'Selesai',
+  tapToCount: 'Ketuk untuk menghitung',
   streak: 'Beruntun',
   resetCounter: 'Reset Counter',
   resetCounterConfirm: 'Apakah Anda ingin mereset counter "{{dhikr}}"?',
@@ -1880,7 +1894,9 @@ const tr: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'Bugün',
+  total: 'Toplam',
   completed: 'Tamamlandı',
+  tapToCount: 'Saymak için dokunun',
   streak: 'Seri',
   resetCounter: 'Sayacı Sıfırla',
   resetCounterConfirm: '"{{dhikr}}" sayacını sıfırlamak istiyor musunuz?',
@@ -2137,7 +2153,9 @@ const ms: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'Hari ini',
+  total: 'Jumlah',
   completed: 'Selesai',
+  tapToCount: 'Ketik untuk mengira',
   streak: 'Berturut-turut',
   resetCounter: 'Set Semula Kaunter',
   resetCounterConfirm: 'Adakah anda ingin set semula kaunter "{{dhikr}}"?',
@@ -2394,7 +2412,9 @@ const bn: TranslationKeys = {
   
   // Tasbih Screen Additional
   today: 'আজ',
+  total: 'মোট',
   completed: 'সম্পন্ন',
+  tapToCount: 'গণনা করতে ট্যাপ করুন',
   streak: 'ধারাবাহিক',
   resetCounter: 'কাউন্টার রিসেট',
   resetCounterConfirm: 'আপনি কি "{{dhikr}}" কাউন্���ার রিসেট করতে চান?',

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from '
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Plus, X, Check } from 'lucide-react-native';
+import { Plus, X, Check, Minus, RotateCcw } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 
@@ -54,7 +54,7 @@ const islamicVideoAds = [
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
-  const { width: screenWidth } = useWindowDimensions();
+  useWindowDimensions();
   const theme = useTheme();
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -85,7 +85,7 @@ export default function TasbihScreen() {
   const {
     tasbihItems,
     settings,
-
+    stats,
     selectedItemId,
     isLoading,
     updateTasbihCount,
@@ -373,9 +373,101 @@ export default function TasbihScreen() {
           )}
         </View>
 
+        {/* Electronic Counter Section */}
+        <View style={styles.counterSection}>
+          {/* Progress Ring & Counter */}
+          <TouchableOpacity
+            style={styles.mainCounterButton}
+            onPress={handleIncrement}
+            activeOpacity={0.8}
+            testID="increment-button"
+          >
+            <LinearGradient
+              colors={[selectedItem.color, selectedItem.color + '99']}
+              style={styles.counterGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              {/* Counter Display */}
+              <View style={styles.counterDisplay}>
+                <Text style={styles.counterNumber}>{selectedItem.count}</Text>
+                <View style={styles.counterDivider} />
+                <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
+              </View>
+              
+              {/* Progress Bar */}
+              <View style={styles.counterProgressBar}>
+                <View 
+                  style={[
+                    styles.counterProgressFill,
+                    { width: `${Math.min((selectedItem.count / selectedItem.targetCount) * 100, 100)}%` }
+                  ]} 
+                />
+              </View>
+              
+              {/* Tap Hint */}
+              <Text style={styles.tapHint}>{t('tapToCount')}</Text>
+              
+              {/* Completion Badge */}
+              {selectedItem.isCompleted && (
+                <View style={styles.completedBadge}>
+                  <Check size={16} color="#FFFFFF" />
+                  <Text style={styles.completedText}>{t('completed')}</Text>
+                </View>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
 
+          {/* Control Buttons */}
+          <View style={styles.controlButtonsRow}>
+            {/* Decrement Button */}
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={handleDecrement}
+              activeOpacity={0.7}
+              testID="decrement-button"
+            >
+              <LinearGradient
+                colors={['#EF4444', '#DC2626']}
+                style={styles.controlButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Minus size={20} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
 
+            {/* Stats Display */}
+            <View style={[styles.statsDisplay, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <View style={styles.statItem}>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('today')}</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>{stats.todayCount}</Text>
+              </View>
+              <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+              <View style={styles.statItem}>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('total')}</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>{stats.totalCount}</Text>
+              </View>
+            </View>
 
+            {/* Reset Button */}
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={handleReset}
+              activeOpacity={0.7}
+              testID="reset-button"
+            >
+              <LinearGradient
+                colors={['#F59E0B', '#D97706']}
+                style={styles.controlButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <RotateCcw size={20} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
       {/* Fixed Ad Banner at Bottom */}
@@ -909,5 +1001,138 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700' as const,
     color: '#FFFFFF',
+  },
+  counterSection: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    gap: 20,
+  },
+  mainCounterButton: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  counterGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  counterDisplay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  counterNumber: {
+    fontSize: 48,
+    fontWeight: '800' as const,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  counterDivider: {
+    width: 40,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    marginVertical: 4,
+  },
+  counterTarget: {
+    fontSize: 20,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  counterProgressBar: {
+    width: 100,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 2,
+    marginTop: 8,
+    overflow: 'hidden',
+  },
+  counterProgressFill: {
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
+  },
+  tapHint: {
+    fontSize: 11,
+    fontWeight: '500' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginTop: 8,
+  },
+  completedBadge: {
+    position: 'absolute' as const,
+    bottom: -10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#10B981',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  completedText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+  },
+  controlButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    width: '100%',
+  },
+  controlButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  controlButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 16,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '500' as const,
+    marginBottom: 2,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
   },
 });
