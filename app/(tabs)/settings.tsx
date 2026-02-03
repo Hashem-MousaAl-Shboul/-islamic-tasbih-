@@ -9,8 +9,7 @@ import {
   Vibrate,
   Bell,
   BellRing,
-  Moon,
-  Type,
+
   Cloud,
   RotateCcw,
   Share2,
@@ -21,14 +20,13 @@ import {
   User,
   Sparkles,
   Globe,
-  Palette,
+
   Mic,
 } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { LanguagePicker } from '@/components/LanguagePicker';
-import { ColorThemePicker } from '@/components/ColorThemePicker';
-import { AppearanceSettings } from '@/components/AppearanceSettings';
+
 import { SettingsItem } from '@/components/SettingsItem';
 import i18n, { AVAILABLE_LANGUAGES } from '@/constants/translations';
 import { ColorThemeKey } from '@/theme/ThemeProvider';
@@ -47,8 +45,7 @@ const SettingsScreen = memo(function SettingsScreen() {
   const { currentReciter, changeReciter, getCurrentReciterName } = useReciterStore();
   const insets = useSafeAreaInsets();
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
-  const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
-  const [showAppearanceSettings, setShowAppearanceSettings] = useState<boolean>(false);
+
   const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
   const [showRewardedAd, setShowRewardedAd] = useState<boolean>(false);
   const [currentAd, setCurrentAd] = useState(adStrategy.getRandomBannerAd());
@@ -76,12 +73,6 @@ const SettingsScreen = memo(function SettingsScreen() {
     },
     [updateSettings]
   );
-
-  const handleToggleDarkMode = useCallback((value: boolean) => {
-    console.log(`[SettingsScreen] Toggle dark mode: ${value}`);
-    adTracker.trackClick('toggle-dark-mode', 'settings', 'toggle-switch');
-    updateSettings({ theme: value ? 'dark' : 'light' });
-  }, [updateSettings]);
 
   const handleShareApp = useCallback(async () => {
     try {
@@ -161,13 +152,6 @@ const SettingsScreen = memo(function SettingsScreen() {
     router.push('/terms' as any);
   }, []);
 
-  const handleSelectTheme = useCallback((themeKey: ColorThemeKey) => {
-    console.log(`[SettingsScreen] Theme changed to: ${themeKey}`);
-    adTracker.trackClick(`theme-${themeKey}`, 'settings', 'theme-picker');
-    updateSettings({ colorTheme: themeKey });
-    setShowColorPicker(false);
-  }, [updateSettings]);
-
   const handleSelectReciter = useCallback((reciterId: ReciterId) => {
     console.log(`[SettingsScreen] Reciter changed to: ${reciterId}`);
     adTracker.trackClick(`reciter-${reciterId}`, 'settings', 'reciter-picker');
@@ -178,11 +162,6 @@ const SettingsScreen = memo(function SettingsScreen() {
   const handleRewardedAdClose = useCallback((rewardClaimed: boolean) => {
     console.log(`[SettingsScreen] Rewarded ad closed, reward claimed: ${rewardClaimed}`);
     setShowRewardedAd(false);
-    if (rewardClaimed) {
-      setTimeout(() => {
-        setShowColorPicker(true);
-      }, 300);
-    }
   }, []);
 
   const handleRewardClaimed = useCallback((rewardValue: number) => {
@@ -253,22 +232,6 @@ const SettingsScreen = memo(function SettingsScreen() {
       ]
     );
   }, [resetAllData]);
-
-  const fontSizeLabel = useMemo(() => {
-    const size = settings.fontSize || 'medium';
-    const labels: Record<string, string> = {
-      small: i18n.t('small') || 'صغير',
-      medium: i18n.t('medium') || 'متوسط',
-      large: i18n.t('large') || 'كبير',
-    };
-    return labels[size] || labels.medium;
-  }, [settings.fontSize]);
-
-  const themeLabel = useMemo(() => {
-    return settings.theme === 'dark' 
-      ? (i18n.t('darkMode') || 'داكن')
-      : (i18n.t('lightModeEnabled') || 'فاتح');
-  }, [settings.theme]);
 
   const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
 
@@ -387,46 +350,6 @@ const SettingsScreen = memo(function SettingsScreen() {
             <View style={styles.sectionIconContainer}>
               <Sparkles size={16} color="#1a5c4c" strokeWidth={2.5} />
             </View>
-            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('appearance') || 'المظهر'}</Text>
-          </View>
-          <View style={styles.settingsCard}>
-            <SettingsItem
-              icon={<Palette size={22} color="#fff" />}
-              title={i18n.t('colorTheme') || 'سمة الألوان'}
-              subtitle={i18n.t('changeColorTheme') || 'تغيير ألوان التطبيق'}
-              type="action"
-              onPress={() => setShowColorPicker(true)}
-              variant="grouped"
-              iconBgColor="#F1C40F"
-            />
-            <View style={styles.divider} />
-            <SettingsItem
-              icon={<Moon size={22} color="#fff" />}
-              title={i18n.t('appearance') || 'المظهر'}
-              subtitle={themeLabel}
-              type="action"
-              onPress={() => handleToggleDarkMode(settings.theme !== 'dark')}
-              variant="grouped"
-              iconBgColor="#9B59B6"
-            />
-            <View style={styles.divider} />
-            <SettingsItem
-              icon={<Type size={22} color="#fff" />}
-              title={i18n.t('fontSize') || 'حجم الخط'}
-              subtitle={fontSizeLabel}
-              type="action"
-              onPress={() => setShowAppearanceSettings(true)}
-              variant="grouped"
-              iconBgColor="#3498DB"
-            />
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIconContainer}>
-              <Sparkles size={16} color="#1a5c4c" strokeWidth={2.5} />
-            </View>
             <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('dataManagement') || 'البيانات والخصوصية'}</Text>
           </View>
           <View style={styles.settingsCard}>
@@ -527,18 +450,6 @@ const SettingsScreen = memo(function SettingsScreen() {
       <LanguagePicker
         visible={showLanguagePicker}
         onClose={() => setShowLanguagePicker(false)}
-      />
-
-      <ColorThemePicker
-        visible={showColorPicker}
-        onClose={() => setShowColorPicker(false)}
-        currentTheme={settings.colorTheme || 'gold'}
-        onSelectTheme={handleSelectTheme}
-      />
-
-      <AppearanceSettings
-        visible={showAppearanceSettings}
-        onClose={() => setShowAppearanceSettings(false)}
       />
 
       <ReciterPicker
