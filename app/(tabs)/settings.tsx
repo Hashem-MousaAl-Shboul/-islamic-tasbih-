@@ -537,6 +537,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 8,
+    justifyContent: 'flex-start',
   },
   profileAvatarContainer: {
     ...Platform.select({
@@ -561,7 +562,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   profileHeaderInfo: {
-    marginLeft: 16,
+    marginHorizontal: 16,
     flex: 1,
   },
   profileHeaderName: {
@@ -606,7 +607,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(26, 92, 76, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginHorizontal: 8,
   },
   sectionTitle: {
     fontSize: 15,
@@ -639,6 +640,6 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: 'rgba(26, 92, 76, 0.08)',
-    marginLeft: 76,
+    marginStart: 76,
   },
 });
