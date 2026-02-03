@@ -14,6 +14,7 @@ import { adTracker } from '@/utils/adTracking';
 import { adStrategy } from '@/utils/adStrategy';
 import AdBanner from '@/components/AdBanner';
 import VideoAd from '@/components/VideoAd';
+import { soundService } from '@/utils/soundService';
 
 // Memoized header component for better performance
 const TasbihHeader = memo(() => {
@@ -72,7 +73,12 @@ export default function TasbihScreen() {
       console.log('[TasbihScreen] Banner ad refreshed');
     }, 45000);
     
-    return () => clearInterval(adRefreshInterval);
+    soundService.initialize();
+
+    return () => {
+      clearInterval(adRefreshInterval);
+      soundService.unload();
+    };
   }, []);
   const [newTasbih, setNewTasbih] = useState({
     arabicText: '',
@@ -109,11 +115,26 @@ export default function TasbihScreen() {
       console.log(`[TasbihScreen] Increment count for: ${selectedItem.id}`);
       adTracker.trackClick(`increment-${selectedItem.id}`, 'tasbih', 'counter-button');
       
+      if (settings.vibrationEnabled && Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(e => console.log('Haptic error', e));
+      }
+
+      if (settings.soundEnabled) {
+        soundService.playClick();
+      }
+
       const willComplete = selectedItem.count + 1 >= selectedItem.targetCount;
       
       updateTasbihCount(selectedItem.id, true);
       
       if (willComplete && !selectedItem.isCompleted) {
+        if (settings.soundEnabled) {
+          soundService.playCompletion();
+        }
+        if (settings.vibrationEnabled && Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(e => console.log('Haptic error', e));
+        }
+
         const adKey = `${selectedItem.id}-${Date.now()}`;
         if (lastAdShownRef.current !== adKey) {
           console.log('[TasbihScreen] Dhikr completed - showing video ad');
@@ -141,9 +162,18 @@ export default function TasbihScreen() {
     if (selectedItem && selectedItem.count > 0) {
       console.log(`[TasbihScreen] Decrement count for: ${selectedItem.id}`);
       adTracker.trackClick(`decrement-${selectedItem.id}`, 'tasbih', 'undo-button');
+      
+      if (settings.vibrationEnabled && Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(e => console.log('Haptic error', e));
+      }
+
+      if (settings.soundEnabled) {
+        soundService.playClick();
+      }
+
       updateTasbihCount(selectedItem.id, false);
     }
-  }, [selectedItem, updateTasbihCount]);
+  }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled]);
 
   const handleReset = useCallback(() => {
     if (selectedItem) {

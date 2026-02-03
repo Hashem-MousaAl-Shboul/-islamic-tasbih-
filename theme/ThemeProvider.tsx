@@ -62,11 +62,14 @@ function computeTypography(scale: TypographyScale): ThemeTokens['typography'] {
 
 export const [ThemeProvider, useTheme] = createContextHook<ThemeTokens>(() => {
   const tasbihStore = useTasbihStore();
-  const settings = tasbihStore?.settings ?? { theme: 'dark', colorTheme: 'gold' };
+  const settings = tasbihStore?.settings ?? { theme: 'dark', colorTheme: 'gold', fontSize: 'medium' };
   const mode = settings.theme ?? 'dark';
   const primary = computePrimaryFromTheme(settings.colorTheme as ColorThemeKey | undefined, Colors.primary);
-  const typographyScale = (settings as any).typographyScale as TypographyScale | undefined;
-  const scale: TypographyScale = typographyScale ?? 'md';
+  
+  const fontSize = settings.fontSize || 'medium';
+  let scale: TypographyScale = 'md';
+  if (fontSize === 'small') scale = 'sm';
+  if (fontSize === 'large') scale = 'lg';
 
   const tokens: ThemeTokens = useMemo(() => {
     const dark = mode === 'dark';

@@ -20,6 +20,9 @@ import {
   MessageCircle,
   User,
   Sparkles,
+  Globe,
+  Palette,
+  Mic,
 } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
@@ -27,30 +30,49 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 import { AppearanceSettings } from '@/components/AppearanceSettings';
 import { SettingsItem } from '@/components/SettingsItem';
-import i18n from '@/constants/translations';
+import i18n, { AVAILABLE_LANGUAGES } from '@/constants/translations';
 import { ColorThemeKey } from '@/theme/ThemeProvider';
+import { notificationService } from '@/utils/notificationService';
 import { adTracker } from '@/utils/adTracking';
+import { adStrategy } from '@/utils/adStrategy';
+import AdBanner from '@/components/AdBanner';
 import RewardedAd from '@/components/RewardedAd';
+import { ReciterPicker } from '@/components/ReciterPicker';
+import { useReciterStore } from '@/hooks/useReciterStore';
+import { ReciterId } from '@/utils/ttsService';
 
 const SettingsScreen = memo(function SettingsScreen() {
-  const { settings, updateSettings } = useTasbihStore();
+  const { settings, updateSettings, resetAllData, tasbihItems, stats } = useTasbihStore();
   const { currentLanguage } = useLanguageStore();
+  const { currentReciter, changeReciter, getCurrentReciterName } = useReciterStore();
   const insets = useSafeAreaInsets();
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [showAppearanceSettings, setShowAppearanceSettings] = useState<boolean>(false);
+  const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
   const [showRewardedAd, setShowRewardedAd] = useState<boolean>(false);
+  const [currentAd, setCurrentAd] = useState(adStrategy.getRandomBannerAd());
 
   useEffect(() => {
     console.log('[SettingsScreen] Screen mounted - tracking KPI');
     adTracker.trackImpression('settings-screen', 'settings', 'screen-view');
+
+    const adRefreshInterval = setInterval(() => {
+      setCurrentAd(adStrategy.getRandomBannerAd());
+    }, 45000);
+
+    return () => clearInterval(adRefreshInterval);
   }, []);
 
   const handleToggleSetting = useCallback(
-    (key: keyof typeof settings) => (value: boolean) => {
+    (key: keyof typeof settings) => async (value: boolean) => {
       console.log(`[SettingsScreen] Toggle setting: ${key} = ${value}`);
       adTracker.trackClick(`toggle-${key}`, 'settings', 'toggle-switch');
       updateSettings({ [key]: value });
+      
+      if (key === 'reminderEnabled') {
+        await notificationService.scheduleDailyReminder(value);
+      }
     },
     [updateSettings]
   );
@@ -146,6 +168,13 @@ const SettingsScreen = memo(function SettingsScreen() {
     setShowColorPicker(false);
   }, [updateSettings]);
 
+  const handleSelectReciter = useCallback((reciterId: ReciterId) => {
+    console.log(`[SettingsScreen] Reciter changed to: ${reciterId}`);
+    adTracker.trackClick(`reciter-${reciterId}`, 'settings', 'reciter-picker');
+    changeReciter(reciterId);
+    setShowReciterPicker(false);
+  }, [changeReciter]);
+
   const handleRewardedAdClose = useCallback((rewardClaimed: boolean) => {
     console.log(`[SettingsScreen] Rewarded ad closed, reward claimed: ${rewardClaimed}`);
     setShowRewardedAd(false);
@@ -160,32 +189,70 @@ const SettingsScreen = memo(function SettingsScreen() {
     console.log(`[SettingsScreen] Reward claimed: ${rewardValue}`);
   }, []);
 
-  const handleBackupData = useCallback(() => {
+  const handleBackupData = useCallback(async () => {
     console.log('[SettingsScreen] Backup data clicked');
-    Alert.alert(
-      i18n.t('exportData') || 'النسخ الاحتياطي',
-      i18n.t('exportDataDescription') || 'تم حفظ البيانات بنجاح',
-      [{ text: i18n.t('ok') || 'حسناً' }]
-    );
-  }, []);
+    try {
+      const backupData = JSON.stringify({
+        tasbihItems,
+        settings,
+        stats,
+        meta: {
+          version: '1.0.0',
+          timestamp: new Date().toISOString(),
+          platform: Platform.OS
+        }
+      }, null, 2);
+
+      const message = i18n.t('shareBackup') || 'Tasbih App Backup Data';
+      
+      if (Platform.OS === 'web') {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(backupData);
+          Alert.alert(
+            i18n.t('success') || 'Success',
+            i18n.t('backupCopied') || 'Backup data copied to clipboard'
+          );
+        } else {
+           Alert.alert(i18n.t('error'), 'Clipboard not available');
+        }
+      } else {
+        await Share.share({
+          title: message,
+          message: backupData,
+        });
+      }
+      
+      adTracker.trackClick('backup-data', 'settings', 'backup-button');
+    } catch (error) {
+      console.error('Backup error:', error);
+      Alert.alert(i18n.t('error'), 'Failed to create backup');
+    }
+  }, [tasbihItems, settings, stats]);
 
   const handleResetData = useCallback(() => {
     console.log('[SettingsScreen] Reset data clicked');
     Alert.alert(
       i18n.t('resetData') || 'إعادة تعيين البيانات',
-      i18n.t('resetDataConfirm') || 'هل أنت متأكد من حذف جميع البيانات؟',
+      i18n.t('resetDataConfirm') || 'هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء.',
       [
         { text: i18n.t('cancel') || 'إلغاء', style: 'cancel' },
         { 
           text: i18n.t('delete') || 'حذف', 
           style: 'destructive',
-          onPress: () => {
-            Alert.alert(i18n.t('success') || 'نجح', i18n.t('dataResetSuccess') || 'تم حذف البيانات');
+          onPress: async () => {
+            try {
+              await resetAllData();
+              adTracker.trackClick('reset-data', 'settings', 'reset-button');
+              Alert.alert(i18n.t('success') || 'نجح', i18n.t('dataResetSuccess') || 'تم حذف البيانات بنجاح');
+            } catch (error) {
+              console.error('Reset error:', error);
+              Alert.alert(i18n.t('error'), 'Failed to reset data');
+            }
           }
         }
       ]
     );
-  }, []);
+  }, [resetAllData]);
 
   const fontSizeLabel = useMemo(() => {
     const size = settings.fontSize || 'medium';
@@ -204,6 +271,11 @@ const SettingsScreen = memo(function SettingsScreen() {
   }, [settings.theme]);
 
   const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
+
+  const languageLabel = useMemo(() => {
+    const lang = AVAILABLE_LANGUAGES.find(l => l.code === currentLanguage);
+    return lang ? lang.nativeName : 'English';
+  }, [currentLanguage]);
 
   return (
     <View style={styles.container} testID="settings-screen">
@@ -256,6 +328,16 @@ const SettingsScreen = memo(function SettingsScreen() {
           </View>
           <View style={styles.settingsCard}>
             <SettingsItem
+              icon={<Globe size={22} color="#fff" />}
+              title={i18n.t('language') || 'اللغة'}
+              subtitle={languageLabel}
+              type="action"
+              onPress={() => setShowLanguagePicker(true)}
+              variant="grouped"
+              iconBgColor="#8B5CF6"
+            />
+            <View style={styles.divider} />
+            <SettingsItem
               icon={<Vibrate size={22} color="#fff" />}
               title={i18n.t('vibration')}
               subtitle={i18n.t('vibrationOnTap')}
@@ -287,6 +369,16 @@ const SettingsScreen = memo(function SettingsScreen() {
               variant="grouped"
               iconBgColor="#E8734A"
             />
+            <View style={styles.divider} />
+            <SettingsItem
+              icon={<Mic size={22} color="#fff" />}
+              title={i18n.t('reciter') || 'القارئ'}
+              subtitle={getCurrentReciterName()}
+              type="action"
+              onPress={() => setShowReciterPicker(true)}
+              variant="grouped"
+              iconBgColor="#8B5CF6"
+            />
           </View>
         </View>
 
@@ -298,6 +390,16 @@ const SettingsScreen = memo(function SettingsScreen() {
             <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>{i18n.t('appearance') || 'المظهر'}</Text>
           </View>
           <View style={styles.settingsCard}>
+            <SettingsItem
+              icon={<Palette size={22} color="#fff" />}
+              title={i18n.t('colorTheme') || 'سمة الألوان'}
+              subtitle={i18n.t('changeColorTheme') || 'تغيير ألوان التطبيق'}
+              type="action"
+              onPress={() => setShowColorPicker(true)}
+              variant="grouped"
+              iconBgColor="#F1C40F"
+            />
+            <View style={styles.divider} />
             <SettingsItem
               icon={<Moon size={22} color="#fff" />}
               title={i18n.t('appearance') || 'المظهر'}
@@ -439,6 +541,13 @@ const SettingsScreen = memo(function SettingsScreen() {
         onClose={() => setShowAppearanceSettings(false)}
       />
 
+      <ReciterPicker
+        visible={showReciterPicker}
+        onClose={() => setShowReciterPicker(false)}
+        onSelect={handleSelectReciter}
+        currentReciter={currentReciter}
+      />
+
       <RewardedAd
         visible={showRewardedAd}
         onClose={handleRewardedAdClose}
@@ -449,6 +558,18 @@ const SettingsScreen = memo(function SettingsScreen() {
         rewardMessage="تم فتح سمات الألوان! اختر اللون المفضل لديك الآن"
         testID="color-theme-rewarded-ad"
       />
+
+      <View style={styles.fixedAdContainer}>
+        <AdBanner
+          imageUrl={currentAd?.imageUrl || "https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=200&fit=crop"}
+          headline={currentAd?.headline || i18n.t('premiumIslamicContent') || 'محتوى إسلامي مميز'}
+          cta={currentAd?.cta || i18n.t('explore') || 'استكشف'}
+          destinationUrl={currentAd?.destinationUrl || "https://www.islamicfinder.org/"}
+          variant={settings.theme === 'dark' ? 'dark' : 'light'}
+          height={80}
+          testID="settings-bottom-ad"
+        />
+      </View>
     </View>
   );
 });
@@ -550,6 +671,13 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingTop: 24,
     paddingHorizontal: 16,
+    paddingBottom: 100,
+  },
+  fixedAdContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   section: {
     marginBottom: 28,
