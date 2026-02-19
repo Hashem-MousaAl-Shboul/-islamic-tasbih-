@@ -1,29 +1,47 @@
-import React from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const TasbihCounter = () => {
-    const progress = React.useRef(new Animated.Value(0)).current;
-    const [count, setCount] = React.useState(0);
+    const [count, setCount] = useState(0);
+    const [soundEnabled, setSoundEnabled] = useState(true);
+    const [vibrationEnabled, setVibrationEnabled] = useState(true);
+    const [timerActive, setTimerActive] = useState(false);
+    const progressAnim = useState(new Animated.Value(0))[0];
 
-    const animatedRing = progress.interpolate({
-        inputRange: [0, 100],
-        outputRange: [0, 1],
-    });
-
-    const handleCount = () => {
+    const incrementCount = () => {
         setCount(count + 1);
-        Animated.timing(progress, {
-            toValue: (count + 1) % 100,
-            duration: 500,
+        if (soundEnabled) {
+            // Play sound
+        }
+        if (vibrationEnabled) {
+            // Trigger vibration
+        }
+        // Progress animation
+        Animated.timing(progressAnim, {
+            toValue: (count + 1) / 100,
+            duration: 300,
             useNativeDriver: false,
         }).start();
     };
 
+    const resetCounter = () => {
+        setCount(0);
+        progressAnim.setValue(0);
+    };
+
     return (
         <View style={styles.container}>
-            <Animated.View style={[styles.progressRing, { opacity: animatedRing }]}/>
-            <Text style={styles.counter}>{count}</Text>
-            <Button title="Count" onPress={handleCount} />
+            <Animated.View style={[styles.progressRing, { transform: [{ rotate: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0rad', '1rad'] }) }] }]}/>
+            <Text style={styles.count}>{count}</Text>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.button} onPress={incrementCount}>
+                    <Icon name="plus" size={30} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={resetCounter}>
+                    <Icon name="refresh" size={30} color="white" />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -33,19 +51,33 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f0f0f0',
+        backgroundColor: 'linear-gradient(to right, #FF7E5F, #FEB47B)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
     },
     progressRing: {
         width: 200,
         height: 200,
         borderRadius: 100,
-        backgroundColor: '#4caf50',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
         position: 'absolute',
     },
-    counter: {
-        fontSize: 48,
+    count: {
+        fontSize: 40,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#ffffff',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        marginTop: 20,
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        borderRadius: 50,
+        padding: 10,
+        margin: 10,
     },
 });
 
