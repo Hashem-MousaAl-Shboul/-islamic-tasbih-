@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useState, useEffect } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, View, Text, ScrollView, Share, Linking, Alert, Platform, StatusBar } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Share, Linking, Alert, Platform } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -264,13 +264,11 @@ const SettingsScreen = memo(function SettingsScreen() {
 
   return (
     <View style={styles.container} testID="settings-screen">
-      <StatusBar barStyle="light-content" backgroundColor="#0d4d3e" />
-      
       <LinearGradient
         colors={['#0d4d3e', '#1a5c4c', '#267261']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.headerGradient, { paddingTop: insets.top }]}
+        style={[styles.headerGradient, { paddingTop: insets.top + (Platform.OS === 'android' ? 8 : 0) }]}
       >
         <View style={styles.headerContent}>
           <View style={styles.headerTitleRow}>
@@ -282,21 +280,23 @@ const SettingsScreen = memo(function SettingsScreen() {
         </View>
         
         <View style={styles.profileHeader}>
-          <View style={styles.profileAvatarContainer}>
-            <LinearGradient
-              colors={['#fff', '#f0f0f0']}
-              style={styles.profileAvatar}
-            >
-              {isAuthenticated && user?.picture ? (
-                <View style={styles.userImageContainer}>
-                  <Text style={styles.userInitial}>
-                    {user.name?.charAt(0).toUpperCase() || 'U'}
-                  </Text>
-                </View>
-              ) : (
-                <User size={32} color="#1a5c4c" strokeWidth={2.5} />
-              )}
-            </LinearGradient>
+          <View style={styles.profileAvatarWrapper}>
+            <View style={styles.profileAvatarContainer}>
+              <LinearGradient
+                colors={['#fff', '#f0f0f0']}
+                style={styles.profileAvatar}
+              >
+                {isAuthenticated && user?.picture ? (
+                  <View style={styles.userImageContainer}>
+                    <Text style={styles.userInitial}>
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </Text>
+                  </View>
+                ) : (
+                  <User size={32} color="#1a5c4c" strokeWidth={2.5} />
+                )}
+              </LinearGradient>
+            </View>
           </View>
           <View style={styles.profileHeaderInfo}>
             <Text style={styles.profileHeaderName}>
@@ -571,6 +571,9 @@ const styles = StyleSheet.create({
       android: {
         elevation: 8,
       },
+      web: {
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      } as any,
     }),
   },
   headerContent: {
@@ -581,7 +584,6 @@ const styles = StyleSheet.create({
   headerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
   headerIconContainer: {
     width: 44,
@@ -592,13 +594,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginRight: 12,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700' as const,
     color: '#fff',
     letterSpacing: 0.5,
-    writingDirection: 'rtl',
   },
   profileHeader: {
     flexDirection: 'row',
@@ -607,7 +609,8 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     justifyContent: 'flex-start',
   },
-  profileAvatarContainer: {
+  profileAvatarWrapper: {
+    borderRadius: 35,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -619,6 +622,10 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
     }),
+  },
+  profileAvatarContainer: {
+    borderRadius: 32,
+    overflow: 'hidden',
   },
   profileAvatar: {
     width: 64,
@@ -639,13 +646,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 4,
     letterSpacing: 0.3,
-    writingDirection: 'rtl',
   },
   profileHeaderEmail: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.85)',
     letterSpacing: 0.2,
-    writingDirection: 'rtl',
   },
   scrollContainer: {
     flex: 1,
@@ -692,19 +697,24 @@ const styles = StyleSheet.create({
   settingsCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
-    overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(26, 92, 76, 0.08)',
     ...Platform.select({
       ios: {
+        overflow: 'hidden' as const,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,
         shadowRadius: 12,
       },
       android: {
-        elevation: 3,
+        overflow: 'hidden' as const,
+        elevation: 2,
       },
+      web: {
+        overflow: 'hidden' as const,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+      } as any,
     }),
   },
   divider: {
