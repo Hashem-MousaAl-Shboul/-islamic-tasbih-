@@ -17,7 +17,6 @@ import {
   Palette,
   Vibrate,
   Volume2,
-  Bell,
   Star,
   Share2,
   Mail,
@@ -40,7 +39,6 @@ import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 import { CreditsPurchaseModal } from '@/components/CreditsPurchaseModal';
-import { notificationService } from '@/utils/notificationService';
 import { useCreditsStore } from '@/hooks/useCreditsStore';
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
@@ -161,19 +159,6 @@ export default function SettingsScreen() {
     updateSettings({ soundEnabled: !settings.soundEnabled });
   }, [settings.soundEnabled, updateSettings]);
 
-  const handleToggleNotifications = useCallback(async () => {
-    const newValue = !settings.reminderEnabled;
-    updateSettings({ reminderEnabled: newValue });
-
-    if (Platform.OS !== 'web') {
-      try {
-        const [hour, minute] = (settings.reminderTime || '20:00').split(':').map(Number);
-        await notificationService.scheduleDailyReminder(newValue, hour, minute);
-      } catch (e) {
-        console.log('[Settings] Notification error:', e);
-      }
-    }
-  }, [settings.reminderEnabled, settings.reminderTime, updateSettings]);
 
   const handleSelectColorTheme = useCallback((themeKey: ColorThemeKey) => {
     updateSettings({ colorTheme: themeKey });
@@ -373,14 +358,6 @@ export default function SettingsScreen() {
             type="toggle"
             value={settings.soundEnabled}
             onToggle={handleToggleSound}
-          />
-          <SettingsRow
-            icon={<Bell size={20} color={PRIMARY} />}
-            title={t('notifications')}
-            subtitle={t('dailyReminders')}
-            type="toggle"
-            value={settings.reminderEnabled}
-            onToggle={handleToggleNotifications}
             isLast
           />
         </View>
