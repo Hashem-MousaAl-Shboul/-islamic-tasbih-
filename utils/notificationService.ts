@@ -2,7 +2,6 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import i18n from '@/constants/translations';
 
-// Configure notifications handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -13,6 +12,16 @@ Notifications.setNotificationHandler({
     priority: Notifications.AndroidNotificationPriority.HIGH,
   }),
 });
+
+if (Platform.OS === 'android') {
+  Notifications.setNotificationChannelAsync('daily-reminder', {
+    name: 'Daily Reminders',
+    importance: Notifications.AndroidImportance.HIGH,
+    sound: 'default',
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: '#1a5c4c',
+  }).catch((err) => console.warn('[NotificationService] Channel setup error:', err));
+}
 
 export const notificationService = {
   async registerForPushNotificationsAsync() {
@@ -56,6 +65,7 @@ export const notificationService = {
               title: i18n.t('appName') || 'Tasbeeh',
               body: i18n.t('dailyReminders') || 'Time for your daily dhikr',
               sound: true,
+              ...(Platform.OS === 'android' ? { channelId: 'daily-reminder' } : {}),
             },
             trigger: {
               type: Notifications.SchedulableTriggerInputTypes.CALENDAR,

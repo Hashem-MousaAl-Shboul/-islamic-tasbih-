@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Switch, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Switch, Platform, Pressable } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -64,13 +64,13 @@ export const SettingsItem = memo(function SettingsItem({
             value={isOn}
             onValueChange={onToggle}
             trackColor={{ 
-              false: theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', 
+              false: Platform.OS === 'android' ? '#d0d0d0' : (theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), 
               true: theme.primary 
             }}
-            thumbColor={isOn ? '#FFFFFF' : theme.mode === 'dark' ? '#f4f3f4' : '#FFFFFF'}
+            thumbColor={Platform.OS === 'android' ? (isOn ? theme.primary : '#f4f3f4') : '#FFFFFF'}
             ios_backgroundColor={theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
             testID={`toggle-${title}`}
-            style={styles.switch}
+            style={Platform.OS === 'android' ? styles.switchAndroid : styles.switch}
           />
         ) : null}
         
@@ -112,22 +112,32 @@ export const SettingsItem = memo(function SettingsItem({
 
   if (type === 'toggle') {
     return (
-      <View style={containerStyle}>
+      <Pressable
+        style={({ pressed }) => [
+          ...containerStyle,
+          Platform.OS === 'android' && pressed && { backgroundColor: 'rgba(0,0,0,0.03)' },
+        ]}
+        onPress={() => onToggle?.(!isOn)}
+        android_ripple={Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.06)', borderless: false } : undefined}
+      >
         {renderContent()}
-      </View>
+      </Pressable>
     );
   }
 
   return (
-    <TouchableOpacity 
-      style={containerStyle}
+    <Pressable
+      style={({ pressed }) => [
+        ...containerStyle,
+        Platform.OS === 'android' && pressed && { backgroundColor: 'rgba(0,0,0,0.03)' },
+      ]}
       testID={`settings-item-${title}`}
       onPress={onPress}
-      activeOpacity={0.6}
       disabled={type !== 'action' && type !== 'select'}
+      android_ripple={Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.06)', borderless: false } : undefined}
     >
       {renderContent()}
-    </TouchableOpacity>
+    </Pressable>
   );
 });
 
@@ -243,5 +253,8 @@ const styles = StyleSheet.create({
   },
   switch: {
     transform: [{ scale: 0.95 }],
+  },
+  switchAndroid: {
+    transform: [{ scale: 1.05 }],
   },
 });
