@@ -1,13 +1,11 @@
 import React, { useCallback, useMemo, useState, memo, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Plus, X, Check, Minus, RotateCcw } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 
 import TasbihCard from '@/components/TasbihCard';
-import { useTheme } from '@/theme/ThemeProvider';
 
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
@@ -15,12 +13,11 @@ import { soundService } from '@/utils/soundService';
 // Memoized header component for better performance
 const TasbihHeader = memo(() => {
   const { t } = useLanguageStore();
-  const theme = useTheme();
 
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('tasbih')}</Text>
+        <Text style={styles.headerTitle}>{t('tasbih')}</Text>
       </View>
     </View>
   );
@@ -33,8 +30,6 @@ export default function TasbihScreen() {
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
   useWindowDimensions();
-  const theme = useTheme();
-
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -254,28 +249,26 @@ export default function TasbihScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top, backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('loading')}</Text>
+      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color="#1a5c4c" />
+        <Text style={styles.loadingText}>{t('loading')}</Text>
       </View>
     );
   }
 
   if (!selectedItem) {
     return (
-      <View style={[styles.container, styles.errorContainer, { paddingTop: insets.top, backgroundColor: theme.background }]}>
-        <Text style={[styles.errorText, { color: theme.primary }]}>{t('noTasbihAvailable')}</Text>
+      <View style={[styles.container, styles.errorContainer, { paddingTop: insets.top }]}>
+        <Text style={styles.errorText}>{t('noTasbihAvailable')}</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]}>
-      {/* Header with Dhikr Cards */}
-      <View style={[styles.headerSection, { paddingTop: 0, backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.headerSection}>
         <TasbihHeader />
         
-        {/* Tasbih Cards */}
         <FlatList
           horizontal
           data={tasbihItems}
@@ -298,15 +291,10 @@ export default function TasbihScreen() {
               activeOpacity={0.7}
               onPress={handleAddTasbih}
             >
-              <LinearGradient
-                colors={['#374151', '#4B5563']}
-                style={styles.addCardGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Plus size={20} color="#9CA3AF" />
+              <View style={styles.addCardGradient}>
+                <Plus size={20} color="#1a5c4c" />
                 <Text style={styles.addCardText}>{t('add')}</Text>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           }
           showsHorizontalScrollIndicator={false}
@@ -325,119 +313,83 @@ export default function TasbihScreen() {
         />
       </View>
 
-
-
-      {/* Main Content */}
       <View style={[styles.mainContent, { paddingBottom: Platform.OS === 'android' ? 100 : 90 }]}>
-        {/* Current Dhikr Display */}
-        <View style={[styles.dhikrDisplay, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.mainArabicText, { color: theme.text }]}>{selectedItem.arabicText}</Text>
+        <View style={styles.dhikrDisplay}>
+          <Text style={styles.mainArabicText}>{selectedItem.arabicText}</Text>
           {settings.showTransliteration && (
-            <Text style={[styles.transliterationText, { color: theme.textSecondary }]}>{selectedItem.transliteration}</Text>
+            <Text style={styles.transliterationText}>{selectedItem.transliteration}</Text>
           )}
           {settings.showTranslation && (
-            <Text style={[styles.translationText, { color: theme.textSecondary }]}>{selectedItem.translation}</Text>
+            <Text style={styles.translationText}>{selectedItem.translation}</Text>
           )}
         </View>
 
-        {/* Electronic Counter Section */}
         <View style={styles.counterSection}>
-          {/* Progress Ring & Counter */}
           <TouchableOpacity
-            style={styles.mainCounterButton}
+            style={[styles.mainCounterButton, { backgroundColor: selectedItem.color }]}
             onPress={handleIncrement}
             activeOpacity={0.8}
             testID="increment-button"
           >
-            <LinearGradient
-              colors={[selectedItem.color, selectedItem.color + '99']}
-              style={styles.counterGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              {/* Counter Display */}
-              <View style={styles.counterDisplay}>
-                <Text style={styles.counterNumber}>{selectedItem.count}</Text>
-                <View style={styles.counterDivider} />
-                <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
+            <View style={styles.counterDisplay}>
+              <Text style={styles.counterNumber}>{selectedItem.count}</Text>
+              <View style={styles.counterDivider} />
+              <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
+            </View>
+            
+            <View style={styles.counterProgressBar}>
+              <View 
+                style={[
+                  styles.counterProgressFill,
+                  { width: `${Math.min((selectedItem.count / selectedItem.targetCount) * 100, 100)}%` }
+                ]} 
+              />
+            </View>
+            
+            <Text style={styles.tapHint}>{t('tapToCount')}</Text>
+            
+            {selectedItem.isCompleted && (
+              <View style={styles.completedBadge}>
+                <Check size={16} color="#FFFFFF" />
+                <Text style={styles.completedText}>{t('completed')}</Text>
               </View>
-              
-              {/* Progress Bar */}
-              <View style={styles.counterProgressBar}>
-                <View 
-                  style={[
-                    styles.counterProgressFill,
-                    { width: `${Math.min((selectedItem.count / selectedItem.targetCount) * 100, 100)}%` }
-                  ]} 
-                />
-              </View>
-              
-              {/* Tap Hint */}
-              <Text style={styles.tapHint}>{t('tapToCount')}</Text>
-              
-              {/* Completion Badge */}
-              {selectedItem.isCompleted && (
-                <View style={styles.completedBadge}>
-                  <Check size={16} color="#FFFFFF" />
-                  <Text style={styles.completedText}>{t('completed')}</Text>
-                </View>
-              )}
-            </LinearGradient>
+            )}
           </TouchableOpacity>
 
-          {/* Control Buttons */}
           <View style={styles.controlButtonsRow}>
-            {/* Decrement Button */}
             <TouchableOpacity
-              style={styles.controlButton}
+              style={[styles.controlButton, styles.decrementBtn]}
               onPress={handleDecrement}
               activeOpacity={0.7}
               testID="decrement-button"
             >
-              <LinearGradient
-                colors={['#EF4444', '#DC2626']}
-                style={styles.controlButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Minus size={20} color="#FFFFFF" />
-              </LinearGradient>
+              <Minus size={20} color="#FFFFFF" />
             </TouchableOpacity>
 
-            {/* Stats Display */}
-            <View style={[styles.statsDisplay, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={styles.statsDisplay}>
               <View style={styles.statItem}>
-                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('today')}</Text>
-                <Text style={[styles.statValue, { color: theme.text }]}>{stats.todayCount}</Text>
+                <Text style={styles.statLabel}>{t('today')}</Text>
+                <Text style={styles.statValue}>{stats.todayCount}</Text>
               </View>
-              <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+              <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{t('total')}</Text>
-                <Text style={[styles.statValue, { color: theme.text }]}>{stats.totalCount}</Text>
+                <Text style={styles.statLabel}>{t('total')}</Text>
+                <Text style={styles.statValue}>{stats.totalCount}</Text>
               </View>
             </View>
 
-            {/* Reset Button */}
             <TouchableOpacity
-              style={styles.controlButton}
+              style={[styles.controlButton, styles.resetBtn]}
               onPress={handleReset}
               activeOpacity={0.7}
               testID="reset-button"
             >
-              <LinearGradient
-                colors={['#F59E0B', '#D97706']}
-                style={styles.controlButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <RotateCcw size={20} color="#FFFFFF" />
-              </LinearGradient>
+              <RotateCcw size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      {/* Add Tasbih Modal */}
       <Modal
         visible={showAddModal}
         animationType="fade"
@@ -445,77 +397,71 @@ export default function TasbihScreen() {
         onRequestClose={handleCloseModal}
       >
         <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
-            {/* Modal Header */}
+          <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton}>
-                <X size={24} color="#94A3B8" />
+                <X size={24} color="#666" />
               </TouchableOpacity>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('addNewTasbih')}</Text>
+              <Text style={styles.modalTitle}>{t('addNewTasbih')}</Text>
               <TouchableOpacity onPress={handleSaveNewTasbih} style={styles.modalSaveButton}>
-                <Check size={24} color="#10B981" />
+                <Check size={24} color="#1a5c4c" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalForm} showsVerticalScrollIndicator={false}>
-              {/* Arabic Text Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: theme.text }]}>{t('arabicText')} *</Text>
+                <Text style={styles.inputLabel}>{t('arabicText')} *</Text>
                 <TextInput
-                  style={[styles.textInput, { backgroundColor: theme.card, color: theme.text, borderColor: theme.border }]}
+                  style={styles.textInput}
                   value={newTasbih.arabicText}
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, arabicText: text }))}
                   placeholder={t('arabicTextPlaceholder')}
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#999"
                   multiline
                   textAlign="right"
                 />
               </View>
 
-              {/* Transliteration Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: theme.text }]}>{t('transliteration')}</Text>
+                <Text style={styles.inputLabel}>{t('transliteration')}</Text>
                 <TextInput
-                  style={[styles.textInput, { backgroundColor: theme.card, color: theme.text, borderColor: theme.border }]}
+                  style={styles.textInput}
                   value={newTasbih.transliteration}
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, transliteration: text }))}
                   placeholder={t('transliterationPlaceholder')}
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#999"
                 />
               </View>
 
-              {/* Translation Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: theme.text }]}>{t('translation')}</Text>
+                <Text style={styles.inputLabel}>{t('translation')}</Text>
                 <TextInput
-                  style={[styles.textInput, { backgroundColor: theme.card, color: theme.text, borderColor: theme.border }]}
+                  style={styles.textInput}
                   value={newTasbih.translation}
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, translation: text }))}
                   placeholder={t('translationPlaceholder')}
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#999"
                   multiline
                 />
               </View>
 
-              {/* Target Count Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: theme.text }]}>{t('targetCount')}</Text>
+                <Text style={styles.inputLabel}>{t('targetCount')}</Text>
                 <TextInput
-                  style={[styles.numberInput, { backgroundColor: theme.card, color: theme.text, borderColor: theme.border }]}
+                  style={styles.numberInput}
                   value={newTasbih.targetCount.toString()}
                   onChangeText={(text) => {
                     const num = parseInt(text) || 1;
                     setNewTasbih(prev => ({ ...prev, targetCount: Math.max(1, num) }));
                   }}
                   placeholder="33"
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#999"
                   keyboardType="numeric"
                 />
               </View>
 
-              {/* Color Selection */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: theme.text }]}>{t('color')}</Text>
+                <Text style={styles.inputLabel}>{t('color')}</Text>
                 <View style={styles.colorPicker}>
                   {predefinedColors.map((color) => (
                     <TouchableOpacity
@@ -541,26 +487,25 @@ export default function TasbihScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
   },
   loadingText: {
     fontSize: 16,
-    color: '#94A3B8',
+    color: '#666',
     marginTop: 12,
     fontWeight: '500' as const,
   },
   errorContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
   },
   errorText: {
     fontSize: 18,
-    color: '#EF4444',
+    color: '#1a5c4c',
     textAlign: 'center',
     fontWeight: '600' as const,
   },
@@ -570,27 +515,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingTop: 20,
+    paddingTop: 16,
   },
   headerLeft: {
     flex: 1,
   },
-
-
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800' as const,
-    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '700' as const,
+    color: '#fff',
     textAlign: 'left',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    writingDirection: 'rtl',
   },
   headerSection: {
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(51, 65, 85, 0.3)',
+    backgroundColor: '#1a5c4c',
     paddingTop: 0,
+    paddingBottom: 8,
   },
   cardsScrollView: {
     maxHeight: 80,
@@ -608,16 +548,17 @@ const styles = StyleSheet.create({
     height: 65,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#4B5563',
+    borderColor: 'rgba(255,255,255,0.4)',
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   addCardText: {
     fontSize: 10,
     fontWeight: '600' as const,
-    color: '#9CA3AF',
+    color: 'rgba(255,255,255,0.7)',
     textAlign: 'center',
   },
 
@@ -631,30 +572,30 @@ const styles = StyleSheet.create({
   },
   dhikrDisplay: {
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     marginBottom: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    borderRadius: 12,
-    paddingVertical: 6,
+    backgroundColor: '#d4ede5',
+    borderRadius: 16,
+    paddingVertical: 10,
     marginHorizontal: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
     alignSelf: 'stretch',
   },
   mainArabicText: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: '#FFFFFF',
+    color: '#1a5c4c',
     textAlign: 'center',
     marginBottom: 2,
     lineHeight: 28,
     paddingHorizontal: 8,
     alignSelf: 'stretch',
+    writingDirection: 'rtl',
   },
   transliterationText: {
     fontSize: 13,
     fontWeight: '500' as const,
-    color: '#94A3B8',
+    color: '#1a5c4c',
+    opacity: 0.7,
     textAlign: 'center',
     marginTop: 2,
     lineHeight: 20,
@@ -662,7 +603,8 @@ const styles = StyleSheet.create({
   translationText: {
     fontSize: 12,
     fontWeight: '400' as const,
-    color: '#64748B',
+    color: '#1a5c4c',
+    opacity: 0.6,
     textAlign: 'center',
     marginTop: 4,
     lineHeight: 18,
@@ -772,13 +714,14 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   modalContent: {
     flex: 1,
     marginTop: 50,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    backgroundColor: '#FFFFFF',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -787,13 +730,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: '#e0e8e5',
   },
   modalCloseButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -801,14 +744,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: '#d4ede5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: '#FFFFFF',
+    color: '#1a5c4c',
     textAlign: 'center',
   },
   modalForm: {
@@ -822,30 +765,30 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontWeight: '600' as const,
-    color: '#F1F5F9',
+    color: '#1a5c4c',
     marginBottom: 8,
     textAlign: 'right',
   },
   textInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f5f5f5',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#1a5c4c',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#e0e8e5',
     minHeight: 48,
   },
   numberInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f5f5f5',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: '#1a5c4c',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#e0e8e5',
     textAlign: 'center',
     width: 100,
   },
@@ -862,7 +805,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   selectedColor: {
-    borderColor: '#FFFFFF',
+    borderColor: '#1a5c4c',
     borderWidth: 3,
   },
   completionModalContainer: {
@@ -942,20 +885,15 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  counterGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 90,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
     borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   counterDisplay: {
     alignItems: 'center',
@@ -1026,18 +964,19 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
   },
-  controlButtonGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+  decrementBtn: {
+    backgroundColor: '#EF4444',
+  },
+  resetBtn: {
+    backgroundColor: '#F5A623',
   },
   statsDisplay: {
     flexDirection: 'row',
@@ -1045,8 +984,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 16,
-    borderWidth: 1,
     gap: 16,
+    backgroundColor: '#d4ede5',
   },
   statItem: {
     alignItems: 'center',
@@ -1055,13 +994,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500' as const,
     marginBottom: 2,
+    color: '#1a5c4c',
+    opacity: 0.7,
   },
   statValue: {
     fontSize: 18,
     fontWeight: '700' as const,
+    color: '#1a5c4c',
   },
   statDivider: {
     width: 1,
     height: 30,
+    backgroundColor: 'rgba(26, 92, 76, 0.15)',
   },
 });

@@ -1,11 +1,10 @@
 export const Colors = {
-  primary: "#00BFA5",
-  primaryDark: "#00897B",
-  primaryLight: "#64FFDA",
-  secondary: "#6366F1",
+  primary: "#1a5c4c",
+  primaryDark: "#134238",
+  primaryLight: "#d4ede5",
+  secondary: "#F5A623",
   white: "#FFFFFF",
   
-  // Theme colors
   dark: {
     background: "#0A0E1A",
     surface: "#141B2D",
@@ -16,11 +15,11 @@ export const Colors = {
     tabBar: "#1A202C",
   },
   light: {
-    background: "#F5F5F5",
+    background: "#f5f5f5",
     surface: "#FFFFFF",
-    text: "#212121",
-    textSecondary: "#757575",
-    border: "#E0E0E0",
+    text: "#1a5c4c",
+    textSecondary: "#666666",
+    border: "#e0e8e5",
     tabBar: "#FFFFFF",
   },
   

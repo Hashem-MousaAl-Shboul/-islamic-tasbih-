@@ -1,8 +1,7 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Platform, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/colors';
-import { useTheme } from '@/theme/ThemeProvider';
+
 
 interface TabItemProps {
   route: any;
@@ -14,10 +13,9 @@ interface TabItemProps {
 
 const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigation, isFocused, isCenter }) {
   const label = descriptor.options.tabBarLabel || descriptor.options.title || route.name;
-  const theme = useTheme();
 
-  const inactiveColor = theme.textSecondary;
-  const activeColor = theme.primary;
+  const inactiveColor = '#999';
+  const activeColor = '#1a5c4c';
   const labelColor = isFocused ? activeColor : inactiveColor;
 
   const onPress = useCallback(() => {
@@ -29,7 +27,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
 
   const renderIcon = () => {
     if (descriptor.options.tabBarIcon) {
-      const iconColor = isCenter ? '#FFFFFF' : (isFocused ? activeColor : inactiveColor);
+      const iconColor = isCenter ? '#FFFFFF' : (isFocused ? '#1a5c4c' : '#999');
       return descriptor.options.tabBarIcon({ color: iconColor, size: 24 });
     }
     return null;
@@ -44,7 +42,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
         style={styles.centerItem}
         testID={`tab-${route.name}`}
       >
-        <View style={[styles.centerButton, { backgroundColor: theme.primary }]} testID={`tab-${route.name}-centerButton`}>
+        <View style={[styles.centerButton, { backgroundColor: '#1a5c4c' }]} testID={`tab-${route.name}-centerButton`}>
           {icon !== null ? icon : null}
         </View>
         <Text
@@ -70,7 +68,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
           {label}
         </Text>
       </View>
-      {isFocused && <View style={[styles.indicator, { backgroundColor: theme.text }]} />}
+      {isFocused && <View style={[styles.indicator, { backgroundColor: '#1a5c4c' }]} />}
     </Pressable>
   );
 }, (prev, next) =>
@@ -86,16 +84,15 @@ interface OptimizedTabBarProps {
 
 const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
 
   const tabBarDynamicStyle = useMemo(() => {
     const bottom = Math.max(insets.bottom, 8);
     return {
       paddingBottom: bottom,
       height: 70 + bottom,
-      backgroundColor: theme.tabBar,
+      backgroundColor: '#FFFFFF',
     };
-  }, [insets.bottom, theme.tabBar]);
+  }, [insets.bottom]);
 
   const tabs = useMemo(() => {
     const middleIndex = Math.floor(state.routes.length / 2);
@@ -141,7 +138,7 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 0, 0, 0.06)',
+    borderTopColor: '#e0e8e5',
     borderRadius: 0,
     paddingTop: 8,
     paddingHorizontal: 0,
@@ -184,7 +181,7 @@ const styles = StyleSheet.create({
     marginTop: -28,
     ...Platform.select({
       ios: {
-        shadowColor: Colors.primary,
+        shadowColor: '#1a5c4c',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -193,7 +190,7 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
       web: {
-        boxShadow: `0 4px 12px ${Colors.primary}66`,
+        boxShadow: '0 4px 12px rgba(26,92,76,0.4)',
       } as any,
     }),
   },

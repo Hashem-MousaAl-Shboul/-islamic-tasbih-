@@ -237,12 +237,12 @@ export default function SettingsScreen() {
   ], [theme.surface, theme.border]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]} testID="settings-screen">
-      <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: theme.background }]}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>
+    <View style={styles.container} testID="settings-screen">
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <Text style={styles.headerTitle}>
           {t('settings')}
         </Text>
-        <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+        <Text style={styles.headerSubtitle}>
           {t('customizeApp')}
         </Text>
       </View>
@@ -253,7 +253,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
       >
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <Text style={styles.sectionTitle}>
           {t('appearance')}
         </Text>
         <View style={sectionStyle}>
@@ -288,7 +288,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <Text style={styles.sectionTitle}>
           {t('interaction')}
         </Text>
         <View style={sectionStyle}>
@@ -323,7 +323,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <Text style={styles.sectionTitle}>
           {t('contactSupport')}
         </Text>
         <View style={sectionStyle}>
@@ -358,7 +358,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <Text style={styles.sectionTitle}>
           {t('about')}
         </Text>
         <View style={sectionStyle}>
@@ -391,7 +391,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+        <Text style={styles.sectionTitle}>
           {t('dataManagement')}
         </Text>
         <View style={sectionStyle}>
@@ -417,10 +417,10 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: theme.textSecondary }]}>
+          <Text style={styles.footerText}>
             {t('appName')}
           </Text>
-          <Text style={[styles.footerVersion, { color: theme.textSecondary }]}>
+          <Text style={styles.footerVersion}>
             v1.0.0
           </Text>
         </View>
@@ -444,20 +444,24 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   header: {
     paddingHorizontal: 20,
     paddingBottom: 16,
+    paddingTop: 16,
+    backgroundColor: '#1a5c4c',
   },
   headerTitle: {
-    fontSize: 32,
-    fontWeight: '800' as const,
-    letterSpacing: -0.5,
+    fontSize: 22,
+    fontWeight: '700' as const,
+    color: '#fff',
     marginBottom: 4,
+    writingDirection: 'rtl',
   },
   headerSubtitle: {
-    fontSize: 15,
-    opacity: 0.7,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
   },
   scrollView: {
     flex: 1,
@@ -466,12 +470,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600' as const,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 0.8,
+    color: '#666',
     marginTop: 24,
-    marginBottom: 8,
+    marginBottom: 10,
     marginLeft: 4,
   },
   section: {
@@ -503,10 +506,12 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 14,
     fontWeight: '500' as const,
+    color: '#1a5c4c',
     opacity: 0.5,
   },
   footerVersion: {
     fontSize: 12,
+    color: '#666',
     opacity: 0.4,
   },
 });

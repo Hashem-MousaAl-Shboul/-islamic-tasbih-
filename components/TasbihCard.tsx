@@ -36,13 +36,13 @@ const TasbihCard = memo<TasbihCardProps>(({
     if (isSelected) {
       return [item.color, item.color + '80'] as const;
     }
-    return ['#1E293B', '#334155'] as const;
+    return ['#d4ede5', '#c5e4da'] as const;
   }, [isSelected, item.color]);
 
-  const textColor = useMemo(() => isSelected ? '#FFFFFF' : '#94A3B8', [isSelected]);
-  const countColor = useMemo(() => isSelected ? '#FFFFFF' : '#64748B', [isSelected]);
+  const textColor = useMemo(() => isSelected ? '#FFFFFF' : '#1a5c4c', [isSelected]);
+  const countColor = useMemo(() => isSelected ? '#FFFFFF' : '#1a5c4c', [isSelected]);
   const borderStyle = useMemo(() => ({
-    borderColor: isSelected ? item.color : '#334155',
+    borderColor: isSelected ? item.color : 'rgba(26,92,76,0.2)',
     borderWidth: isSelected ? 2 : 1,
   }), [isSelected, item.color]);
 
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,

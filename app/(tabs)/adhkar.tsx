@@ -7,8 +7,6 @@ import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
 import { Sparkles, Sun, Moon, Clock, Heart, Star, Play, Share2, MoonStar, Sunrise } from 'lucide-react-native';
-import { useTheme } from '@/theme/ThemeProvider';
-
 import * as Haptics from 'expo-haptics';
 
 
@@ -50,7 +48,7 @@ const FilterButtonComponent: React.FC<FilterButtonProps> = ({ filter, selectedFi
   const renderIcon = () => {
     switch (filter) {
       case 'all':
-        return <Sparkles size={16} color={iconColor ?? '#F59E0B'} />;
+        return <Sparkles size={16} color={iconColor ?? '#1a5c4c'} />;
       case 'morning':
         return <Sun size={16} color={iconColor ?? '#F59E0B'} />;
       case 'evening':
@@ -378,10 +376,9 @@ AdhkarCard.displayName = 'AdhkarCard';
 
 const AdhkarHeader = memo<{ selectedFilter: FilterType; onFilterChange: (filter: FilterType) => void }>(({ selectedFilter, onFilterChange }) => {
   const { t } = useLanguageStore();
-  const theme = useTheme();
   
   return (
-    <View style={[styles.headerSection, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+    <View style={styles.headerSection}>
       <View style={styles.filterSection}>
         <ScrollView 
           horizontal 
@@ -512,7 +509,6 @@ export default function AdhkarScreen() {
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const deferredFilter = useDeferredValue<FilterType>(selectedFilter);
 
@@ -638,18 +634,18 @@ export default function AdhkarScreen() {
   
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.center, { paddingTop: insets.top, backgroundColor: theme.background }]} testID="adhkar-loading">
-        <ActivityIndicator size="large" color={theme.primary} />
-        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>{t('loadingAdhkar')}</Text>
+      <View style={[styles.container, styles.center, { paddingTop: insets.top }]} testID="adhkar-loading">
+        <ActivityIndicator size="large" color="#1a5c4c" />
+        <Text style={styles.loadingText}>{t('loadingAdhkar')}</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.background }]} testID="adhkar-screen">
+    <View style={[styles.container, { paddingTop: insets.top }]} testID="adhkar-screen">
       <ErrorBoundary t={t}>
-        <View style={[styles.topBar, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-          <Text style={[styles.topBarTitle, { color: theme.text }]}>{t('adhkar')}</Text>
+        <View style={styles.topBar}>
+          <Text style={styles.topBarTitle}>{t('adhkar')}</Text>
         </View>
         <AdhkarHeader selectedFilter={selectedFilter} onFilterChange={handleFilterChange} />
         
@@ -684,6 +680,7 @@ export default function AdhkarScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   center: {
     flex: 1,
@@ -698,24 +695,26 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 15,
-    color: '#94A3B8',
+    color: '#666',
     marginTop: 12,
     fontWeight: '500' as const,
   },
   topBar: {
     paddingVertical: 16,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
+    backgroundColor: '#1a5c4c',
   },
   topBarTitle: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700' as const,
     textAlign: 'left',
+    color: '#fff',
+    writingDirection: 'rtl',
   },
   headerSection: {
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(51, 65, 85, 0.3)',
+    borderBottomColor: '#e0e8e5',
     paddingBottom: 8,
   },
   filterSection: {
@@ -733,13 +732,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(148, 163, 184, 0.15)',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderColor: '#e0e8e5',
+    backgroundColor: '#f5f5f5',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   filterButtonGradient: {
     flexDirection: 'row',
@@ -750,13 +749,13 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   filterButtonActive: {
-    borderColor: '#F59E0B',
-    backgroundColor: '#F59E0B',
+    borderColor: '#1a5c4c',
+    backgroundColor: '#1a5c4c',
   },
   filterButtonText: {
     fontSize: 12,
     fontWeight: '600' as const,
-    color: '#D1D5DB',
+    color: '#666',
   },
   filterButtonTextActive: {
     color: '#FFFFFF',
@@ -775,16 +774,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderRadius: 20,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(51, 65, 85, 0.3)',
     overflow: 'hidden',
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    backgroundColor: '#d4ede5',
     width: '100%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   adhkarCardTouchable: {
     padding: 20,
@@ -831,32 +828,20 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 14,
     gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255,255,255,0.5)',
   },
   categoryText: {
     fontSize: 13,
     fontWeight: '700' as const,
-    color: '#F3F4F6',
-    textShadowColor: 'rgba(0, 0, 0, 0.25)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    color: '#1a5c4c',
   },
   favoriteIcon: {
     padding: 9,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: 'rgba(255,255,255,0.6)',
   },
   favoriteIconActive: {
     backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    borderColor: '#F59E0B',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
   headerActions: {
     flexDirection: 'row',
@@ -866,12 +851,7 @@ const styles = StyleSheet.create({
   tasbihHeaderButton: {
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: '#1a5c4c',
   },
   tasbihHeaderButtonGradient: {
     flexDirection: 'row',
@@ -898,13 +878,10 @@ const styles = StyleSheet.create({
   adhkarArabicText: {
     fontSize: 16,
     lineHeight: 28,
-    color: '#FFFFFF',
+    color: '#1a5c4c',
     textAlign: 'right',
     fontWeight: '700' as const,
     letterSpacing: 0.5,
-    textShadowColor: 'rgba(0, 0, 0, 0.35)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
     paddingVertical: 6,
     paddingHorizontal: 4,
     writingDirection: 'rtl',
@@ -929,24 +906,17 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#F59E0B',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-    elevation: 1,
+    backgroundColor: '#F5A623',
   },
   adhkarTransliteration: {
     flex: 1,
     fontSize: 16,
-    color: '#FDE68A',
+    color: '#1a5c4c',
+    opacity: 0.8,
     textAlign: 'right',
     lineHeight: 26,
     fontStyle: 'italic',
     fontWeight: '600' as const,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
     writingDirection: 'rtl',
   },
   adhkarTransliterationExpanded: {
@@ -967,24 +937,17 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#3B82F6',
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-    elevation: 1,
+    backgroundColor: '#4A90D9',
   },
   adhkarTranslation: {
     flex: 1,
     fontSize: 16,
-    color: '#DBEAFE',
+    color: '#1a5c4c',
+    opacity: 0.65,
     textAlign: 'right',
     lineHeight: 26,
     fontStyle: 'italic',
     fontWeight: '600' as const,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
     writingDirection: 'rtl',
   },
   adhkarTranslationExpanded: {
@@ -1006,11 +969,12 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#1a5c4c',
   },
   readingText: {
     fontSize: 12,
-    color: '#D1D5DB',
+    color: '#1a5c4c',
+    opacity: 0.6,
     fontWeight: '600' as const,
   },
   actionButtons: {
@@ -1020,18 +984,10 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 8,
     borderRadius: 10,
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: 'rgba(26, 92, 76, 0.08)',
   },
   actionButtonActive: {
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    borderColor: '#F59E0B',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: 'rgba(26, 92, 76, 0.15)',
   },
   tasbihButton: {
     borderRadius: 10,
@@ -1065,24 +1021,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 40,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    backgroundColor: '#d4ede5',
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: '#FFFFFF',
+    color: '#1a5c4c',
     marginTop: 16,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   emptySubtitle: {
     fontSize: 14,
     fontWeight: '500' as const,
-    color: '#94A3B8',
+    color: '#666',
     marginTop: 8,
     textAlign: 'center',
   },
@@ -1098,8 +1049,6 @@ const styles = StyleSheet.create({
   shareIcon: {
     padding: 9,
     borderRadius: 12,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
+    backgroundColor: 'rgba(255,255,255,0.6)',
   },
 });
