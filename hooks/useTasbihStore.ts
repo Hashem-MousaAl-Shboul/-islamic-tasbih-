@@ -473,11 +473,14 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dataVersionRef = useRef<number>(0);
-  const isLoadingRef = useRef<boolean>(true);
-  isLoadingRef.current = isLoading;
+  const hasLoadedRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (isLoadingRef.current) return;
+    if (isLoading) return;
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      return;
+    }
     dataVersionRef.current += 1;
     const version = dataVersionRef.current;
 
@@ -496,7 +499,7 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [tasbihItems, settings, stats, selectedItemId, saveData]);
+  }, [tasbihItems, settings, stats, selectedItemId, saveData, isLoading]);
 
 
 

@@ -1,9 +1,22 @@
-import { Audio } from 'expo-av';
 import { Platform } from 'react-native';
 
+let AudioModule: any = null;
+
+async function getAudio(): Promise<any> {
+  if (AudioModule) return AudioModule;
+  try {
+    const mod = await import('expo-av');
+    AudioModule = mod.Audio;
+    return AudioModule;
+  } catch (e) {
+    console.log('[SoundService] expo-av not available:', e);
+    return null;
+  }
+}
+
 class SoundService {
-  private clickSound: Audio.Sound | null = null;
-  private completionSound: Audio.Sound | null = null;
+  private clickSound: any | null = null;
+  private completionSound: any | null = null;
   private isLoaded: boolean = false;
 
   private isInitializing: boolean = false;
@@ -13,6 +26,11 @@ class SoundService {
     this.isInitializing = true;
     
     try {
+      const Audio = await getAudio();
+      if (!Audio) {
+        console.log('[SoundService] Audio module not available');
+        return;
+      }
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
         staysActiveInBackground: false,
@@ -31,6 +49,8 @@ class SoundService {
   private async ensureClickSound(): Promise<void> {
     if (this.clickSound) return;
     try {
+      const Audio = await getAudio();
+      if (!Audio) return;
       this.clickSound = new Audio.Sound();
       await this.clickSound.loadAsync(
         { uri: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3' },
@@ -45,6 +65,8 @@ class SoundService {
   private async ensureCompletionSound(): Promise<void> {
     if (this.completionSound) return;
     try {
+      const Audio = await getAudio();
+      if (!Audio) return;
       this.completionSound = new Audio.Sound();
       await this.completionSound.loadAsync(
         { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },

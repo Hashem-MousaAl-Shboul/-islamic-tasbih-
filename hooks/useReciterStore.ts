@@ -19,10 +19,10 @@ export const [ReciterProvider, useReciterStore] = createContextHook(() => {
         
         if (savedReciter && (savedReciter as ReciterId)) {
           setCurrentReciter(savedReciter as ReciterId);
-          ttsService.setReciter(savedReciter as ReciterId);
+          setTimeout(() => ttsService.setReciter(savedReciter as ReciterId), 0);
         } else {
           setCurrentReciter('sudais');
-          ttsService.setReciter('sudais');
+          setTimeout(() => ttsService.setReciter('sudais'), 0);
         }
         
         setIsLoading(false);
@@ -30,7 +30,6 @@ export const [ReciterProvider, useReciterStore] = createContextHook(() => {
         console.error('[ReciterStore] Error loading saved reciter:', error);
         if (mounted) {
           setCurrentReciter('sudais');
-          ttsService.setReciter('sudais');
           setIsLoading(false);
         }
       }

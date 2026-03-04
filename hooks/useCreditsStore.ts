@@ -29,16 +29,27 @@ async function initRevenueCat() {
     return;
   }
   try {
-    const timeoutPromise = new Promise<null>((_, reject) => 
-      setTimeout(() => reject(new Error('RevenueCat init timeout')), 5000)
+    const timeoutPromise = new Promise<null>((resolve) => 
+      setTimeout(() => {
+        console.log('[RevenueCat] Init timed out, continuing without it');
+        resolve(null);
+      }, 3000)
     );
-    const importPromise = import('react-native-purchases').then(mod => {
-      Purchases = mod.default;
-      Purchases.configure({ apiKey });
-      rcConfigured = true;
-      console.log('[RevenueCat] Configured successfully');
-      return true;
-    });
+    const importPromise = (async () => {
+      try {
+        const mod = await import('react-native-purchases');
+        Purchases = mod.default;
+        if (Purchases && typeof Purchases.configure === 'function') {
+          Purchases.configure({ apiKey });
+          rcConfigured = true;
+          console.log('[RevenueCat] Configured successfully');
+        }
+        return true;
+      } catch (importErr) {
+        console.log('[RevenueCat] Import failed (non-blocking):', importErr);
+        return null;
+      }
+    })();
     await Promise.race([importPromise, timeoutPromise]);
   } catch (e) {
     console.log('[RevenueCat] Configuration error (non-blocking):', e);
@@ -71,7 +82,10 @@ export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
   }, [creditsQuery.data]);
 
   useEffect(() => {
-    initRevenueCat();
+    const timer = setTimeout(() => {
+      initRevenueCat().catch(e => console.log('[RevenueCat] Deferred init error:', e));
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   const offeringsQuery = useQuery({
