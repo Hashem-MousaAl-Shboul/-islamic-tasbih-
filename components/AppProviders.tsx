@@ -1,8 +1,6 @@
-import React, { ReactNode, memo } from 'react';
+import React, { ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
 import { LanguageProvider } from '@/hooks/useLanguageStore';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { TasbihProvider } from '@/hooks/useTasbihStore';
@@ -12,14 +10,6 @@ import { CreditsProvider } from '@/hooks/useCreditsStore';
 import { queryClient } from '@/utils/queryClient';
 
 interface AppProvidersProps { children: ReactNode }
-
-const GestureRoot = memo(({ children }: { children: ReactNode }) => (
-  <GestureHandlerRootView style={styles.flex1} testID="gesture-root">
-    {children}
-  </GestureHandlerRootView>
-));
-
-GestureRoot.displayName = 'GestureRoot';
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
@@ -31,9 +21,7 @@ export function AppProviders({ children }: AppProvidersProps) {
               <FavoritesProvider>
                 <ThemeProvider>
                   <CreditsProvider>
-                    <GestureRoot>
-                      {children}
-                    </GestureRoot>
+                    {children}
                   </CreditsProvider>
                 </ThemeProvider>
               </FavoritesProvider>
@@ -44,7 +32,3 @@ export function AppProviders({ children }: AppProvidersProps) {
     </QueryClientProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  flex1: { flex: 1 },
-});

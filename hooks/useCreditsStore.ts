@@ -3,35 +3,40 @@ import { Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import createContextHook from '@nkzw/create-context-hook';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Purchases, {
-  PurchasesPackage,
-} from 'react-native-purchases';
+
+type PurchasesPackage = any;
 
 const CREDITS_STORAGE_KEY = 'user_credits';
 const CREDITS_PER_PURCHASE = 100;
 
+let Purchases: any = null;
+let rcConfigured = false;
+
 function getRCApiKey() {
-  if (__DEV__ || Platform.OS === 'web') {
-    return process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY ?? '';
-  }
+  if (Platform.OS === 'web') return '';
   return Platform.select({
     ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY ?? '',
     android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ?? '',
-    default: process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY ?? '',
+    default: '',
   }) ?? '';
 }
 
-const apiKey = getRCApiKey();
-
-if (apiKey) {
+async function initRevenueCat() {
+  if (Platform.OS === 'web' || rcConfigured) return;
+  const apiKey = getRCApiKey();
+  if (!apiKey) {
+    console.log('[RevenueCat] No API key found, skipping configuration');
+    return;
+  }
   try {
+    const mod = await import('react-native-purchases');
+    Purchases = mod.default;
     Purchases.configure({ apiKey });
+    rcConfigured = true;
     console.log('[RevenueCat] Configured successfully');
   } catch (e) {
     console.log('[RevenueCat] Configuration error:', e);
   }
-} else {
-  console.log('[RevenueCat] No API key found, skipping configuration');
 }
 
 export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
@@ -59,12 +64,16 @@ export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
     }
   }, [creditsQuery.data]);
 
+  useEffect(() => {
+    initRevenueCat();
+  }, []);
+
   const offeringsQuery = useQuery({
     queryKey: ['rc-offerings'],
     queryFn: async () => {
       try {
-        if (!apiKey) {
-          console.log('[RevenueCat] No API key, returning null offerings');
+        if (Platform.OS === 'web' || !Purchases) {
+          console.log('[RevenueCat] Not available, returning null offerings');
           return null;
         }
         const offerings = await Purchases.getOfferings();
@@ -75,7 +84,7 @@ export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
         return null;
       }
     },
-    enabled: !!apiKey,
+    enabled: Platform.OS !== 'web' && rcConfigured,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -92,6 +101,7 @@ export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
 
   const purchaseMutation = useMutation({
     mutationFn: async (pkg: PurchasesPackage) => {
+      if (!Purchases) throw new Error('RevenueCat not initialized');
       console.log('[Purchase] Starting purchase for:', pkg.identifier);
       const result = await Purchases.purchasePackage(pkg);
       console.log('[Purchase] Purchase result:', result.customerInfo.activeSubscriptions);
@@ -114,6 +124,7 @@ export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
 
   const restoreMutation = useMutation({
     mutationFn: async () => {
+      if (!Purchases) throw new Error('RevenueCat not initialized');
       console.log('[Purchase] Restoring purchases...');
       const customerInfo = await Purchases.restorePurchases();
       console.log('[Purchase] Restore result:', customerInfo);
@@ -140,7 +151,7 @@ export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
     const current = offeringsQuery.data?.current;
     if (!current) return null;
     const pkg = current.availablePackages.find(
-      (p) => p.identifier === 'credits_100' || p.identifier === '$rc_consumable'
+      (p: any) => p.identifier === 'credits_100' || p.identifier === '$rc_consumable'
     );
     return pkg ?? current.availablePackages[0] ?? null;
   }, [offeringsQuery.data]);

@@ -19,21 +19,20 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
   const labelColor = isFocused ? activeColor : inactiveColor;
 
   const onPress = useCallback(() => {
-    console.log('[OptimizedTabBar] tab press', { routeName: route.name, isFocused, isCenter });
-    if (!isFocused) {
+    const event = navigation.emit({
+      type: 'tabPress',
+      target: route.key,
+      canPreventDefault: true,
+    });
+    if (!isFocused && !event.defaultPrevented) {
       navigation.navigate(route.name);
     }
-  }, [isFocused, navigation, route.name, isCenter]);
+  }, [isFocused, navigation, route.name, route.key]);
 
-  const renderIcon = () => {
-    if (descriptor.options.tabBarIcon) {
-      const iconColor = isCenter ? '#FFFFFF' : (isFocused ? '#1a5c4c' : '#999');
-      return descriptor.options.tabBarIcon({ color: iconColor, size: 24 });
-    }
-    return null;
-  };
-
-  const icon = renderIcon();
+  const iconColor = isCenter ? '#FFFFFF' : (isFocused ? '#1a5c4c' : '#999');
+  const icon = descriptor.options.tabBarIcon
+    ? descriptor.options.tabBarIcon({ color: iconColor, size: 24 })
+    : null;
 
   if (isCenter) {
     return (
@@ -71,10 +70,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
       {isFocused && <View style={[styles.indicator, { backgroundColor: '#1a5c4c' }]} />}
     </Pressable>
   );
-}, (prev, next) =>
-  prev.isFocused === next.isFocused &&
-  prev.route.key === next.route.key
-);
+});
 
 interface OptimizedTabBarProps {
   state: any;
@@ -123,10 +119,7 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
       </View>
     </View>
   );
-}, (prev, next) => 
-  prev.state.index === next.state.index &&
-  prev.state.routes.length === next.state.routes.length
-);
+});
 
 export default OptimizedTabBar;
 
