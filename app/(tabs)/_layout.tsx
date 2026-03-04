@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { Book, Circle, BarChart3, Settings } from "lucide-react-native";
+import { BookOpen, Circle, BarChart3, Settings } from "lucide-react-native";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
 import { StyleSheet, Platform, View } from "react-native";
 import { Colors } from "@/constants/colors";
@@ -70,28 +70,28 @@ export default function TabLayout() {
             name="tasbih"
             options={{
               title: t("tasbih") || "التسبيح",
-              tabBarIcon: ({ color }) => <Circle size={24} color={color} />,
+              tabBarIcon: ({ color, size }) => <Circle size={size} color={color} />,
             }}
           />
           <Tabs.Screen
             name="adhkar"
             options={{
               title: t("adhkar") || "الأذكار",
-              tabBarIcon: ({ color }) => <Book size={24} color={color} />,
+              tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} />,
             }}
           />
           <Tabs.Screen
             name="statistics"
             options={{
               title: t("statistics") || "الإحصائيات",
-              tabBarIcon: ({ color }) => <BarChart3 size={24} color={color} />,
+              tabBarIcon: ({ color, size }) => <BarChart3 size={size} color={color} />,
             }}
           />
           <Tabs.Screen
             name="settings"
             options={{
               title: t("settings") || "الإعدادات",
-              tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
+              tabBarIcon: ({ color, size }) => <Settings size={size} color={color} />,
             }}
           />
 
