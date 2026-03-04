@@ -120,7 +120,34 @@ export const SettingsItem = memo(function SettingsItem({
         onPress={() => onToggle?.(!isOn)}
         android_ripple={Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.06)', borderless: false } : undefined}
       >
-        {renderContent()}
+        {({ pressed }) => (
+          <View style={[styles.touchableContent, variant === 'grouped' && styles.touchableGrouped]}>
+            <View style={styles.leftContent}>
+              <View style={iconContainerStyle}>
+                {icon}
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.title, { color: theme.text }, danger && styles.dangerText]}>{title}</Text>
+                {subtitle ? <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{subtitle}</Text> : null}
+              </View>
+            </View>
+            <View style={styles.rightContent}>
+              <Switch
+                value={isOn}
+                onValueChange={undefined}
+                trackColor={{ 
+                  false: Platform.OS === 'android' ? '#d0d0d0' : (theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'), 
+                  true: theme.primary 
+                }}
+                thumbColor={Platform.OS === 'android' ? (isOn ? theme.primary : '#f4f3f4') : '#FFFFFF'}
+                ios_backgroundColor={theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}
+                testID={`toggle-${title}`}
+                style={Platform.OS === 'android' ? styles.switchAndroid : styles.switch}
+                pointerEvents="none"
+              />
+            </View>
+          </View>
+        )}
       </Pressable>
     );
   }

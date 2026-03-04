@@ -8,7 +8,6 @@ import {
   ScrollView,
   Platform,
   Animated,
-  StatusBar,
 } from 'react-native';
 import { Clock, X, Check } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -103,7 +102,7 @@ export const ReminderTimePicker = memo(function ReminderTimePicker({
       onRequestClose={handleClose}
       statusBarTranslucent={Platform.OS === 'android'}
     >
-      <View style={[styles.overlay, Platform.OS === 'android' && { paddingTop: StatusBar.currentHeight || 0 }]}>
+      <View style={styles.overlay}>
         <Animated.View
           style={[styles.backdrop, { opacity: backdropOpacity }]}
         >
@@ -245,6 +244,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',
+    backgroundColor: 'transparent',
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   scrollPicker: {
-    maxHeight: Platform.OS === 'android' ? 220 : 260,
+    maxHeight: 240,
   },
   scrollPickerContent: {
     paddingVertical: 4,
