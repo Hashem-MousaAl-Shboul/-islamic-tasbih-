@@ -8,8 +8,7 @@ import {
   Settings,
   Vibrate,
   Bell,
-  BellRing,
-  Clock,
+
   Cloud,
   RotateCcw,
   Share2,
@@ -28,13 +27,13 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 
 import { SettingsItem } from '@/components/SettingsItem';
 import i18n, { AVAILABLE_LANGUAGES } from '@/constants/translations';
-import { notificationService } from '@/utils/notificationService';
+
 import { adTracker } from '@/utils/adTracking';
 import { adStrategy } from '@/utils/adStrategy';
 import AdBanner from '@/components/AdBanner';
 import RewardedAd from '@/components/RewardedAd';
 import { ReciterPicker } from '@/components/ReciterPicker';
-import { ReminderTimePicker } from '@/components/ReminderTimePicker';
+
 import { useReciterStore } from '@/hooks/useReciterStore';
 import { useAuth } from '@/hooks/useAuthStore';
 import { ReciterId } from '@/utils/ttsService';
@@ -48,7 +47,7 @@ const SettingsScreen = memo(function SettingsScreen() {
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
 
   const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
-  const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
+
   const [showRewardedAd, setShowRewardedAd] = useState<boolean>(false);
   const [currentAd, setCurrentAd] = useState(adStrategy.getRandomBannerAd());
 
@@ -63,40 +62,17 @@ const SettingsScreen = memo(function SettingsScreen() {
     return () => clearInterval(adRefreshInterval);
   }, []);
 
-  const parsedReminderTime = useMemo(() => {
-    const parts = (settings.reminderTime || '20:00').split(':');
-    return { hour: parseInt(parts[0], 10) || 20, minute: parseInt(parts[1], 10) || 0 };
-  }, [settings.reminderTime]);
 
-  const reminderTimeLabel = useMemo(() => {
-    const { hour, minute } = parsedReminderTime;
-    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    const period = hour < 12 ? (i18n.t('am') || 'AM') : (i18n.t('pm') || 'PM');
-    return `${h12}:${minute.toString().padStart(2, '0')} ${period}`;
-  }, [parsedReminderTime]);
 
   const handleToggleSetting = useCallback(
     (key: keyof typeof settings) => async (value: boolean) => {
       console.log(`[SettingsScreen] Toggle setting: ${key} = ${value}`);
       adTracker.trackClick(`toggle-${key}`, 'settings', 'toggle-switch');
       updateSettings({ [key]: value });
-      
-      if (key === 'reminderEnabled') {
-        const { hour, minute } = parsedReminderTime;
-        await notificationService.scheduleDailyReminder(value, hour, minute);
-      }
-    },
-    [updateSettings, parsedReminderTime]
-  );
 
-  const handleSelectReminderTime = useCallback(async (hour: number, minute: number) => {
-    console.log(`[SettingsScreen] Reminder time changed to: ${hour}:${minute}`);
-    const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-    updateSettings({ reminderTime: timeStr });
-    if (settings.reminderEnabled) {
-      await notificationService.scheduleDailyReminder(true, hour, minute);
-    }
-  }, [updateSettings, settings.reminderEnabled]);
+    },
+    [updateSettings]
+  );
 
   const handleShareApp = useCallback(async () => {
     try {
@@ -378,31 +354,7 @@ const SettingsScreen = memo(function SettingsScreen() {
               variant="grouped"
               iconBgColor="#F5A623"
             />
-            <View style={styles.divider} />
-            <SettingsItem
-              icon={<BellRing size={22} color="#fff" />}
-              title={i18n.t('notifications')}
-              subtitle={i18n.t('dailyReminders')}
-              type="toggle"
-              value={settings.reminderEnabled ?? false}
-              onToggle={handleToggleSetting('reminderEnabled')}
-              variant="grouped"
-              iconBgColor="#E8734A"
-            />
-            {settings.reminderEnabled && (
-              <>
-                <View style={styles.divider} />
-                <SettingsItem
-                  icon={<Clock size={22} color="#fff" />}
-                  title={i18n.t('reminderTime') || 'وقت التذكير'}
-                  subtitle={reminderTimeLabel}
-                  type="action"
-                  onPress={() => setShowTimePicker(true)}
-                  variant="grouped"
-                  iconBgColor="#FF9500"
-                />
-              </>
-            )}
+
             <View style={styles.divider} />
             <SettingsItem
               icon={<Mic size={22} color="#fff" />}
@@ -563,13 +515,7 @@ const SettingsScreen = memo(function SettingsScreen() {
         currentReciter={currentReciter}
       />
 
-      <ReminderTimePicker
-        visible={showTimePicker}
-        onClose={() => setShowTimePicker(false)}
-        onSelect={handleSelectReminderTime}
-        currentHour={parsedReminderTime.hour}
-        currentMinute={parsedReminderTime.minute}
-      />
+
 
       <RewardedAd
         visible={showRewardedAd}
