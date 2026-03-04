@@ -276,6 +276,16 @@ export interface TranslationKeys {
   completedTimes: string;
   times: string;
   dhikrDetails: string;
+  
+  // Reminder Time Picker
+  reminderTime: string;
+  selectReminderTime: string;
+  hour: string;
+  minute: string;
+  am: string;
+  pm: string;
+  reminderScheduled: string;
+  reminderDisabled: string;
 }
 
 // Arabic translations
@@ -548,6 +558,16 @@ const ar: TranslationKeys = {
   completedTimes: 'مكتمل',
   times: 'مرات',
   dhikrDetails: 'تفاصيل الأذكار',
+  
+  // Reminder Time Picker
+  reminderTime: 'وقت التذكير',
+  selectReminderTime: 'اختر وقت التذكير اليومي',
+  hour: 'ساعة',
+  minute: 'دقيقة',
+  am: 'ص',
+  pm: 'م',
+  reminderScheduled: 'تم جدولة التذكير',
+  reminderDisabled: 'تم إيقاف التذكير',
 };
 
 // English translations
@@ -820,6 +840,16 @@ const en: TranslationKeys = {
   completedTimes: 'Completed',
   times: 'times',
   dhikrDetails: 'Dhikr Details',
+  
+  // Reminder Time Picker
+  reminderTime: 'Reminder Time',
+  selectReminderTime: 'Select daily reminder time',
+  hour: 'Hour',
+  minute: 'Minute',
+  am: 'AM',
+  pm: 'PM',
+  reminderScheduled: 'Reminder scheduled',
+  reminderDisabled: 'Reminder disabled',
 };
 
 // French translations
@@ -1093,6 +1123,15 @@ const fr: TranslationKeys = {
   completedTimes: 'Terminé',
   times: 'fois',
   dhikrDetails: 'Détails du Dhikr',
+  
+  reminderTime: 'Heure de rappel',
+  selectReminderTime: 'Sélectionner l\'heure du rappel quotidien',
+  hour: 'Heure',
+  minute: 'Minute',
+  am: 'AM',
+  pm: 'PM',
+  reminderScheduled: 'Rappel programmé',
+  reminderDisabled: 'Rappel désactivé',
 };
 
 // Spanish translations
@@ -1365,6 +1404,15 @@ const es: TranslationKeys = {
   completedTimes: 'Completado',
   times: 'veces',
   dhikrDetails: 'Detalles del Dhikr',
+  
+  reminderTime: 'Hora del recordatorio',
+  selectReminderTime: 'Seleccionar hora del recordatorio diario',
+  hour: 'Hora',
+  minute: 'Minuto',
+  am: 'AM',
+  pm: 'PM',
+  reminderScheduled: 'Recordatorio programado',
+  reminderDisabled: 'Recordatorio desactivado',
 };
 
 // Urdu translations
@@ -1638,6 +1686,15 @@ const ur: TranslationKeys = {
   completedTimes: 'مکمل',
   times: 'بار',
   dhikrDetails: 'ذکر کی تفصیلات',
+  
+  reminderTime: 'یاد دہانی کا وقت',
+  selectReminderTime: 'روزانہ یاد دہانی کا وقت منتخب کریں',
+  hour: 'گھنٹہ',
+  minute: 'منٹ',
+  am: 'صبح',
+  pm: 'شام',
+  reminderScheduled: 'یاد دہانی مقرر',
+  reminderDisabled: 'یاد دہانی بند',
 };
 
 // Indonesian translations
@@ -1910,6 +1967,15 @@ const id: TranslationKeys = {
   completedTimes: 'Selesai',
   times: 'kali',
   dhikrDetails: 'Detail Dzikir',
+  
+  reminderTime: 'Waktu Pengingat',
+  selectReminderTime: 'Pilih waktu pengingat harian',
+  hour: 'Jam',
+  minute: 'Menit',
+  am: 'AM',
+  pm: 'PM',
+  reminderScheduled: 'Pengingat dijadwalkan',
+  reminderDisabled: 'Pengingat dinonaktifkan',
 };
 
 // Turkish translations
@@ -2182,6 +2248,15 @@ const tr: TranslationKeys = {
   completedTimes: 'Tamamlandı',
   times: 'kez',
   dhikrDetails: 'Zikir Detayları',
+  
+  reminderTime: 'Hatırlatma Zamanı',
+  selectReminderTime: 'Günlük hatırlatma zamanını seçin',
+  hour: 'Saat',
+  minute: 'Dakika',
+  am: 'ÖÖ',
+  pm: 'ÖS',
+  reminderScheduled: 'Hatırlatma planlandı',
+  reminderDisabled: 'Hatırlatma devre dışı',
 };
 
 // Malay translations
@@ -2454,6 +2529,15 @@ const ms: TranslationKeys = {
   completedTimes: 'Selesai',
   times: 'kali',
   dhikrDetails: 'Butiran Zikir',
+  
+  reminderTime: 'Masa Peringatan',
+  selectReminderTime: 'Pilih masa peringatan harian',
+  hour: 'Jam',
+  minute: 'Minit',
+  am: 'AM',
+  pm: 'PM',
+  reminderScheduled: 'Peringatan dijadualkan',
+  reminderDisabled: 'Peringatan dinyahaktifkan',
 };
 
 // Bengali translations
@@ -2726,6 +2810,15 @@ const bn: TranslationKeys = {
   completedTimes: 'সম্পন্ন',
   times: 'বার',
   dhikrDetails: 'জিকিরের বিবরণ',
+  
+  reminderTime: 'স্মরণীয় সময়',
+  selectReminderTime: 'দৈনিক স্মরণীয় সময় নির্বাচন করুন',
+  hour: 'ঘণ্টা',
+  minute: 'মিনিট',
+  am: 'AM',
+  pm: 'PM',
+  reminderScheduled: 'স্মরণীয় নির্ধারিত',
+  reminderDisabled: 'স্মরণীয় নিষ্ক্রিয়',
 };
 
 // Setup i18n
