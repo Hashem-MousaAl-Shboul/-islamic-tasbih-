@@ -82,9 +82,10 @@ export const [CreditsProvider, useCreditsStore] = createContextHook(() => {
   }, [creditsQuery.data]);
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     const timer = setTimeout(() => {
       initRevenueCat().catch(e => console.log('[RevenueCat] Deferred init error:', e));
-    }, 2000);
+    }, 5000);
     return () => clearTimeout(timer);
   }, []);
 

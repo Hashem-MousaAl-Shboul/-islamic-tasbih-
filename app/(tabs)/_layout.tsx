@@ -33,15 +33,18 @@ export default function TabLayout() {
       }
     };
 
-    unsubscribeRef.current = yasAI.addListener(handlePlaybackChange);
-    
-    const initialState = yasAI.getPlaybackState();
-    if (mounted) {
-      setIsBarVisible(initialState.isPlaying);
-    }
+    const timer = setTimeout(() => {
+      if (!mounted) return;
+      unsubscribeRef.current = yasAI.addListener(handlePlaybackChange);
+      const initialState = yasAI.getPlaybackState();
+      if (mounted) {
+        setIsBarVisible(initialState.isPlaying);
+      }
+    }, 1000);
 
     return () => {
       mounted = false;
+      clearTimeout(timer);
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
         unsubscribeRef.current = null;

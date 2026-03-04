@@ -219,18 +219,29 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
     }
   }, []);
 
+  const tasbihItemsRef = useRef(tasbihItems);
+  const settingsRef = useRef(settings);
+  const statsRef = useRef(stats);
+  const selectedItemIdRef = useRef(selectedItemId);
+
+  useEffect(() => { tasbihItemsRef.current = tasbihItems; }, [tasbihItems]);
+  useEffect(() => { settingsRef.current = settings; }, [settings]);
+  useEffect(() => { statsRef.current = stats; }, [stats]);
+  useEffect(() => { selectedItemIdRef.current = selectedItemId; }, [selectedItemId]);
+
   const saveData = useCallback(async () => {
     try {
       await Promise.all([
-        AsyncStorage.setItem(STORAGE_KEYS.TASBIH_ITEMS, JSON.stringify(tasbihItems)),
-        AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings)),
-        AsyncStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats)),
-        AsyncStorage.setItem(STORAGE_KEYS.SELECTED_ITEM, selectedItemId),
+        AsyncStorage.setItem(STORAGE_KEYS.TASBIH_ITEMS, JSON.stringify(tasbihItemsRef.current)),
+        AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settingsRef.current)),
+        AsyncStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(statsRef.current)),
+        AsyncStorage.setItem(STORAGE_KEYS.SELECTED_ITEM, selectedItemIdRef.current),
       ]);
+      console.log('[TasbihStore] Data saved successfully');
     } catch (error) {
       console.error('Error saving tasbih data:', error);
     }
-  }, [tasbihItems, settings, stats, selectedItemId]);
+  }, []);
 
   const addCustomTasbih = useCallback((tasbih: Omit<TasbihItem, 'id' | 'count' | 'isCompleted' | 'totalCompletions'>) => {
     const newTasbih: TasbihItem = {
@@ -472,43 +483,38 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
   }, [tasbihItems]);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dataVersionRef = useRef<number>(0);
   const hasLoadedRef = useRef<boolean>(false);
+  const changeCountRef = useRef<number>(0);
 
   useEffect(() => {
     if (isLoading) return;
     if (!hasLoadedRef.current) {
       hasLoadedRef.current = true;
+      console.log('[TasbihStore] Initial load complete, skipping auto-save');
       return;
     }
-    dataVersionRef.current += 1;
-    const version = dataVersionRef.current;
+    changeCountRef.current += 1;
+    const thisChange = changeCountRef.current;
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
     saveTimeoutRef.current = setTimeout(() => {
-      if (version === dataVersionRef.current) {
+      if (thisChange === changeCountRef.current) {
         saveData().catch(err => console.error('Auto-save error:', err));
       }
-    }, 2000);
+    }, 3000);
 
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [tasbihItems, settings, stats, selectedItemId, saveData, isLoading]);
-
-
+  }, [tasbihItems, settings, stats, selectedItemId, isLoading, saveData]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadData();
-    }, 50);
-    
-    return () => clearTimeout(timer);
+    loadData();
   }, [loadData]);
 
   return useMemo(() => ({

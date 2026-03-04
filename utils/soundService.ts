@@ -31,16 +31,27 @@ class SoundService {
         console.log('[SoundService] Audio module not available');
         return;
       }
-      await Audio.setAudioModeAsync({
+
+      const audioModePromise = Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
         staysActiveInBackground: false,
         shouldDuckAndroid: true,
       });
 
+      const timeoutPromise = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          console.log('[SoundService] setAudioModeAsync timed out, continuing');
+          resolve();
+        }, 3000);
+      });
+
+      await Promise.race([audioModePromise, timeoutPromise]);
+
       this.isLoaded = true;
       console.log('[SoundService] Audio mode set successfully');
     } catch (error) {
-      console.error('[SoundService] Error initializing audio:', error);
+      console.log('[SoundService] Error initializing audio (non-blocking):', error);
+      this.isLoaded = true;
     } finally {
       this.isInitializing = false;
     }
