@@ -8,6 +8,8 @@ import {
   Alert,
   Linking,
   Share,
+  TouchableOpacity,
+  Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -27,16 +29,14 @@ import {
   Sun,
   Info,
   Coins,
+  ChevronRight,
+  Settings,
 } from 'lucide-react-native';
 import * as StoreReview from 'expo-store-review';
-import * as MailComposer from 'expo-mail-composer';
 import * as Haptics from 'expo-haptics';
-import * as NavigationBar from 'expo-navigation-bar';
 
-import { useTheme } from '@/theme/ThemeProvider';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
-import { SettingsItem } from '@/components/SettingsItem';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 import { CreditsPurchaseModal } from '@/components/CreditsPurchaseModal';
@@ -44,8 +44,79 @@ import { notificationService } from '@/utils/notificationService';
 import { useCreditsStore } from '@/hooks/useCreditsStore';
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
+const PRIMARY = '#1a5c4c';
+const CARD_BG = '#d4ede5';
+const SCREEN_BG = '#f5f5f5';
+const TEXT_PRIMARY = '#1a5c4c';
+const TEXT_SECONDARY = '#666666';
+
+interface SettingsRowProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  type: 'toggle' | 'select' | 'action';
+  value?: boolean | string;
+  onPress?: () => void;
+  onToggle?: () => void;
+  danger?: boolean;
+  isLast?: boolean;
+}
+
+function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, danger, isLast }: SettingsRowProps) {
+  const handlePress = useCallback(() => {
+    if (type === 'toggle' && onToggle) {
+      onToggle();
+    } else if (onPress) {
+      onPress();
+    }
+  }, [type, onToggle, onPress]);
+
+  return (
+    <TouchableOpacity
+      style={[styles.row, !isLast && styles.rowBorder]}
+      onPress={handlePress}
+      activeOpacity={0.6}
+      testID={`settings-row-${title}`}
+    >
+      <View style={styles.rowLeft}>
+        <View style={[styles.rowIcon, danger && styles.rowIconDanger]}>
+          {icon}
+        </View>
+        <View style={styles.rowTextContainer}>
+          <Text style={[styles.rowTitle, danger && styles.dangerText]}>{title}</Text>
+          {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
+        </View>
+      </View>
+      <View style={styles.rowRight}>
+        {type === 'toggle' ? (
+          <Switch
+            value={Boolean(value)}
+            onValueChange={() => onToggle?.()}
+            trackColor={{
+              false: Platform.OS === 'android' ? '#d0d0d0' : 'rgba(0,0,0,0.1)',
+              true: PRIMARY,
+            }}
+            thumbColor={Platform.OS === 'android' ? (value ? PRIMARY : '#f4f3f4') : '#FFFFFF'}
+            ios_backgroundColor="rgba(0,0,0,0.1)"
+            style={Platform.OS === 'android' ? styles.switchAndroid : styles.switchIOS}
+            pointerEvents="none"
+          />
+        ) : null}
+        {type === 'select' ? (
+          <View style={styles.selectContainer}>
+            <Text style={styles.selectValue}>{String(value ?? '')}</Text>
+            <ChevronRight size={16} color={TEXT_SECONDARY} />
+          </View>
+        ) : null}
+        {type === 'action' ? (
+          <ChevronRight size={18} color={danger ? '#E74C3C' : TEXT_SECONDARY} />
+        ) : null}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export default function SettingsScreen() {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { t, getCurrentLanguageInfo } = useLanguageStore();
   const { settings, updateSettings, resetAllData } = useTasbihStore();
@@ -63,25 +134,25 @@ export default function SettingsScreen() {
 
     if (Platform.OS === 'android') {
       try {
-        NavigationBar.setBackgroundColorAsync(
-          newTheme === 'dark' ? '#0A0E1A' : '#F5F5F5'
-        ).catch(() => {});
-        NavigationBar.setButtonStyleAsync(
-          newTheme === 'dark' ? 'light' : 'dark'
-        ).catch(() => {});
+        import('expo-navigation-bar').then((NavigationBar) => {
+          NavigationBar.setBackgroundColorAsync(
+            newTheme === 'dark' ? '#0A0E1A' : '#F5F5F5'
+          ).catch(() => {});
+          NavigationBar.setButtonStyleAsync(
+            newTheme === 'dark' ? 'light' : 'dark'
+          ).catch(() => {});
+        }).catch(() => {});
       } catch (e) {
         console.log('[Settings] NavigationBar error:', e);
       }
     }
 
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   }, [settings.theme, updateSettings]);
 
   const handleToggleVibration = useCallback(() => {
     updateSettings({ vibrationEnabled: !settings.vibrationEnabled });
-    if (!settings.vibrationEnabled && Platform.OS !== 'web') {
+    if (!settings.vibrationEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     }
   }, [settings.vibrationEnabled, updateSettings]);
@@ -106,19 +177,8 @@ export default function SettingsScreen() {
 
   const handleSelectColorTheme = useCallback((themeKey: ColorThemeKey) => {
     updateSettings({ colorTheme: themeKey });
-
-    if (Platform.OS === 'android') {
-      try {
-        NavigationBar.setBackgroundColorAsync(
-          settings.theme === 'dark' ? '#0A0E1A' : '#F5F5F5'
-        ).catch(() => {});
-      } catch (e) {
-        console.log('[Settings] NavigationBar color error:', e);
-      }
-    }
-
     setShowColorPicker(false);
-  }, [updateSettings, settings.theme]);
+  }, [updateSettings]);
 
   const handleRateApp = useCallback(async () => {
     try {
@@ -126,7 +186,6 @@ export default function SettingsScreen() {
         Alert.alert(t('rateApp'), t('rateAppDescription'));
         return;
       }
-
       const isAvailable = await StoreReview.isAvailableAsync();
       if (isAvailable) {
         await StoreReview.requestReview();
@@ -141,11 +200,10 @@ export default function SettingsScreen() {
 
   const handleShareApp = useCallback(async () => {
     try {
-      const result = await Share.share({
+      await Share.share({
         message: t('shareMessage'),
         title: t('appName'),
       });
-      console.log('[Settings] Share result:', result);
     } catch (e) {
       console.log('[Settings] Share error:', e);
     }
@@ -160,6 +218,7 @@ export default function SettingsScreen() {
         return;
       }
 
+      const MailComposer = await import('expo-mail-composer');
       const isAvailable = await MailComposer.isAvailableAsync();
       if (isAvailable) {
         await MailComposer.composeAsync({
@@ -174,7 +233,9 @@ export default function SettingsScreen() {
       }
     } catch (e) {
       console.log('[Settings] Mail error:', e);
-      Alert.alert(t('error'), t('contactError'));
+      Linking.openURL('mailto:support@subbah.app').catch(() => {
+        Alert.alert(t('error'), t('contactError'));
+      });
     }
   }, [t]);
 
@@ -236,20 +297,16 @@ export default function SettingsScreen() {
     });
   }, [t]);
 
-  const sectionStyle = useMemo(() => [
-    styles.section,
-    { backgroundColor: theme.surface, borderColor: theme.border },
-  ], [theme.surface, theme.border]);
-
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]} testID="settings-screen">
-      <View style={[styles.header, { paddingTop: insets.top, backgroundColor: theme.primary }]}>
-        <Text style={styles.headerTitle}>
-          {t('settings')}
-        </Text>
-        <Text style={styles.headerSubtitle}>
-          {t('customizeApp')}
-        </Text>
+    <View style={styles.container} testID="settings-screen">
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerTitleRow}>
+            <Settings size={24} color="#fff" />
+            <Text style={styles.headerTitle}>{t('settings')}</Text>
+          </View>
+          <Text style={styles.headerSubtitle}>{t('customizeApp')}</Text>
+        </View>
       </View>
 
       <ScrollView
@@ -258,191 +315,151 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
       >
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          {t('appearance')}
-        </Text>
-        <View style={sectionStyle}>
-          <SettingsItem
+        <Text style={styles.sectionTitle}>{t('appearance')}</Text>
+        <View style={styles.card}>
+          <SettingsRow
             icon={settings.theme === 'dark'
-              ? <Moon size={22} color={theme.primary} />
-              : <Sun size={22} color={theme.primary} />}
+              ? <Moon size={20} color={PRIMARY} />
+              : <Sun size={20} color={PRIMARY} />}
             title={t('darkMode')}
             subtitle={settings.theme === 'dark' ? t('darkModeEnabled') : t('lightModeEnabled')}
             type="toggle"
             value={settings.theme === 'dark'}
             onToggle={handleToggleDarkMode}
-            variant="grouped"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Palette size={22} color={theme.primary} />}
+          <SettingsRow
+            icon={<Palette size={20} color={PRIMARY} />}
             title={t('colorTheme')}
             type="select"
             value={t(settings.colorTheme || 'gold')}
             onPress={() => setShowColorPicker(true)}
-            variant="grouped"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Globe size={22} color={theme.primary} />}
+          <SettingsRow
+            icon={<Globe size={20} color={PRIMARY} />}
             title={t('language')}
             type="select"
             value={languageInfo?.nativeName || 'العربية'}
             onPress={() => setShowLanguagePicker(true)}
-            variant="grouped"
+            isLast
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          {t('buyCredits') || 'Credits'}
-        </Text>
-        <View style={sectionStyle}>
-          <SettingsItem
-            icon={<Coins size={22} color="#F59E0B" />}
+        <Text style={styles.sectionTitle}>{t('buyCredits') || 'Credits'}</Text>
+        <View style={styles.card}>
+          <SettingsRow
+            icon={<Coins size={20} color="#F5A623" />}
             title={t('buyCredits') || 'Buy Credits'}
             subtitle={`${credits} ${t('credits') || 'credits'}`}
             type="action"
             onPress={() => setShowCreditsPurchase(true)}
-            variant="grouped"
-            iconBgColor="rgba(245,158,11,0.15)"
+            isLast
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          {t('interaction')}
-        </Text>
-        <View style={sectionStyle}>
-          <SettingsItem
-            icon={<Vibrate size={22} color={theme.primary} />}
+        <Text style={styles.sectionTitle}>{t('interaction')}</Text>
+        <View style={styles.card}>
+          <SettingsRow
+            icon={<Vibrate size={20} color={PRIMARY} />}
             title={t('vibration')}
             subtitle={t('vibrationOnTap')}
             type="toggle"
             value={settings.vibrationEnabled}
             onToggle={handleToggleVibration}
-            variant="grouped"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Volume2 size={22} color={theme.primary} />}
+          <SettingsRow
+            icon={<Volume2 size={20} color={PRIMARY} />}
             title={t('sound')}
             subtitle={t('soundOnInteraction')}
             type="toggle"
             value={settings.soundEnabled}
             onToggle={handleToggleSound}
-            variant="grouped"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Bell size={22} color={theme.primary} />}
+          <SettingsRow
+            icon={<Bell size={20} color={PRIMARY} />}
             title={t('notifications')}
             subtitle={t('dailyReminders')}
             type="toggle"
             value={settings.reminderEnabled}
             onToggle={handleToggleNotifications}
-            variant="grouped"
+            isLast
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          {t('contactSupport')}
-        </Text>
-        <View style={sectionStyle}>
-          <SettingsItem
-            icon={<Star size={22} color="#F59E0B" />}
+        <Text style={styles.sectionTitle}>{t('contactSupport')}</Text>
+        <View style={styles.card}>
+          <SettingsRow
+            icon={<Star size={20} color="#F5A623" />}
             title={t('rateApp')}
             subtitle={t('rateAppDescription')}
             type="action"
             onPress={handleRateApp}
-            variant="grouped"
-            iconBgColor="rgba(245,158,11,0.15)"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Share2 size={22} color="#3B82F6" />}
+          <SettingsRow
+            icon={<Share2 size={20} color="#4A90D9" />}
             title={t('shareApp')}
             subtitle={t('shareAppDescription')}
             type="action"
             onPress={handleShareApp}
-            variant="grouped"
-            iconBgColor="rgba(59,130,246,0.15)"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Mail size={22} color="#10B981" />}
+          <SettingsRow
+            icon={<Mail size={20} color="#27AE60" />}
             title={t('contactUs')}
             subtitle={t('contactUsDescription')}
             type="action"
             onPress={handleContactUs}
-            variant="grouped"
-            iconBgColor="rgba(16,185,129,0.15)"
+            isLast
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          {t('about')}
-        </Text>
-        <View style={sectionStyle}>
-          <SettingsItem
-            icon={<Shield size={22} color={theme.primary} />}
+        <Text style={styles.sectionTitle}>{t('about')}</Text>
+        <View style={styles.card}>
+          <SettingsRow
+            icon={<Shield size={20} color={PRIMARY} />}
             title={t('privacy')}
             subtitle={t('viewPrivacyPolicy')}
             type="action"
             onPress={handleOpenPrivacy}
-            variant="grouped"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<FileText size={22} color={theme.primary} />}
+          <SettingsRow
+            icon={<FileText size={20} color={PRIMARY} />}
             title={t('terms')}
             subtitle={t('viewTerms')}
             type="action"
             onPress={handleOpenTerms}
-            variant="grouped"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Info size={22} color={theme.textSecondary} />}
+          <SettingsRow
+            icon={<Info size={20} color={TEXT_SECONDARY} />}
             title={t('version')}
             subtitle="1.0.0"
             type="action"
             onPress={() => {}}
-            variant="grouped"
-            iconBgColor={`${theme.textSecondary}20`}
+            isLast
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-          {t('dataManagement')}
-        </Text>
-        <View style={sectionStyle}>
-          <SettingsItem
-            icon={<RotateCcw size={22} color="#F59E0B" />}
+        <Text style={styles.sectionTitle}>{t('dataManagement')}</Text>
+        <View style={styles.card}>
+          <SettingsRow
+            icon={<RotateCcw size={20} color="#F5A623" />}
             title={t('resetSettings')}
             subtitle={t('resetSettingsDescription')}
             type="action"
             onPress={handleResetSettings}
-            variant="grouped"
-            iconBgColor="rgba(245,158,11,0.15)"
           />
-          <View style={[styles.divider, { backgroundColor: theme.border }]} />
-          <SettingsItem
-            icon={<Trash2 size={22} color="#FF6B6B" />}
+          <SettingsRow
+            icon={<Trash2 size={20} color="#E74C3C" />}
             title={t('deleteAllData')}
             subtitle={t('deleteAllDataDescription')}
             type="action"
             onPress={handleDeleteAllData}
             danger
-            variant="grouped"
+            isLast
           />
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: theme.primary }]}>
-            {t('appName')}
-          </Text>
-          <Text style={[styles.footerVersion, { color: theme.textSecondary }]}>
-            v1.0.0
-          </Text>
+          <Text style={styles.footerText}>{t('appName')}</Text>
+          <Text style={styles.footerVersion}>v1.0.0</Text>
         </View>
       </ScrollView>
 
@@ -469,56 +486,119 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: SCREEN_BG,
   },
   header: {
+    backgroundColor: PRIMARY,
+    paddingBottom: 20,
+  },
+  headerContent: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
     paddingTop: 16,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: '700' as const,
     color: '#fff',
-    marginBottom: 4,
     writingDirection: 'rtl',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.65)',
+    marginTop: 4,
+    marginLeft: 34,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
+    paddingTop: 16,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600' as const,
-    marginTop: 24,
+    color: TEXT_SECONDARY,
+    marginTop: 20,
     marginBottom: 10,
     marginLeft: 4,
   },
-  section: {
+  card: {
+    backgroundColor: CARD_BG,
     borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 1,
-      },
-      default: {},
-    }),
   },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 76,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    minHeight: 60,
+  },
+  rowBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(26, 92, 76, 0.15)',
+  },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  rowIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  rowIconDanger: {
+    backgroundColor: '#fee2e2',
+  },
+  rowTextContainer: {
+    flex: 1,
+  },
+  rowTitle: {
+    fontSize: 16,
+    fontWeight: '500' as const,
+    color: TEXT_PRIMARY,
+  },
+  dangerText: {
+    color: '#E74C3C',
+  },
+  rowSubtitle: {
+    fontSize: 13,
+    color: TEXT_PRIMARY,
+    opacity: 0.6,
+    marginTop: 2,
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  selectContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  selectValue: {
+    fontSize: 14,
+    color: TEXT_SECONDARY,
+    fontWeight: '500' as const,
+  },
+  switchIOS: {
+    transform: [{ scale: 0.9 }],
+  },
+  switchAndroid: {
+    transform: [{ scale: 1.0 }],
   },
   footer: {
     alignItems: 'center',
@@ -528,10 +608,12 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 14,
     fontWeight: '500' as const,
+    color: PRIMARY,
     opacity: 0.5,
   },
   footerVersion: {
     fontSize: 12,
+    color: TEXT_SECONDARY,
     opacity: 0.4,
   },
 });
