@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, ActivityIndicator, FlatList, Platform, ScrollVi
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
-import { useTasbihStore } from '@/hooks/useTasbihStore';
+
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
-import { Sparkles, Sun, Moon, Clock, Heart, Star, Play, Share2, MoonStar, Sunrise } from 'lucide-react-native';
+import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 
@@ -98,13 +98,12 @@ interface AdhkarCardProps {
   item: AdhkarItem;
   index: number;
   reducedMotion: boolean;
-  onStartTasbih: (item: AdhkarItem) => void;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   onShare: (item: AdhkarItem) => void;
 }
 
-const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMotion, onStartTasbih, isFavorite, onToggleFavorite, onShare }) => {
+const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMotion, isFavorite, onToggleFavorite, onShare }) => {
   const { t } = useLanguageStore();
   const [expanded, setExpanded] = useState<boolean>(false);
 
@@ -118,20 +117,6 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
     }
     setExpanded(prev => !prev);
   }, []);
-
-  const handleStartTasbih = useCallback((e?: any) => {
-    if (e && e.stopPropagation) {
-      e.stopPropagation();
-    }
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } catch (error) {
-        console.log('Haptic feedback error:', error);
-      }
-    }
-    onStartTasbih(item);
-  }, [item, onStartTasbih]);
 
   const handleToggleFavorite = useCallback((e?: any) => {
     if (e && e.stopPropagation) {
@@ -280,33 +265,6 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
                   <Share2 size={16} color="#3B82F6" strokeWidth={1.5} />
                 </Pressable>
               </>
-            )}
-            {Platform.OS === 'web' ? (
-              <View
-                style={styles.tasbihHeaderButton}
-                onStartShouldSetResponder={() => true}
-                onResponderRelease={handleStartTasbih}
-                testID="adhkar-start-tasbih-header"
-                accessibilityLabel={t('add')}
-              >
-                <View style={styles.tasbihHeaderButtonGradient}>
-                  <Play size={14} color="#FFFFFF" strokeWidth={1.5} />
-                  <Text style={styles.tasbihHeaderButtonText}>{t('add')}</Text>
-                </View>
-              </View>
-            ) : (
-              <Pressable 
-                style={styles.tasbihHeaderButton}
-                onPress={handleStartTasbih}
-                testID="adhkar-start-tasbih-header"
-                accessibilityRole="button"
-                accessibilityLabel={t('add')}
-              >
-                <View style={styles.tasbihHeaderButtonGradient}>
-                  <Play size={14} color="#FFFFFF" strokeWidth={1.5} />
-                  <Text style={styles.tasbihHeaderButtonText}>{t('add')}</Text>
-                </View>
-              </Pressable>
             )}
 
           </View>
@@ -505,9 +463,7 @@ function useReducedMotion(): boolean {
 
 export default function AdhkarScreen() {
   const { isLoading } = useLanguageStore();
-  const { addCustomTasbih } = useTasbihStore();
   const { isFavorite, toggleFavorite } = useFavoritesStore();
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const deferredFilter = useDeferredValue<FilterType>(selectedFilter);
@@ -532,59 +488,6 @@ export default function AdhkarScreen() {
   }, [deferredFilter, isFavorite]);
 
   const reducedMotion = useReducedMotion();
-
-  const getTargetCountForCategory = useCallback((category: string) => {
-    switch (category) {
-      case 'morning':
-      case 'evening':
-        return 1;
-      case 'after-prayer':
-        return 33;
-      case 'duas':
-        return 10;
-      case 'sleep':
-      case 'wakeup':
-        return 1;
-      default:
-        return 33;
-    }
-  }, []);
-
-  const getCategoryColorForTasbih = useCallback((category: string) => {
-    switch (category) {
-      case 'morning':
-        return '#F59E0B';
-      case 'evening':
-        return '#8B5CF6';
-      case 'after-prayer':
-        return '#10B981';
-      case 'duas':
-        return '#EF4444';
-      case 'sleep':
-        return '#6366F1';
-      case 'wakeup':
-        return '#F97316';
-      default:
-        return '#F59E0B';
-    }
-  }, []);
-
-  const handleStartTasbih = useCallback((item: AdhkarItem) => {
-    const tasbihDhikr = {
-      arabicText: item.arabicText,
-      transliteration: item.transliteration || '',
-      translation: item.translation || '',
-      count: 0,
-      targetCount: getTargetCountForCategory(item.category),
-      color: getCategoryColorForTasbih(item.category),
-      category: 'custom' as const,
-    };
-    
-    console.log(`[AdhkarScreen] Starting tasbih for: ${item.id}`);
-    
-    addCustomTasbih(tasbihDhikr);
-    router.push('/tasbih');
-  }, [addCustomTasbih, router, getTargetCountForCategory, getCategoryColorForTasbih]);
 
   const handleShareAdhkar = useCallback(async (item: AdhkarItem) => {
     try {
@@ -614,13 +517,12 @@ export default function AdhkarScreen() {
         item={item}
         index={index}
         reducedMotion={reducedMotion}
-        onStartTasbih={handleStartTasbih}
         isFavorite={isFavorite(item.id)}
         onToggleFavorite={toggleFavorite}
         onShare={handleShareAdhkar}
       />
     );
-  }, [handleStartTasbih, reducedMotion, isFavorite, toggleFavorite, handleShareAdhkar]);
+  }, [reducedMotion, isFavorite, toggleFavorite, handleShareAdhkar]);
 
   const keyExtractor = useCallback((item: AdhkarItem) => item.id, []);
 
@@ -848,23 +750,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  tasbihHeaderButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#1a5c4c',
-  },
-  tasbihHeaderButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    gap: 6,
-  },
-  tasbihHeaderButtonText: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-  },
+
   adhkarMainContent: {
     gap: 14,
     marginBottom: 16,
