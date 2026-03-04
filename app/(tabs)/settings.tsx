@@ -242,8 +242,8 @@ export default function SettingsScreen() {
   ], [theme.surface, theme.border]);
 
   return (
-    <View style={styles.container} testID="settings-screen">
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]} testID="settings-screen">
+      <View style={[styles.header, { paddingTop: insets.top, backgroundColor: theme.primary }]}>
         <Text style={styles.headerTitle}>
           {t('settings')}
         </Text>
@@ -258,7 +258,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
       >
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('appearance')}
         </Text>
         <View style={sectionStyle}>
@@ -293,7 +293,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('buyCredits') || 'Credits'}
         </Text>
         <View style={sectionStyle}>
@@ -308,7 +308,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('interaction')}
         </Text>
         <View style={sectionStyle}>
@@ -343,7 +343,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('contactSupport')}
         </Text>
         <View style={sectionStyle}>
@@ -378,7 +378,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('about')}
         </Text>
         <View style={sectionStyle}>
@@ -411,7 +411,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('dataManagement')}
         </Text>
         <View style={sectionStyle}>
@@ -437,10 +437,10 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
+          <Text style={[styles.footerText, { color: theme.primary }]}>
             {t('appName')}
           </Text>
-          <Text style={styles.footerVersion}>
+          <Text style={[styles.footerVersion, { color: theme.textSecondary }]}>
             v1.0.0
           </Text>
         </View>
@@ -469,13 +469,11 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   header: {
     paddingHorizontal: 20,
     paddingBottom: 16,
     paddingTop: 16,
-    backgroundColor: '#1a5c4c',
   },
   headerTitle: {
     fontSize: 22,
@@ -497,7 +495,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: '#666',
     marginTop: 24,
     marginBottom: 10,
     marginLeft: 4,
@@ -531,12 +528,10 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 14,
     fontWeight: '500' as const,
-    color: '#1a5c4c',
     opacity: 0.5,
   },
   footerVersion: {
     fontSize: 12,
-    color: '#666',
     opacity: 0.4,
   },
 });
