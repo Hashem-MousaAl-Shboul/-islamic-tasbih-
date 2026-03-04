@@ -130,22 +130,9 @@ export default function SettingsScreen() {
     const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
     updateSettings({ theme: newTheme });
 
-    if (Platform.OS === 'android') {
-      try {
-        import('expo-navigation-bar').then((NavigationBar) => {
-          NavigationBar.setBackgroundColorAsync(
-            newTheme === 'dark' ? '#0A0E1A' : '#F5F5F5'
-          ).catch(() => {});
-          NavigationBar.setButtonStyleAsync(
-            newTheme === 'dark' ? 'light' : 'dark'
-          ).catch(() => {});
-        }).catch(() => {});
-      } catch (e) {
-        console.log('[Settings] NavigationBar error:', e);
-      }
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   }, [settings.theme, updateSettings]);
 
   const handleToggleVibration = useCallback(() => {

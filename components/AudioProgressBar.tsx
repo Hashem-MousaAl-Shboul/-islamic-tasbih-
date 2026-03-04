@@ -33,7 +33,7 @@ export const AudioProgressBar: React.FC<AudioProgressBarProps> = ({ isVisible, o
         });
       }
     } catch (error) {
-      console.error('[AudioProgressBar] updatePlaybackState error:', error);
+      console.log('[AudioProgressBar] updatePlaybackState error:', error);
     }
   }, [duration]);
 
@@ -48,10 +48,10 @@ export const AudioProgressBar: React.FC<AudioProgressBarProps> = ({ isVisible, o
 
   // تحديث حالة التشغيل دورياً
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !currentId) return;
     const interval = setInterval(updatePlaybackState, 1000);
     return () => clearInterval(interval);
-  }, [updatePlaybackState, isVisible]);
+  }, [updatePlaybackState, isVisible, currentId]);
 
   // إعادة تعيين التقدم عند تغيير الذكر
   useEffect(() => {

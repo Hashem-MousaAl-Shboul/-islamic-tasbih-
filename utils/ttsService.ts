@@ -1,5 +1,12 @@
-import * as Speech from 'expo-speech';
 import { Platform } from 'react-native';
+
+let Speech: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Speech = require('expo-speech');
+} catch {
+  console.log('[TTS] expo-speech not available');
+}
 
 export type ReciterId = 'sudais' | 'shuraim' | 'alafasy' | 'maher' | 'husary';
 
@@ -244,12 +251,13 @@ class TTSService {
   private voices: ExpoVoice[] = [];
   private isVoicesLoaded: boolean = false;
 
-  constructor() {}
-
   async ensureVoicesLoaded(): Promise<void> {
     try {
-      if (this.isVoicesLoaded) return;
-      const available = (await (Speech as any).getAvailableVoicesAsync?.()) as ExpoVoice[] | undefined;
+      if (this.isVoicesLoaded || !Speech) {
+        this.isVoicesLoaded = true;
+        return;
+      }
+      const available = (await Speech.getAvailableVoicesAsync?.()) as ExpoVoice[] | undefined;
       this.voices = Array.isArray(available) ? available : [];
 
       if (this.voices.length === 0 && Platform.OS === 'web') {
@@ -261,7 +269,7 @@ class TTSService {
 
       this.isVoicesLoaded = true;
       console.log(`[TTS] Loaded voices: ${this.voices.length}`);
-    } catch (e) {
+    } catch {
       console.log('[TTS] Failed to load voices, will use defaults');
       this.voices = [];
       this.isVoicesLoaded = true;
@@ -334,11 +342,14 @@ class TTSService {
   }
 
   private async speakOnce(text: string, baseOptions: TTSOptions): Promise<void> {
-    return new Promise(async (resolve, reject) => {
+    if (!Speech) {
+      console.log('[TTS] Speech module not available, skipping');
+      return;
+    }
+    return new Promise<void>((resolve, reject) => {
       try {
-        await this.ensureVoicesLoaded();
         const options = this.platformAdjustedOptions(baseOptions, this.currentReciter) as any;
-        (Speech as any).speak(text, {
+        Speech.speak(text, {
           ...options,
           onDone: () => resolve(),
           onStopped: () => resolve(),
@@ -392,11 +403,16 @@ class TTSService {
   }
 
   async speak(text: string): Promise<void> {
+    if (!Speech) {
+      console.log('[TTS] Speech module not available');
+      return;
+    }
     try {
       if (this.isPlaying) {
         await this.stop();
       }
 
+      await this.ensureVoicesLoaded();
       const base = BASE_PRESETS[this.currentReciter];
       const phrases = this.splitIntoPhrases(text);
 
@@ -458,7 +474,7 @@ class TTSService {
   async stop(): Promise<void> {
     try {
       console.log('[TTS] Stopping speech');
-      (Speech as any).stop();
+      Speech?.stop?.();
       this.isPlaying = false;
       this.currentText = '';
       this.isProcessingQueue = false;

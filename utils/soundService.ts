@@ -6,8 +6,11 @@ class SoundService {
   private completionSound: Audio.Sound | null = null;
   private isLoaded: boolean = false;
 
+  private isInitializing: boolean = false;
+
   async initialize() {
-    if (this.isLoaded || Platform.OS === 'web') return;
+    if (this.isLoaded || this.isInitializing || Platform.OS === 'web') return;
+    this.isInitializing = true;
     
     try {
       await Audio.setAudioModeAsync({
@@ -16,22 +19,40 @@ class SoundService {
         shouldDuckAndroid: true,
       });
 
+      this.isLoaded = true;
+      console.log('[SoundService] Audio mode set successfully');
+    } catch (error) {
+      console.error('[SoundService] Error initializing audio:', error);
+    } finally {
+      this.isInitializing = false;
+    }
+  }
+
+  private async ensureClickSound(): Promise<void> {
+    if (this.clickSound) return;
+    try {
       this.clickSound = new Audio.Sound();
       await this.clickSound.loadAsync(
         { uri: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3' },
         { shouldPlay: false, volume: 0.5 }
       );
+    } catch (e) {
+      console.log('[SoundService] Failed to load click sound:', e);
+      this.clickSound = null;
+    }
+  }
 
+  private async ensureCompletionSound(): Promise<void> {
+    if (this.completionSound) return;
+    try {
       this.completionSound = new Audio.Sound();
       await this.completionSound.loadAsync(
         { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },
         { shouldPlay: false, volume: 0.7 }
       );
-
-      this.isLoaded = true;
-      console.log('[SoundService] Sounds loaded successfully');
-    } catch (error) {
-      console.error('[SoundService] Error loading sounds:', error);
+    } catch (e) {
+      console.log('[SoundService] Failed to load completion sound:', e);
+      this.completionSound = null;
     }
   }
 
@@ -40,21 +61,23 @@ class SoundService {
       try {
         const audio = new window.Audio('https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3');
         audio.volume = 0.5;
-        await audio.play();
+        audio.play().catch(() => {});
       } catch (error) {
         console.log('[SoundService] Web audio play error:', error);
       }
       return;
     }
 
-    if (!this.isLoaded || !this.clickSound) {
+    if (!this.isLoaded) {
       await this.initialize();
     }
 
     try {
+      await this.ensureClickSound();
       await this.clickSound?.replayAsync();
     } catch (error) {
       console.log('[SoundService] Click sound error:', error);
+      this.clickSound = null;
     }
   }
 
@@ -63,21 +86,23 @@ class SoundService {
       try {
         const audio = new window.Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         audio.volume = 0.7;
-        await audio.play();
+        audio.play().catch(() => {});
       } catch (error) {
         console.log('[SoundService] Web audio play error:', error);
       }
       return;
     }
 
-    if (!this.isLoaded || !this.completionSound) {
+    if (!this.isLoaded) {
       await this.initialize();
     }
 
     try {
+      await this.ensureCompletionSound();
       await this.completionSound?.replayAsync();
     } catch (error) {
       console.log('[SoundService] Completion sound error:', error);
+      this.completionSound = null;
     }
   }
 

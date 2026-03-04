@@ -3,17 +3,13 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Platform, UIManager } from 'react-native';
+
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AppProviders } from '@/components/AppProviders';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 SplashScreen.preventAutoHideAsync();
-
-if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental?.(true);
-}
 
 function RootLayoutNav() {
   const { t } = useLanguageStore();

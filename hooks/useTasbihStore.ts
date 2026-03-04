@@ -472,30 +472,31 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
   }, [tasbihItems]);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSaveDataRef = useRef<string>('');
+  const dataVersionRef = useRef<number>(0);
+  const isLoadingRef = useRef<boolean>(true);
+  isLoadingRef.current = isLoading;
 
   useEffect(() => {
-    if (!isLoading) {
-      const currentData = JSON.stringify({ tasbihItems, settings, stats, selectedItemId });
-      
-      if (currentData !== lastSaveDataRef.current) {
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
-        
-        saveTimeoutRef.current = setTimeout(() => {
-          lastSaveDataRef.current = currentData;
-          saveData().catch(err => console.error('Auto-save error:', err));
-        }, 1000);
-      }
+    if (isLoadingRef.current) return;
+    dataVersionRef.current += 1;
+    const version = dataVersionRef.current;
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
-    
+
+    saveTimeoutRef.current = setTimeout(() => {
+      if (version === dataVersionRef.current) {
+        saveData().catch(err => console.error('Auto-save error:', err));
+      }
+    }, 2000);
+
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [tasbihItems, settings, stats, selectedItemId, isLoading, saveData]);
+  }, [tasbihItems, settings, stats, selectedItemId, saveData]);
 
 
 

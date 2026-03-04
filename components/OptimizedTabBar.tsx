@@ -94,22 +94,22 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
     const middleIndex = Math.floor(state.routes.length / 2);
     return state.routes.map((route: any, index: number) => ({
       route,
-      descriptor: descriptors[route.key],
       isFocused: state.index === index,
       key: route.key,
       isCenter: index === middleIndex,
     }));
-  }, [state.routes, state.index, descriptors]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.routes.length, state.index]);
 
   return (
     <View style={styles.wrapper} testID="optimized-tab-bar">
       <View style={[styles.tabBar, tabBarDynamicStyle]} testID="tab-bar-shell">
         <View style={styles.tabContainer}>
-          {tabs.map(({ route, descriptor, isFocused, key, isCenter }: any) => (
+          {tabs.map(({ route, isFocused, key, isCenter }: any) => (
             <TabItem
               key={key}
               route={route}
-              descriptor={descriptor}
+              descriptor={descriptors[route.key]}
               navigation={navigation}
               isFocused={isFocused}
               isCenter={isCenter}
