@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from 'react';
+import React, { useCallback, useMemo, useState, memo, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,10 +10,6 @@ import TasbihCard from '@/components/TasbihCard';
 import { useTheme } from '@/theme/ThemeProvider';
 
 import * as Haptics from 'expo-haptics';
-import { adTracker } from '@/utils/adTracking';
-import { adStrategy } from '@/utils/adStrategy';
-import AdBanner from '@/components/AdBanner';
-import VideoAd from '@/components/VideoAd';
 import { soundService } from '@/utils/soundService';
 
 // Memoized header component for better performance
@@ -33,25 +29,6 @@ const TasbihHeader = memo(() => {
 TasbihHeader.displayName = 'TasbihHeader';
 
 
-
-const islamicVideoAds = [
-  {
-    id: 'islamic-video-1',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    duration: 10
-  },
-  {
-    id: 'islamic-video-2',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-    duration: 10
-  },
-  {
-    id: 'islamic-video-3',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    duration: 10
-  }
-];
-
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
@@ -59,24 +36,12 @@ export default function TasbihScreen() {
   const theme = useTheme();
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [showVideoAd, setShowVideoAd] = useState<boolean>(false);
-  const [currentVideoAd, setCurrentVideoAd] = useState<{ id: string; videoUrl: string; duration: number }>(islamicVideoAds[0]);
-  const lastAdShownRef = useRef<string | null>(null);
-  const [currentAd, setCurrentAd] = useState(adStrategy.getRandomBannerAd());
 
   useEffect(() => {
-    console.log('[TasbihScreen] Screen mounted - tracking KPI');
-    adTracker.trackImpression('tasbih-screen', 'tasbih', 'screen-view');
-    
-    const adRefreshInterval = setInterval(() => {
-      setCurrentAd(adStrategy.getRandomBannerAd());
-      console.log('[TasbihScreen] Banner ad refreshed');
-    }, 45000);
-    
+    console.log('[TasbihScreen] Screen mounted');
     soundService.initialize();
 
     return () => {
-      clearInterval(adRefreshInterval);
       soundService.unload();
     };
   }, []);
@@ -113,7 +78,6 @@ export default function TasbihScreen() {
   const handleIncrement = useCallback(() => {
     if (selectedItem) {
       console.log(`[TasbihScreen] Increment count for: ${selectedItem.id}`);
-      adTracker.trackClick(`increment-${selectedItem.id}`, 'tasbih', 'counter-button');
       
       if (settings.vibrationEnabled && Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(e => console.log('Haptic error', e));
@@ -134,26 +98,6 @@ export default function TasbihScreen() {
         if (settings.vibrationEnabled && Platform.OS !== 'web') {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(e => console.log('Haptic error', e));
         }
-
-        const adKey = `${selectedItem.id}-${Date.now()}`;
-        if (lastAdShownRef.current !== adKey) {
-          console.log('[TasbihScreen] Dhikr completed - showing video ad');
-          lastAdShownRef.current = adKey;
-          setTimeout(() => {
-            try {
-              const randomVideoAd = islamicVideoAds[Math.floor(Math.random() * islamicVideoAds.length)];
-              if (randomVideoAd && randomVideoAd.videoUrl) {
-                console.log(`[TasbihScreen] Selected video ad: ${randomVideoAd.id}`);
-                setCurrentVideoAd(randomVideoAd);
-                setShowVideoAd(true);
-              } else {
-                console.log('[TasbihScreen] Invalid video ad selected');
-              }
-            } catch (error) {
-              console.error('[TasbihScreen] Error showing video ad:', error);
-            }
-          }, 800);
-        }
       }
     }
   }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled]);
@@ -161,7 +105,6 @@ export default function TasbihScreen() {
   const handleDecrement = useCallback(() => {
     if (selectedItem && selectedItem.count > 0) {
       console.log(`[TasbihScreen] Decrement count for: ${selectedItem.id}`);
-      adTracker.trackClick(`decrement-${selectedItem.id}`, 'tasbih', 'undo-button');
       
       if (settings.vibrationEnabled && Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(e => console.log('Haptic error', e));
@@ -178,7 +121,6 @@ export default function TasbihScreen() {
   const handleReset = useCallback(() => {
     if (selectedItem) {
       console.log(`[TasbihScreen] Reset counter for: ${selectedItem.id}`);
-      adTracker.trackClick(`reset-${selectedItem.id}`, 'tasbih', 'reset-button');
       if (Platform.OS === 'web') {
         const confirmed = confirm(t('resetCounterConfirm', { dhikr: selectedItem.arabicText }));
         if (confirmed) {
@@ -207,7 +149,6 @@ export default function TasbihScreen() {
 
   const handleSelectItem = useCallback(async (itemId: string) => {
     console.log(`[TasbihScreen] Selected item: ${itemId}`);
-    adTracker.trackClick(`select-${itemId}`, 'tasbih', 'tasbih-card');
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try {
         await Haptics.selectionAsync();
@@ -220,7 +161,6 @@ export default function TasbihScreen() {
 
   const handleDeleteTasbih = useCallback((itemId: string) => {
     console.log(`[TasbihScreen] Delete tasbih: ${itemId}`);
-    adTracker.trackClick(`delete-${itemId}`, 'tasbih', 'delete-button');
     deleteTasbih(itemId);
     
     if (settings.hapticFeedback && Platform.OS !== 'web') {
@@ -234,7 +174,6 @@ export default function TasbihScreen() {
 
   const handleRestoreTasbih = useCallback((itemId: string) => {
     console.log(`[TasbihScreen] Restore tasbih: ${itemId}`);
-    adTracker.trackClick(`restore-${itemId}`, 'tasbih', 'restore-button');
     restoreTasbih(itemId);
     
     if (settings.hapticFeedback && Platform.OS !== 'web') {
@@ -250,7 +189,6 @@ export default function TasbihScreen() {
 
   const handleAddTasbih = useCallback(() => {
     console.log('[TasbihScreen] Add new tasbih clicked');
-    adTracker.trackClick('add-new-tasbih', 'tasbih', 'add-button');
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try {
         Haptics.selectionAsync();
@@ -268,7 +206,6 @@ export default function TasbihScreen() {
     }
     
     console.log('[TasbihScreen] Saving new custom tasbih');
-    adTracker.trackClick('save-custom-tasbih', 'tasbih', 'save-button');
     
     addCustomTasbih({
       arabicText: newTasbih.arabicText.trim(),
@@ -499,35 +436,6 @@ export default function TasbihScreen() {
           </View>
         </View>
       </View>
-
-      {/* Fixed Ad Banner at Bottom */}
-      <View style={styles.fixedAdContainer}>
-        <AdBanner
-          imageUrl={currentAd.imageUrl}
-          headline={currentAd.headline}
-          cta={currentAd.cta}
-          destinationUrl={currentAd.destinationUrl}
-          variant={theme.mode === 'dark' ? 'dark' : 'light'}
-          height={80}
-          testID="tasbih-islamic-ad"
-        />
-      </View>
-
-      {/* Video Ad Modal */}
-      {currentVideoAd && (
-        <VideoAd
-          visible={showVideoAd}
-          onClose={() => {
-            console.log('[TasbihScreen] Closing video ad');
-            setShowVideoAd(false);
-          }}
-          adId={currentVideoAd.id}
-          videoUrl={currentVideoAd.videoUrl}
-          duration={currentVideoAd.duration}
-          autoClose={true}
-          testID="tasbih-video-ad"
-        />
-      )}
 
       {/* Add Tasbih Modal */}
       <Modal
@@ -956,14 +864,6 @@ const styles = StyleSheet.create({
   selectedColor: {
     borderColor: '#FFFFFF',
     borderWidth: 3,
-  },
-  fixedAdContainer: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    elevation: 10,
   },
   completionModalContainer: {
     flex: 1,

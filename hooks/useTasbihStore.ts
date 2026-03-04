@@ -1,29 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Storage abstraction for cross-platform compatibility
-const storage = {
-  getItem: async (key: string): Promise<string | null> => {
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        return window.localStorage.getItem(key);
-      }
-      return null;
-    }
-    return await AsyncStorage.getItem(key);
-  },
-  setItem: async (key: string, value: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(key, value);
-      }
-      return;
-    }
-    await AsyncStorage.setItem(key, value);
-  },
-};
 
 export interface TasbihItem {
   id: string;
@@ -196,7 +173,7 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
     try {
       setIsLoading(true);
       
-      const storedSettings = await storage.getItem(STORAGE_KEYS.SETTINGS);
+      const storedSettings = await AsyncStorage.getItem(STORAGE_KEYS.SETTINGS);
       
       if (storedSettings) {
         try {
@@ -208,9 +185,9 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
       }
       
       const [storedItems, storedStats, storedSelectedId] = await Promise.all([
-        storage.getItem(STORAGE_KEYS.TASBIH_ITEMS),
-        storage.getItem(STORAGE_KEYS.STATS),
-        storage.getItem(STORAGE_KEYS.SELECTED_ITEM),
+        AsyncStorage.getItem(STORAGE_KEYS.TASBIH_ITEMS),
+        AsyncStorage.getItem(STORAGE_KEYS.STATS),
+        AsyncStorage.getItem(STORAGE_KEYS.SELECTED_ITEM),
       ]);
 
       if (storedItems) {
@@ -247,10 +224,10 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
   const saveData = useCallback(async () => {
     try {
       await Promise.all([
-        storage.setItem(STORAGE_KEYS.TASBIH_ITEMS, JSON.stringify(tasbihItems)),
-        storage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings)),
-        storage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats)),
-        storage.setItem(STORAGE_KEYS.SELECTED_ITEM, selectedItemId),
+        AsyncStorage.setItem(STORAGE_KEYS.TASBIH_ITEMS, JSON.stringify(tasbihItems)),
+        AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings)),
+        AsyncStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats)),
+        AsyncStorage.setItem(STORAGE_KEYS.SELECTED_ITEM, selectedItemId),
       ]);
     } catch (error) {
       console.error('Error saving tasbih data:', error);
@@ -414,10 +391,10 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
       };
       
       await Promise.all([
-        storage.setItem(STORAGE_KEYS.TASBIH_ITEMS, JSON.stringify(DEFAULT_TASBIH_ITEMS)),
-        storage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(resetSettings)),
-        storage.setItem(STORAGE_KEYS.STATS, JSON.stringify(DEFAULT_STATS)),
-        storage.setItem(STORAGE_KEYS.SELECTED_ITEM, '1'),
+        AsyncStorage.setItem(STORAGE_KEYS.TASBIH_ITEMS, JSON.stringify(DEFAULT_TASBIH_ITEMS)),
+        AsyncStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(resetSettings)),
+        AsyncStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(DEFAULT_STATS)),
+        AsyncStorage.setItem(STORAGE_KEYS.SELECTED_ITEM, '1'),
       ]);
     } catch (error) {
       console.error('Error resetting all data:', error);

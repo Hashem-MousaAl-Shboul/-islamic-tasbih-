@@ -1,28 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Platform } from 'react-native';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const storage = {
-  getItem: async (key: string): Promise<string | null> => {
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        return window.localStorage.getItem(key);
-      }
-      return null;
-    }
-    return await AsyncStorage.getItem(key);
-  },
-  setItem: async (key: string, value: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(key, value);
-      }
-      return;
-    }
-    await AsyncStorage.setItem(key, value);
-  },
-};
 
 interface FavoritesStore {
   favorites: Set<string>;
@@ -39,7 +17,7 @@ export const [FavoritesProvider, useFavoritesStore] = createContextHook<Favorite
   useEffect(() => {
     const loadFavorites = async () => {
       try {
-        const storedFavorites = await storage.getItem(STORAGE_KEY);
+        const storedFavorites = await AsyncStorage.getItem(STORAGE_KEY);
         if (storedFavorites) {
           const favoritesArray = JSON.parse(storedFavorites);
           setFavorites(new Set(favoritesArray));
@@ -56,7 +34,7 @@ export const [FavoritesProvider, useFavoritesStore] = createContextHook<Favorite
   const saveFavorites = useCallback(async (newFavorites: Set<string>) => {
     try {
       const favoritesArray = Array.from(newFavorites);
-      await storage.setItem(STORAGE_KEY, JSON.stringify(favoritesArray));
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(favoritesArray));
       console.log('[FavoritesStore] Saved favorites:', favoritesArray.length);
     } catch (error) {
       console.error('[FavoritesStore] Error saving favorites:', error);

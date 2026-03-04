@@ -10,8 +10,6 @@ import { Sparkles, Sun, Moon, Clock, Heart, Star, Play, Share2, MoonStar, Sunris
 import { useTheme } from '@/theme/ThemeProvider';
 
 import * as Haptics from 'expo-haptics';
-import { adTracker } from '@/utils/adTracking';
-import AdBanner from '@/components/AdBanner';
 
 
 console.log('[AdhkarScreen] module loaded');
@@ -520,8 +518,7 @@ export default function AdhkarScreen() {
 
 
   useEffect(() => {
-    console.log('[AdhkarScreen] Screen mounted - tracking KPI');
-    adTracker.trackImpression('adhkar-screen', 'adhkar', 'screen-view');
+    console.log('[AdhkarScreen] Screen mounted');
   }, []);
 
   const filteredAdhkar = useMemo(() => {
@@ -588,7 +585,6 @@ export default function AdhkarScreen() {
     };
     
     console.log(`[AdhkarScreen] Starting tasbih for: ${item.id}`);
-    adTracker.trackClick(`start-tasbih-${item.id}`, 'adhkar', 'add-to-tasbih-button');
     
     addCustomTasbih(tasbihDhikr);
     router.push('/tasbih');
@@ -609,7 +605,6 @@ export default function AdhkarScreen() {
       }
       
       console.log(`[AdhkarScreen] Shared adhkar: ${item.id}`);
-      adTracker.trackClick(`share-adhkar-${item.id}`, 'adhkar', 'share-button');
     } catch (error) {
       console.error('[AdhkarScreen] Share error:', error);
     }
@@ -637,7 +632,6 @@ export default function AdhkarScreen() {
     const next = filter;
     setSelectedFilter(next);
     console.log(`[AdhkarScreen] Filter changed to: ${filter}`);
-    adTracker.trackClick(`filter-${filter}`, 'adhkar', 'filter-button');
   }, []);
 
   const { t } = useLanguageStore();
@@ -681,18 +675,7 @@ export default function AdhkarScreen() {
             })}
           />
         </View>
-      {/* Fixed Ad Banner at Bottom */}
-      <View style={styles.fixedAdContainer}>
-        <AdBanner
-          imageUrl="https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=400&h=200&fit=crop"
-          headline={t('premiumIslamicContent')}
-          cta={t('explore')}
-          destinationUrl="https://www.islamicfinder.org/"
-          variant={theme.mode === 'dark' ? 'dark' : 'light'}
-          height={80}
-          testID="adhkar-bottom-ad"
-        />
-      </View>
+
       </ErrorBoundary>
     </View>
   );
@@ -1109,16 +1092,6 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
 
-  fixedAdContainer: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
-    borderTopWidth: 0,
-  },
   emptyIcon: {
     opacity: 0.7,
   },

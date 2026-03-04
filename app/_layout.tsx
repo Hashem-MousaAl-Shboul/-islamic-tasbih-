@@ -33,9 +33,7 @@ function RootLayoutNav() {
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     </>
@@ -43,41 +41,11 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [isReady, setIsReady] = React.useState<boolean>(false);
-
   useEffect(() => {
-    let hidden = false;
-    
-    const safeHide = async () => {
-      if (!hidden) {
-        hidden = true;
-        try {
-          await SplashScreen.hideAsync();
-        } catch (e) {
-          console.log('[RootLayout] hide splash error', e);
-        }
-      }
-    };
-
-    const initApp = () => {
-      setIsReady(true);
-      requestAnimationFrame(() => {
-        safeHide();
-      });
-    };
-    
-    const timeout = setTimeout(() => {
-      initApp();
-    }, 2000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
+    SplashScreen.hideAsync().catch(e => {
+      console.log('[RootLayout] hide splash error', e);
+    });
   }, []);
-
-  if (!isReady) {
-    return null;
-  }
 
   return (
     <AppProviders>
