@@ -26,67 +26,70 @@ const VideoAdComponent: React.FC<VideoAdProps> = ({
 }) => {
   const [timeRemaining, setTimeRemaining] = useState<number>(duration);
   const [canSkip, setCanSkip] = useState<boolean>(false);
-  const [hasTrackedImpression, setHasTrackedImpression] = useState<boolean>(false);
+  const hasTrackedImpressionRef = useRef<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const videoRef = useRef<Video>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   const handleClose = useCallback(() => {
     console.log(`[VideoAd] Closing video ad: ${adId}`);
     adTracker.trackClick(`close-${adId}`, 'tasbih', 'video-ad-close');
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-    onClose();
-  }, [adId, onClose]);
+    onCloseRef.current();
+  }, [adId]);
 
   useEffect(() => {
-    if (visible) {
-      console.log(`[VideoAd] Video ad displayed: ${adId}`);
-      setTimeRemaining(duration);
-      setCanSkip(false);
-      setIsLoading(true);
-      
-      if (!hasTrackedImpression) {
-        console.log(`[VideoAd] Tracking impression for: ${adId}`);
-        adTracker.trackImpression(adId, 'tasbih', 'video-ad');
-        setHasTrackedImpression(true);
-      }
-
-      timerRef.current = setInterval(() => {
-        setTimeRemaining(prev => {
-          const newTime = prev - 1;
-          console.log(`[VideoAd] Timer update: ${newTime}s remaining`);
-          
-          if (newTime <= 0) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-            setCanSkip(true);
-            if (autoClose) {
-              console.log(`[VideoAd] Auto-closing video ad: ${adId}`);
-              setTimeout(() => {
-                handleClose();
-              }, 500);
-            }
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-
-      return () => {
-        console.log(`[VideoAd] Cleaning up timer for: ${adId}`);
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-      };
-    } else {
-      setHasTrackedImpression(false);
+    if (!visible) {
+      hasTrackedImpressionRef.current = false;
+      return;
     }
-  }, [visible, duration, adId, autoClose, handleClose]);
+
+    console.log(`[VideoAd] Video ad displayed: ${adId}`);
+    setTimeRemaining(duration);
+    setCanSkip(false);
+    setIsLoading(true);
+
+    if (!hasTrackedImpressionRef.current) {
+      console.log(`[VideoAd] Tracking impression for: ${adId}`);
+      adTracker.trackImpression(adId, 'tasbih', 'video-ad');
+      hasTrackedImpressionRef.current = true;
+    }
+
+    timerRef.current = setInterval(() => {
+      setTimeRemaining(prev => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          setCanSkip(true);
+          if (autoClose) {
+            console.log(`[VideoAd] Auto-closing video ad: ${adId}`);
+            setTimeout(() => {
+              onCloseRef.current();
+            }, 500);
+          }
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      console.log(`[VideoAd] Cleaning up timer for: ${adId}`);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [visible, duration, adId, autoClose]);
 
   const onPlaybackStatusUpdate = useCallback((status: AVPlaybackStatus) => {
     if ('isLoaded' in status && status.isLoaded) {

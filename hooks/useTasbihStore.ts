@@ -198,16 +198,14 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
       
       const storedSettings = await storage.getItem(STORAGE_KEYS.SETTINGS);
       
-      requestAnimationFrame(() => {
-        if (storedSettings) {
-          try {
-            const parsedSettings = JSON.parse(storedSettings);
-            setSettings({ ...DEFAULT_SETTINGS, ...parsedSettings });
-          } catch (e) {
-            console.error('Error parsing settings:', e);
-          }
+      if (storedSettings) {
+        try {
+          const parsedSettings = JSON.parse(storedSettings);
+          setSettings({ ...DEFAULT_SETTINGS, ...parsedSettings });
+        } catch (e) {
+          console.error('Error parsing settings:', e);
         }
-      });
+      }
       
       const [storedItems, storedStats, storedSelectedId] = await Promise.all([
         storage.getItem(STORAGE_KEYS.TASBIH_ITEMS),
@@ -215,38 +213,34 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
         storage.getItem(STORAGE_KEYS.SELECTED_ITEM),
       ]);
 
-      requestAnimationFrame(() => {
-        if (storedItems) {
-          try {
-            const parsedItems = JSON.parse(storedItems);
-            if (parsedItems && parsedItems.length > 0) {
-              setTasbihItems(parsedItems);
-            }
-          } catch (e) {
-            console.error('Error parsing items:', e);
+      if (storedItems) {
+        try {
+          const parsedItems = JSON.parse(storedItems);
+          if (parsedItems && parsedItems.length > 0) {
+            setTasbihItems(parsedItems);
           }
+        } catch (e) {
+          console.error('Error parsing items:', e);
         }
+      }
 
-        if (storedStats) {
-          try {
-            const parsedStats = JSON.parse(storedStats);
-            setStats({ ...DEFAULT_STATS, ...parsedStats });
-          } catch (e) {
-            console.error('Error parsing stats:', e);
-          }
+      if (storedStats) {
+        try {
+          const parsedStats = JSON.parse(storedStats);
+          setStats({ ...DEFAULT_STATS, ...parsedStats });
+        } catch (e) {
+          console.error('Error parsing stats:', e);
         }
+      }
 
-        if (storedSelectedId) {
-          setSelectedItemId(storedSelectedId);
-        }
-        
-        setIsLoading(false);
-      });
+      if (storedSelectedId) {
+        setSelectedItemId(storedSelectedId);
+      }
+      
+      setIsLoading(false);
     } catch (error) {
       console.error('Error loading tasbih data:', error);
-      requestAnimationFrame(() => {
-        setIsLoading(false);
-      });
+      setIsLoading(false);
     }
   }, []);
 

@@ -2,25 +2,42 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import i18n from '@/constants/translations';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    priority: Notifications.AndroidNotificationPriority.HIGH,
-  }),
-});
+let _notificationHandlerSet = false;
+let _channelSetup = false;
 
-if (Platform.OS === 'android') {
-  Notifications.setNotificationChannelAsync('daily-reminder', {
-    name: 'Daily Reminders',
-    importance: Notifications.AndroidImportance.HIGH,
-    sound: 'default',
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#1a5c4c',
-  }).catch((err) => console.warn('[NotificationService] Channel setup error:', err));
+function ensureNotificationHandler() {
+  if (_notificationHandlerSet) return;
+  _notificationHandlerSet = true;
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+    console.log('[NotificationService] Handler set successfully');
+  } catch (e) {
+    console.warn('[NotificationService] Handler setup error:', e);
+  }
+}
+
+function ensureAndroidChannel() {
+  if (_channelSetup || Platform.OS !== 'android') return;
+  _channelSetup = true;
+  try {
+    Notifications.setNotificationChannelAsync('daily-reminder', {
+      name: 'Daily Reminders',
+      importance: Notifications.AndroidImportance.HIGH,
+      sound: 'default',
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#1a5c4c',
+    }).catch((err) => console.warn('[NotificationService] Channel setup error:', err));
+  } catch (e) {
+    console.warn('[NotificationService] Channel creation error:', e);
+  }
 }
 
 export const notificationService = {
@@ -52,8 +69,10 @@ export const notificationService = {
   async scheduleDailyReminder(enabled: boolean, hour: number = 20, minute: number = 0) {
     if (Platform.OS === 'web') return;
 
+    ensureNotificationHandler();
+    ensureAndroidChannel();
+
     try {
-      // Cancel all existing notifications first
       await Notifications.cancelAllScheduledNotificationsAsync();
 
       if (enabled) {

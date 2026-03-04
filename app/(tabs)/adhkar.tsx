@@ -447,6 +447,21 @@ const AdhkarHeader = memo<{ selectedFilter: FilterType; onFilterChange: (filter:
 
 AdhkarHeader.displayName = 'AdhkarHeader';
 
+const EmptyStateComponent = memo(function EmptyStateComponent() {
+  const { t } = useLanguageStore();
+  return (
+    <View style={styles.emptyContainer} testID="adhkar-empty">
+      <View style={styles.emptyCard}>
+        <View style={styles.emptyIcon}>
+          <Sparkles size={48} color="#F59E0B" />
+        </View>
+        <Text style={styles.emptyTitle}>{t('noAdhkarInCategory')}</Text>
+        <Text style={styles.emptySubtitle}>{t('tryAnotherCategory')}</Text>
+      </View>
+    </View>
+  );
+});
+
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   t: (key: string) => string;
@@ -624,23 +639,6 @@ export default function AdhkarScreen() {
     console.log(`[AdhkarScreen] Filter changed to: ${filter}`);
     adTracker.trackClick(`filter-${filter}`, 'adhkar', 'filter-button');
   }, []);
-
-  const EmptyStateComponent = memo(() => {
-    const { t } = useLanguageStore();
-    return (
-      <View style={styles.emptyContainer} testID="adhkar-empty">
-        <View style={styles.emptyCard}>
-          <View style={styles.emptyIcon}>
-            <Sparkles size={48} color="#F59E0B" />
-          </View>
-          <Text style={styles.emptyTitle}>{t('noAdhkarInCategory')}</Text>
-          <Text style={styles.emptySubtitle}>{t('tryAnotherCategory')}</Text>
-        </View>
-      </View>
-    );
-  });
-
-  EmptyStateComponent.displayName = 'EmptyStateComponent';
 
   const { t } = useLanguageStore();
   

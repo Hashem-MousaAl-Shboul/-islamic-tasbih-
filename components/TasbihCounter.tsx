@@ -1,34 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { Plus, RotateCcw } from 'lucide-react-native';
 
 const TasbihCounter = () => {
-    const [count, setCount] = useState(0);
-    const [soundEnabled, setSoundEnabled] = useState(true);
-    const [vibrationEnabled, setVibrationEnabled] = useState(true);
-    const [timerActive, setTimerActive] = useState(false);
+    const [count, setCount] = useState<number>(0);
     const progressAnim = useState(new Animated.Value(0))[0];
 
-    const incrementCount = () => {
-        setCount(count + 1);
-        if (soundEnabled) {
-            // Play sound
-        }
-        if (vibrationEnabled) {
-            // Trigger vibration
-        }
-        // Progress animation
-        Animated.timing(progressAnim, {
-            toValue: (count + 1) / 100,
-            duration: 300,
-            useNativeDriver: false,
-        }).start();
-    };
+    const incrementCount = useCallback(() => {
+        setCount(prev => {
+            const next = prev + 1;
+            Animated.timing(progressAnim, {
+                toValue: next / 100,
+                duration: 300,
+                useNativeDriver: false,
+            }).start();
+            return next;
+        });
+    }, [progressAnim]);
 
-    const resetCounter = () => {
+    const resetCounter = useCallback(() => {
         setCount(0);
         progressAnim.setValue(0);
-    };
+    }, [progressAnim]);
 
     return (
         <View style={styles.container}>
@@ -36,10 +29,10 @@ const TasbihCounter = () => {
             <Text style={styles.count}>{count}</Text>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.button} onPress={incrementCount}>
-                    <Icon name="plus" size={30} color="white" />
+                    <Plus size={30} color="white" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={resetCounter}>
-                    <Icon name="refresh" size={30} color="white" />
+                    <RotateCcw size={30} color="white" />
                 </TouchableOpacity>
             </View>
         </View>
@@ -49,9 +42,9 @@ const TasbihCounter = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'linear-gradient(to right, #FF7E5F, #FEB47B)',
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+        backgroundColor: '#FF7E5F',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
@@ -62,15 +55,15 @@ const styles = StyleSheet.create({
         height: 200,
         borderRadius: 100,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        position: 'absolute',
+        position: 'absolute' as const,
     },
     count: {
         fontSize: 40,
-        fontWeight: 'bold',
+        fontWeight: 'bold' as const,
         color: '#ffffff',
     },
     buttonContainer: {
-        flexDirection: 'row',
+        flexDirection: 'row' as const,
         marginTop: 20,
     },
     button: {

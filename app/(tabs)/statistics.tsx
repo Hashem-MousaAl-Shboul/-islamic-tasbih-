@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useCallback, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, StatusBar, TouchableOpacity, Dimensions, Platform, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   BarChart3,
@@ -175,7 +175,6 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
   return (
     <View style={styles.container} testID="statistics-screen">
-      <StatusBar barStyle="light-content" backgroundColor="#1a5c4c" />
       
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerContent}>
