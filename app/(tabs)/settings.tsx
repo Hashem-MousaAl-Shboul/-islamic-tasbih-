@@ -249,8 +249,9 @@ export default function SettingsScreen() {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
+        overScrollMode="never"
       >
         <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('appearance')}
@@ -485,8 +486,9 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
       },
       android: {
-        elevation: 2,
+        elevation: 1,
       },
+      default: {},
     }),
   },
   divider: {

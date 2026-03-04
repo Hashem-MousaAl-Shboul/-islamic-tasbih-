@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Platform } from 'react-native';
-import { Video, ResizeMode, AVPlaybackStatus, AVPlaybackStatusSuccess } from 'expo-av';
+import { Video, AVPlaybackStatus, AVPlaybackStatusSuccess } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import { X } from 'lucide-react-native';
 import { adTracker } from '@/utils/adTracking';
@@ -159,7 +159,7 @@ const VideoAdComponent: React.FC<VideoAdProps> = ({
                 source={{ uri: videoUrl }}
                 style={styles.video}
                 useNativeControls={false}
-                resizeMode={ResizeMode.CONTAIN}
+                resizeMode={'contain' as any}
                 shouldPlay={visible}
                 isLooping={false}
                 volume={1.0}

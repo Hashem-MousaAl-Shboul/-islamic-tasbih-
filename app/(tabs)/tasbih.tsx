@@ -391,7 +391,7 @@ export default function TasbihScreen() {
 
 
       {/* Main Content */}
-      <View style={[styles.mainContent, { paddingBottom: 90 }]}>
+      <View style={[styles.mainContent, { paddingBottom: Platform.OS === 'android' ? 100 : 90 }]}>
         {/* Current Dhikr Display */}
         <View style={[styles.dhikrDisplay, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.mainArabicText, { color: theme.text }]}>{selectedItem.arabicText}</Text>
@@ -719,6 +719,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'transparent',
     paddingVertical: 12,
+    overflow: 'hidden',
   },
   dhikrDisplay: {
     alignItems: 'center',
@@ -730,7 +731,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
-    width: '100%',
+    alignSelf: 'stretch',
   },
   mainArabicText: {
     fontSize: 18,
@@ -741,7 +742,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     paddingHorizontal: 8,
     alignSelf: 'stretch',
-    writingDirection: 'rtl',
   },
   transliterationText: {
     fontSize: 13,
@@ -962,10 +962,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
-    borderTopWidth: 0,
+    zIndex: 10,
+    elevation: 10,
   },
   completionModalContainer: {
     flex: 1,
