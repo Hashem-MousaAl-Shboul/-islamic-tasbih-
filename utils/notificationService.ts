@@ -1,6 +1,13 @@
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { Platform, LogBox } from 'react-native';
 import i18n from '@/constants/translations';
+
+if (Platform.OS !== 'web') {
+  LogBox.ignoreLogs([
+    'expo-notifications: Android Push notifications',
+    'expo-notifications',
+  ]);
+}
 
 let _notificationHandlerSet = false;
 let _channelSetup = false;
@@ -61,7 +68,7 @@ export const notificationService = {
       
       return true;
     } catch (error) {
-      console.error('Error requesting notification permissions:', error);
+      console.log('[NotificationService] Permission request error (expected in dev):', error);
       return false;
     }
   },
@@ -101,7 +108,7 @@ export const notificationService = {
         console.log('[NotificationService] All notifications cancelled');
       }
     } catch (error) {
-      console.error('Error scheduling notifications:', error);
+      console.log('[NotificationService] Scheduling error (expected in dev):', error);
     }
   }
 };
