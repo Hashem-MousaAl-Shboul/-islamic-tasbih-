@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +15,7 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useAuth } from '@/hooks/useAuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { LogIn } from 'lucide-react-native';
+import { notificationService } from '@/utils/notificationService';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -21,12 +23,25 @@ export default function LoginScreen() {
   const { signInWithGoogle, isLoading } = useAuth();
   const tokens = useTheme();
 
+  const requestNotificationPermission = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      try {
+        await notificationService.registerForPushNotificationsAsync();
+        console.log('[Login] Notification permission requested');
+      } catch (error) {
+        console.log('[Login] Notification permission error:', error);
+      }
+    }
+  }, []);
+
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
+    await requestNotificationPermission();
     router.replace('/(tabs)/tasbih');
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    await requestNotificationPermission();
     router.replace('/(tabs)/tasbih');
   };
 

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useAuth } from '@/hooks/useAuthStore';
 import { LogIn } from 'lucide-react-native';
+import { notificationService } from '@/utils/notificationService';
 
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
 
@@ -23,26 +25,39 @@ export default function WelcomeScreen() {
   const { signInWithGoogle, isLoading } = useAuth();
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
 
+  const requestNotificationPermission = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      try {
+        await notificationService.registerForPushNotificationsAsync();
+        console.log('[Welcome] Notification permission requested');
+      } catch (error) {
+        console.log('[Welcome] Notification permission error:', error);
+      }
+    }
+  }, []);
+
   const handleContinue = useCallback(async () => {
     try {
       setIsNavigating(true);
       await AsyncStorage.setItem(WELCOME_SEEN_KEY, 'true');
+      await requestNotificationPermission();
       router.replace('/(tabs)/tasbih');
     } catch (error) {
       console.error('Error saving welcome status:', error);
       router.replace('/(tabs)/tasbih');
     }
-  }, [router]);
+  }, [router, requestNotificationPermission]);
 
   const handleGoogleSignIn = useCallback(async () => {
     try {
       await AsyncStorage.setItem(WELCOME_SEEN_KEY, 'true');
       await signInWithGoogle();
+      await requestNotificationPermission();
       router.replace('/(tabs)/tasbih');
     } catch (error) {
       console.error('Error during sign in:', error);
     }
-  }, [router, signInWithGoogle]);
+  }, [router, signInWithGoogle, requestNotificationPermission]);
 
   return (
     <View style={styles.backgroundImage}>
