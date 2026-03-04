@@ -29,8 +29,7 @@ export interface TasbihSettings {
   hapticFeedback: boolean;
   completionSound: boolean;
   dailyGoal: number;
-  reminderEnabled: boolean;
-  reminderTime: string;
+
   animationsEnabled: boolean;
   fontSize: 'small' | 'medium' | 'large';
   reducedMotion: boolean;
@@ -140,8 +139,7 @@ const DEFAULT_SETTINGS: TasbihSettings = {
   hapticFeedback: true,
   completionSound: true,
   dailyGoal: 300,
-  reminderEnabled: false,
-  reminderTime: '20:00',
+
   animationsEnabled: true,
   fontSize: 'medium',
   reducedMotion: false,
@@ -382,7 +380,6 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
         ...DEFAULT_SETTINGS,
         vibrationEnabled: true,
         soundEnabled: true,
-        reminderEnabled: false,
         theme: 'dark' as const,
         colorTheme: 'gold' as const,
         animationsEnabled: true,

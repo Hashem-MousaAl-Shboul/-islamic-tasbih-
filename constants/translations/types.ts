@@ -11,7 +11,6 @@ export interface TranslationKeys {
   wakeupAdhkar: string;
   language: string;
   vibration: string;
-  notifications: string;
   theme: string;
   about: string;
   contactUs: string;
@@ -94,7 +93,6 @@ export interface TranslationKeys {
   lightModeEnabled: string;
   vibrationOnTap: string;
   soundOnInteraction: string;
-  dailyReminders: string;
   colorTheme: string;
   blue: string;
   green: string;
@@ -227,14 +225,10 @@ export interface TranslationKeys {
   completedTimes: string;
   times: string;
   dhikrDetails: string;
-  reminderTime: string;
-  selectReminderTime: string;
   hour: string;
   minute: string;
   am: string;
   pm: string;
-  reminderScheduled: string;
-  reminderDisabled: string;
   buyCredits: string;
   creditsDescription: string;
   currentBalance: string;
