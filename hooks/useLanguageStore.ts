@@ -36,28 +36,23 @@ export const [LanguageProvider, useLanguageStore] = createContextHook(() => {
           }
         }
         
-        requestAnimationFrame(() => {
-          if (mounted) {
-            i18n.locale = languageToSet;
-            setCurrentLanguage(languageToSet);
-            setIsLoading(false);
-          }
-        });
+        if (mounted) {
+          i18n.locale = languageToSet;
+          setCurrentLanguage(languageToSet);
+          setIsLoading(false);
+          console.log('[LanguageStore] Language loaded:', languageToSet);
+        }
       } catch (error) {
         console.error('Error loading saved language:', error);
         if (mounted) {
-          requestAnimationFrame(() => {
-            i18n.locale = 'ar';
-            setCurrentLanguage('ar');
-            setIsLoading(false);
-          });
+          i18n.locale = 'ar';
+          setCurrentLanguage('ar');
+          setIsLoading(false);
         }
       }
     };
     
-    requestIdleCallback(() => {
-      loadSavedLanguage();
-    }, { timeout: 100 });
+    loadSavedLanguage();
     
     return () => {
       mounted = false;

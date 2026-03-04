@@ -29,13 +29,19 @@ async function initRevenueCat() {
     return;
   }
   try {
-    const mod = await import('react-native-purchases');
-    Purchases = mod.default;
-    Purchases.configure({ apiKey });
-    rcConfigured = true;
-    console.log('[RevenueCat] Configured successfully');
+    const timeoutPromise = new Promise<null>((_, reject) => 
+      setTimeout(() => reject(new Error('RevenueCat init timeout')), 5000)
+    );
+    const importPromise = import('react-native-purchases').then(mod => {
+      Purchases = mod.default;
+      Purchases.configure({ apiKey });
+      rcConfigured = true;
+      console.log('[RevenueCat] Configured successfully');
+      return true;
+    });
+    await Promise.race([importPromise, timeoutPromise]);
   } catch (e) {
-    console.log('[RevenueCat] Configuration error:', e);
+    console.log('[RevenueCat] Configuration error (non-blocking):', e);
   }
 }
 
