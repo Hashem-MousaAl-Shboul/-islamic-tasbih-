@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import * as Haptics from 'expo-haptics';
 
+
 interface TabItemProps {
   route: any;
   descriptor: any;
@@ -16,34 +17,25 @@ interface TabItemProps {
 const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigation, isFocused, index, totalTabs }) {
   const theme = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const bgAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
-  const iconTranslate = useRef(new Animated.Value(isFocused ? -2 : 0)).current;
+  const focusAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
   const label = descriptor.options.tabBarLabel || descriptor.options.title || route.name;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(bgAnim, {
-        toValue: isFocused ? 1 : 0,
-        useNativeDriver: false,
-        tension: 80,
-        friction: 12,
-      }),
-      Animated.spring(iconTranslate, {
-        toValue: isFocused ? -2 : 0,
-        useNativeDriver: true,
-        tension: 80,
-        friction: 12,
-      }),
-    ]).start();
-  }, [isFocused, bgAnim, iconTranslate]);
+    Animated.spring(focusAnim, {
+      toValue: isFocused ? 1 : 0,
+      useNativeDriver: false,
+      tension: 65,
+      friction: 11,
+    }).start();
+  }, [isFocused, focusAnim]);
 
   const onPressIn = useCallback(() => {
     Animated.spring(scaleAnim, {
-      toValue: 0.88,
+      toValue: 0.85,
       useNativeDriver: true,
-      tension: 200,
-      friction: 10,
+      tension: 250,
+      friction: 8,
     }).start();
   }, [scaleAnim]);
 
@@ -51,7 +43,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
     Animated.spring(scaleAnim, {
       toValue: 1,
       useNativeDriver: true,
-      tension: 200,
+      tension: 180,
       friction: 10,
     }).start();
   }, [scaleAnim]);
@@ -72,21 +64,42 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
 
   const isDark = theme.mode === 'dark';
   const activeColor = theme.primary;
-  const inactiveColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)';
-  const iconColor = isFocused ? activeColor : inactiveColor;
+  const inactiveColor = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.32)';
+
+  const staticIconColor = isFocused ? activeColor : inactiveColor;
 
   const icon = descriptor.options.tabBarIcon
-    ? descriptor.options.tabBarIcon({ color: iconColor, size: 22 })
+    ? descriptor.options.tabBarIcon({ color: staticIconColor, size: 24 })
     : null;
 
-  const activeBg = bgAnim.interpolate({
+  const pillBg = focusAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['transparent', isDark ? `${activeColor}18` : `${activeColor}12`],
+    outputRange: ['transparent', isDark ? `${activeColor}20` : `${activeColor}14`],
   });
 
-  const labelOpacity = bgAnim.interpolate({
+  const pillWidth = focusAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.5, 1],
+    outputRange: [48, 72],
+  });
+
+  const pillHeight = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [48, 36],
+  });
+
+  const labelOpacity = focusAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.55, 0.8, 1],
+  });
+
+  const labelTranslateY = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -1],
+  });
+
+  const iconScale = focusAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.15, 1.1],
   });
 
   return (
@@ -99,23 +112,35 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
     >
       <Animated.View
         style={[
-          styles.tabPill,
+          styles.tabContent,
           {
-            backgroundColor: activeBg,
             transform: [{ scale: scaleAnim }],
           },
         ]}
       >
-        <Animated.View style={{ transform: [{ translateY: iconTranslate }] }}>
-          {icon}
+        <Animated.View
+          style={[
+            styles.iconPill,
+            {
+              backgroundColor: pillBg,
+              width: pillWidth,
+              height: pillHeight,
+            },
+          ]}
+        >
+          <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+            {icon}
+          </Animated.View>
         </Animated.View>
+
         <Animated.Text
           style={[
             styles.tabLabel,
             {
               color: isFocused ? activeColor : inactiveColor,
               opacity: labelOpacity,
-              fontWeight: isFocused ? '700' as const : '500' as const,
+              fontWeight: isFocused ? '700' as const : '400' as const,
+              transform: [{ translateY: labelTranslateY }],
             },
           ]}
           numberOfLines={1}
@@ -123,9 +148,6 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
         >
           {label}
         </Animated.Text>
-        {isFocused && (
-          <View style={[styles.activeDot, { backgroundColor: activeColor }]} />
-        )}
       </Animated.View>
     </Pressable>
   );
@@ -142,11 +164,11 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
   const theme = useTheme();
   const isDark = theme.mode === 'dark';
 
-  const bottomPad = Math.max(insets.bottom, 6);
+  const bottomPad = Math.max(insets.bottom, 8);
 
   const barStyle = useMemo(() => {
-    const bgColor = isDark ? 'rgba(20,27,45,0.92)' : 'rgba(255,255,255,0.94)';
-    const borderColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const bgColor = isDark ? 'rgba(15,20,36,0.96)' : 'rgba(255,255,255,0.97)';
+    const borderColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
 
     return {
       backgroundColor: bgColor,
@@ -193,57 +215,52 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 6,
+    paddingTop: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 12,
+        elevation: 16,
       },
       web: {
-        boxShadow: '0 -3px 12px rgba(0,0,0,0.06)',
+        boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
       } as any,
     }),
   },
   tabContainer: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'space-around' as const,
+    justifyContent: 'space-evenly' as const,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+    paddingVertical: 2,
   },
-  tabPill: {
+  tabContent: {
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    minWidth: 64,
-    gap: 2,
+    gap: 3,
+  },
+  iconPill: {
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderRadius: 18,
   },
   tabLabel: {
-    fontSize: 10,
+    fontSize: 11,
     textAlign: 'center' as const,
-    letterSpacing: 0.2,
-    marginTop: 2,
+    letterSpacing: 0.15,
     ...Platform.select({
       android: {
         includeFontPadding: false,
         textAlignVertical: 'center' as const,
       },
     }),
-  },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 3,
   },
 });
