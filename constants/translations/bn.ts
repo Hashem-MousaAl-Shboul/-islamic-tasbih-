@@ -237,4 +237,12 @@ export const bn: TranslationKeys = {
   pm: 'PM',
   reminderScheduled: 'স্মরণীয় নির্ধারিত',
   reminderDisabled: 'স্মরণীয় নিষ্ক্রিয়',
+  buyCredits: 'ক্রেডিট কিনুন',
+  creditsDescription: 'প্রিমিয়াম বৈশিষ্ট্য আনলক করতে ক্রেডিট ব্যবহার করুন',
+  currentBalance: 'বর্তমান ব্যালেন্স',
+  credits: 'ক্রেডিট',
+  bestValue: 'সেরা মূল্য',
+  oneTimePurchase: 'একবার কেনাকাটা',
+  buyNow: 'এখনই কিনুন',
+  restorePurchases: 'কেনাকাটা পুনরুদ্ধার করুন',
 };

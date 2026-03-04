@@ -237,4 +237,12 @@ export const ar: TranslationKeys = {
   pm: 'م',
   reminderScheduled: 'تم جدولة التذكير',
   reminderDisabled: 'تم إيقاف التذكير',
+  buyCredits: 'شراء رصيد',
+  creditsDescription: 'استخدم الرصيد لفتح الميزات المميزة',
+  currentBalance: 'الرصيد الحالي',
+  credits: 'رصيد',
+  bestValue: 'أفضل قيمة',
+  oneTimePurchase: 'شراء لمرة واحدة',
+  buyNow: 'اشترِ الآن',
+  restorePurchases: 'استعادة المشتريات',
 };

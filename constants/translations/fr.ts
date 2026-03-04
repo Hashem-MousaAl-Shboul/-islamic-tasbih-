@@ -237,4 +237,12 @@ export const fr: TranslationKeys = {
   pm: 'PM',
   reminderScheduled: 'Rappel programmé',
   reminderDisabled: 'Rappel désactivé',
+  buyCredits: 'Acheter des crédits',
+  creditsDescription: 'Utilisez les crédits pour débloquer les fonctionnalités premium',
+  currentBalance: 'Solde actuel',
+  credits: 'crédits',
+  bestValue: 'Meilleure offre',
+  oneTimePurchase: 'Achat unique',
+  buyNow: 'Acheter maintenant',
+  restorePurchases: 'Restaurer les achats',
 };

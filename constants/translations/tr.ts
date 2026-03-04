@@ -237,4 +237,12 @@ export const tr: TranslationKeys = {
   pm: 'ÖS',
   reminderScheduled: 'Hatırlatma planlandı',
   reminderDisabled: 'Hatırlatma devre dışı',
+  buyCredits: 'Kredi Satın Al',
+  creditsDescription: 'Premium özelliklerin kilidini açmak için kredi kullanın',
+  currentBalance: 'Mevcut Bakiye',
+  credits: 'kredi',
+  bestValue: 'En İyi Değer',
+  oneTimePurchase: 'Tek seferlik satın alma',
+  buyNow: 'Şimdi Satın Al',
+  restorePurchases: 'Satın Alımları Geri Yükle',
 };

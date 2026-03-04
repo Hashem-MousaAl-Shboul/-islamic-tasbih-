@@ -237,4 +237,12 @@ export const ms: TranslationKeys = {
   pm: 'PM',
   reminderScheduled: 'Peringatan dijadualkan',
   reminderDisabled: 'Peringatan dinyahaktifkan',
+  buyCredits: 'Beli Kredit',
+  creditsDescription: 'Gunakan kredit untuk membuka ciri premium',
+  currentBalance: 'Baki Semasa',
+  credits: 'kredit',
+  bestValue: 'Nilai Terbaik',
+  oneTimePurchase: 'Pembelian sekali',
+  buyNow: 'Beli Sekarang',
+  restorePurchases: 'Pulihkan Pembelian',
 };

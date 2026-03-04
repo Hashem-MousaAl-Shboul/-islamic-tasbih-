@@ -235,4 +235,12 @@ export interface TranslationKeys {
   pm: string;
   reminderScheduled: string;
   reminderDisabled: string;
+  buyCredits: string;
+  creditsDescription: string;
+  currentBalance: string;
+  credits: string;
+  bestValue: string;
+  oneTimePurchase: string;
+  buyNow: string;
+  restorePurchases: string;
 }

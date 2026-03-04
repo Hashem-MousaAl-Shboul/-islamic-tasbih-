@@ -237,4 +237,12 @@ export const en: TranslationKeys = {
   pm: 'PM',
   reminderScheduled: 'Reminder scheduled',
   reminderDisabled: 'Reminder disabled',
+  buyCredits: 'Buy Credits',
+  creditsDescription: 'Use credits to unlock premium features',
+  currentBalance: 'Current Balance',
+  credits: 'credits',
+  bestValue: 'Best Value',
+  oneTimePurchase: 'One-time purchase',
+  buyNow: 'Buy Now',
+  restorePurchases: 'Restore Purchases',
 };

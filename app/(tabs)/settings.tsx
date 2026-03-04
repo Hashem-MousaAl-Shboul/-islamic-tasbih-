@@ -26,6 +26,7 @@ import {
   Moon,
   Sun,
   Info,
+  Coins,
 } from 'lucide-react-native';
 import * as StoreReview from 'expo-store-review';
 import * as MailComposer from 'expo-mail-composer';
@@ -38,7 +39,9 @@ import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { SettingsItem } from '@/components/SettingsItem';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
+import { CreditsPurchaseModal } from '@/components/CreditsPurchaseModal';
 import { notificationService } from '@/utils/notificationService';
+import { useCreditsStore } from '@/hooks/useCreditsStore';
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
 export default function SettingsScreen() {
@@ -46,9 +49,11 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { t, getCurrentLanguageInfo } = useLanguageStore();
   const { settings, updateSettings, resetAllData } = useTasbihStore();
+  const { credits } = useCreditsStore();
 
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
+  const [showCreditsPurchase, setShowCreditsPurchase] = useState<boolean>(false);
 
   const languageInfo = useMemo(() => getCurrentLanguageInfo(), [getCurrentLanguageInfo]);
 
@@ -289,6 +294,21 @@ export default function SettingsScreen() {
         </View>
 
         <Text style={styles.sectionTitle}>
+          {t('buyCredits') || 'Credits'}
+        </Text>
+        <View style={sectionStyle}>
+          <SettingsItem
+            icon={<Coins size={22} color="#F59E0B" />}
+            title={t('buyCredits') || 'Buy Credits'}
+            subtitle={`${credits} ${t('credits') || 'credits'}`}
+            type="action"
+            onPress={() => setShowCreditsPurchase(true)}
+            variant="grouped"
+            iconBgColor="rgba(245,158,11,0.15)"
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>
           {t('interaction')}
         </Text>
         <View style={sectionStyle}>
@@ -436,6 +456,11 @@ export default function SettingsScreen() {
         onClose={() => setShowColorPicker(false)}
         currentTheme={(settings.colorTheme as ColorThemeKey) || 'gold'}
         onSelectTheme={handleSelectColorTheme}
+      />
+
+      <CreditsPurchaseModal
+        visible={showCreditsPurchase}
+        onClose={() => setShowCreditsPurchase(false)}
       />
     </View>
   );

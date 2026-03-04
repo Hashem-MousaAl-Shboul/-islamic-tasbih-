@@ -237,4 +237,12 @@ export const ur: TranslationKeys = {
   pm: 'شام',
   reminderScheduled: 'یاد دہانی مقرر',
   reminderDisabled: 'یاد دہانی بند',
+  buyCredits: 'کریڈٹ خریدیں',
+  creditsDescription: 'پریمیم فیچرز کھولنے کے لیے کریڈٹ استعمال کریں',
+  currentBalance: 'موجودہ بیلنس',
+  credits: 'کریڈٹ',
+  bestValue: 'بہترین قیمت',
+  oneTimePurchase: 'ایک بار خریداری',
+  buyNow: 'ابھی خریدیں',
+  restorePurchases: 'خریداریاں بحال کریں',
 };

@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { TasbihProvider } from '@/hooks/useTasbihStore';
 import { FavoritesProvider } from '@/hooks/useFavoritesStore';
 import { ReciterProvider } from '@/hooks/useReciterStore';
+import { CreditsProvider } from '@/hooks/useCreditsStore';
 import { queryClient } from '@/utils/queryClient';
 
 interface AppProvidersProps { children: ReactNode }
@@ -29,9 +30,11 @@ export function AppProviders({ children }: AppProvidersProps) {
             <TasbihProvider>
               <FavoritesProvider>
                 <ThemeProvider>
-                  <GestureRoot>
-                    {children}
-                  </GestureRoot>
+                  <CreditsProvider>
+                    <GestureRoot>
+                      {children}
+                    </GestureRoot>
+                  </CreditsProvider>
                 </ThemeProvider>
               </FavoritesProvider>
             </TasbihProvider>
