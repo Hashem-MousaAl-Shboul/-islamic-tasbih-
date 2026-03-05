@@ -237,4 +237,8 @@ export interface TranslationKeys {
   oneTimePurchase: string;
   buyNow: string;
   restorePurchases: string;
+  listenToAdhkar: string;
+  listening: string;
+  stopListening: string;
+  listenToDhikr: string;
 }

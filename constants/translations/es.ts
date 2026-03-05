@@ -239,4 +239,8 @@ export const es: TranslationKeys = {
   oneTimePurchase: 'Compra única',
   buyNow: 'Comprar ahora',
   restorePurchases: 'Restaurar compras',
+  listenToAdhkar: 'Escuchar',
+  listening: 'Escuchando...',
+  stopListening: 'Detener',
+  listenToDhikr: 'Escuchar Dhikr',
 };

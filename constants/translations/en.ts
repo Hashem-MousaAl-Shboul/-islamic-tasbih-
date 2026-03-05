@@ -239,4 +239,8 @@ export const en: TranslationKeys = {
   oneTimePurchase: 'One-time purchase',
   buyNow: 'Buy Now',
   restorePurchases: 'Restore Purchases',
+  listenToAdhkar: 'Listen',
+  listening: 'Listening...',
+  stopListening: 'Stop',
+  listenToDhikr: 'Listen to Dhikr',
 };

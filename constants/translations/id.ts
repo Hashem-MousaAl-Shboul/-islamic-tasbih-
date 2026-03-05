@@ -239,4 +239,8 @@ export const id: TranslationKeys = {
   oneTimePurchase: 'Pembelian sekali',
   buyNow: 'Beli Sekarang',
   restorePurchases: 'Pulihkan Pembelian',
+  listenToAdhkar: 'Dengarkan',
+  listening: 'Mendengarkan...',
+  stopListening: 'Berhenti',
+  listenToDhikr: 'Dengarkan Dzikir',
 };

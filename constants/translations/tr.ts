@@ -239,4 +239,8 @@ export const tr: TranslationKeys = {
   oneTimePurchase: 'Tek seferlik satın alma',
   buyNow: 'Şimdi Satın Al',
   restorePurchases: 'Satın Alımları Geri Yükle',
+  listenToAdhkar: 'Dinle',
+  listening: 'Dinleniyor...',
+  stopListening: 'Durdur',
+  listenToDhikr: 'Zikir Dinle',
 };

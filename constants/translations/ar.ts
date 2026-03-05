@@ -239,4 +239,8 @@ export const ar: TranslationKeys = {
   oneTimePurchase: 'شراء لمرة واحدة',
   buyNow: 'اشترِ الآن',
   restorePurchases: 'استعادة المشتريات',
+  listenToAdhkar: 'استمع للذكر',
+  listening: 'جاري الاستماع...',
+  stopListening: 'إيقاف',
+  listenToDhikr: 'استمع للذكر',
 };

@@ -239,4 +239,8 @@ export const bn: TranslationKeys = {
   oneTimePurchase: 'একবার কেনাকাটা',
   buyNow: 'এখনই কিনুন',
   restorePurchases: 'কেনাকাটা পুনরুদ্ধার করুন',
+  listenToAdhkar: 'শুনুন',
+  listening: 'শোনা হচ্ছে...',
+  stopListening: 'থামুন',
+  listenToDhikr: 'যিকির শুনুন',
 };

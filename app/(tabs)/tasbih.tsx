@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus, X, Check, Minus, RotateCcw } from 'lucide-react-native';
+import { Plus, X, Check, Minus, RotateCcw, Volume2, VolumeX } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 
@@ -9,6 +9,7 @@ import TasbihCard from '@/components/TasbihCard';
 
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
+import { ttsService } from '@/utils/ttsService';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -50,6 +51,8 @@ export default function TasbihScreen() {
       soundService.unload();
     };
   }, []);
+
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
   const [newTasbih, setNewTasbih] = useState({
     arabicText: '',
@@ -263,6 +266,39 @@ export default function TasbihScreen() {
     }
   }, [newTasbih, addCustomTasbih, settings.hapticFeedback, t]);
 
+  const handleSpeak = useCallback(async () => {
+    if (!selectedItem) return;
+    if (isSpeaking) {
+      try {
+        console.log('[TasbihScreen] Stopping speech');
+        await ttsService.stop();
+        setIsSpeaking(false);
+      } catch (error) {
+        console.error('[TasbihScreen] Stop speech error:', error);
+        setIsSpeaking(false);
+      }
+    } else {
+      try {
+        console.log(`[TasbihScreen] Speaking: ${selectedItem.arabicText}`);
+        if (Platform.OS !== 'web') {
+          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) { console.log('Haptic error', e); }
+        }
+        setIsSpeaking(true);
+        await ttsService.playDhikr(selectedItem.arabicText);
+        setIsSpeaking(false);
+      } catch (error) {
+        console.error('[TasbihScreen] Speech error:', error);
+        setIsSpeaking(false);
+      }
+    }
+  }, [selectedItem, isSpeaking]);
+
+  useEffect(() => {
+    return () => {
+      ttsService.stop().catch(() => {});
+    };
+  }, []);
+
   const handleCloseModal = useCallback(() => {
     setShowAddModal(false);
     setNewTasbih({
@@ -356,6 +392,21 @@ export default function TasbihScreen() {
           {settings.showTranslation && (
             <Text style={styles.translationText}>{selectedItem.translation}</Text>
           )}
+          <TouchableOpacity
+            style={[styles.speakDhikrButton, isSpeaking && styles.speakDhikrButtonActive]}
+            onPress={handleSpeak}
+            activeOpacity={0.7}
+            testID="tasbih-speak-button"
+          >
+            {isSpeaking ? (
+              <VolumeX size={16} color="#FFFFFF" />
+            ) : (
+              <Volume2 size={16} color={DEEP_GREEN} />
+            )}
+            <Text style={[styles.speakDhikrText, isSpeaking && styles.speakDhikrTextActive]}>
+              {isSpeaking ? t('stopListening') : t('listenToDhikr')}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.counterSection}>
@@ -934,5 +985,26 @@ const styles = StyleSheet.create({
   selectedColor: {
     borderColor: DEEP_GREEN,
     borderWidth: 3,
+  },
+  speakDhikrButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 20,
+    backgroundColor: 'rgba(27,67,50,0.08)',
+    marginTop: 12,
+  },
+  speakDhikrButtonActive: {
+    backgroundColor: DEEP_GREEN,
+  },
+  speakDhikrText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: DEEP_GREEN,
+  },
+  speakDhikrTextActive: {
+    color: '#FFFFFF',
   },
 });

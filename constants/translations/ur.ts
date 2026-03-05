@@ -239,4 +239,8 @@ export const ur: TranslationKeys = {
   oneTimePurchase: 'ایک بار خریداری',
   buyNow: 'ابھی خریدیں',
   restorePurchases: 'خریداریاں بحال کریں',
+  listenToAdhkar: 'سنیں',
+  listening: 'سن رہے ہیں...',
+  stopListening: 'رکیں',
+  listenToDhikr: 'ذکر سنیں',
 };

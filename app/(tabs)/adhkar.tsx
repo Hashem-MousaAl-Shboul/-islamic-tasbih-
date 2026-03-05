@@ -5,8 +5,9 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
-import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise } from 'lucide-react-native';
+import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Volume2, VolumeX } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { ttsService } from '@/utils/ttsService';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -106,9 +107,12 @@ interface AdhkarCardProps {
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   onShare: (item: AdhkarItem) => void;
+  speakingId: string | null;
+  onSpeak: (item: AdhkarItem) => void;
+  onStopSpeak: () => void;
 }
 
-const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMotion, isFavorite, onToggleFavorite, onShare }) => {
+const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMotion, isFavorite, onToggleFavorite, onShare, speakingId, onSpeak, onStopSpeak }) => {
   const { t } = useLanguageStore();
   const [expanded, setExpanded] = useState<boolean>(false);
 
@@ -134,6 +138,20 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
     }
     onShare(item);
   }, [item, onShare]);
+
+  const isSpeaking = speakingId === item.id;
+
+  const handleSpeak = useCallback((e?: any) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (Platform.OS !== 'web') {
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
+    }
+    if (isSpeaking) {
+      onStopSpeak();
+    } else {
+      onSpeak(item);
+    }
+  }, [item, isSpeaking, onSpeak, onStopSpeak]);
 
   const getCategoryIcon = (category: string) => {
     const size = 14;
@@ -233,6 +251,42 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
           </View>
         </View>
 
+        <View style={styles.speakRow}>
+          {Platform.OS === 'web' ? (
+            <View
+              style={[styles.speakButton, isSpeaking && styles.speakButtonActive]}
+              onStartShouldSetResponder={() => true}
+              onResponderRelease={handleSpeak}
+              testID="adhkar-speak-button"
+            >
+              {isSpeaking ? (
+                <VolumeX size={16} color="#FFFFFF" />
+              ) : (
+                <Volume2 size={16} color={accent} />
+              )}
+              <Text style={[styles.speakButtonText, isSpeaking && styles.speakButtonTextActive]}>
+                {isSpeaking ? t('stopListening') : t('listenToAdhkar')}
+              </Text>
+            </View>
+          ) : (
+            <Pressable
+              style={[styles.speakButton, isSpeaking && { backgroundColor: accent }]}
+              onPress={handleSpeak}
+              testID="adhkar-speak-button"
+              accessibilityRole="button"
+            >
+              {isSpeaking ? (
+                <VolumeX size={16} color="#FFFFFF" />
+              ) : (
+                <Volume2 size={16} color={accent} />
+              )}
+              <Text style={[styles.speakButtonText, isSpeaking && styles.speakButtonTextActive]}>
+                {isSpeaking ? t('stopListening') : t('listenToAdhkar')}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+
         <View style={styles.adhkarMainContent}>
           <Text
             style={[styles.adhkarArabicText, expanded && styles.adhkarArabicTextExpanded]}
@@ -278,7 +332,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
 
 const AdhkarCard = memo(
   AdhkarCardComponent,
-  (prev, next) => prev.item.id === next.item.id && prev.item.arabicText === next.item.arabicText && prev.item.transliteration === next.item.transliteration && prev.item.translation === next.item.translation && prev.index === next.index && prev.reducedMotion === next.reducedMotion && prev.isFavorite === next.isFavorite
+  (prev, next) => prev.item.id === next.item.id && prev.item.arabicText === next.item.arabicText && prev.item.transliteration === next.item.transliteration && prev.item.translation === next.item.translation && prev.index === next.index && prev.reducedMotion === next.reducedMotion && prev.isFavorite === next.isFavorite && prev.speakingId === next.speakingId
 );
 
 AdhkarCard.displayName = 'AdhkarCard';
@@ -365,8 +419,14 @@ export default function AdhkarScreen() {
   const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const deferredFilter = useDeferredValue<FilterType>(selectedFilter);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
 
-  useEffect(() => { console.log('[AdhkarScreen] Screen mounted'); }, []);
+  useEffect(() => {
+    console.log('[AdhkarScreen] Screen mounted');
+    return () => {
+      ttsService.stop().catch(() => {});
+    };
+  }, []);
 
   const filteredAdhkar = useMemo(() => {
     console.log(`[AdhkarScreen] Filtering adhkar for category: ${deferredFilter}`);
@@ -381,6 +441,29 @@ export default function AdhkarScreen() {
   }, [deferredFilter, isFavorite]);
 
   const reducedMotion = useReducedMotion();
+
+  const handleSpeakAdhkar = useCallback(async (item: AdhkarItem) => {
+    try {
+      console.log(`[AdhkarScreen] Speaking adhkar: ${item.id}`);
+      setSpeakingId(item.id);
+      await ttsService.playDhikr(item.arabicText);
+      setSpeakingId(null);
+    } catch (error) {
+      console.error('[AdhkarScreen] Speech error:', error);
+      setSpeakingId(null);
+    }
+  }, []);
+
+  const handleStopSpeak = useCallback(async () => {
+    try {
+      console.log('[AdhkarScreen] Stopping speech');
+      await ttsService.stop();
+      setSpeakingId(null);
+    } catch (error) {
+      console.error('[AdhkarScreen] Stop speech error:', error);
+      setSpeakingId(null);
+    }
+  }, []);
 
   const handleShareAdhkar = useCallback(async (item: AdhkarItem) => {
     try {
@@ -409,9 +492,12 @@ export default function AdhkarScreen() {
         isFavorite={isFavorite(item.id)}
         onToggleFavorite={toggleFavorite}
         onShare={handleShareAdhkar}
+        speakingId={speakingId}
+        onSpeak={handleSpeakAdhkar}
+        onStopSpeak={handleStopSpeak}
       />
     );
-  }, [reducedMotion, isFavorite, toggleFavorite, handleShareAdhkar]);
+  }, [reducedMotion, isFavorite, toggleFavorite, handleShareAdhkar, speakingId, handleSpeakAdhkar, handleStopSpeak]);
 
   const keyExtractor = useCallback((item: AdhkarItem) => item.id, []);
 
@@ -724,5 +810,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 110,
+  },
+  speakRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  speakButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(27,67,50,0.06)',
+  },
+  speakButtonActive: {
+    backgroundColor: DEEP_GREEN,
+  },
+  speakButtonText: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: DEEP_GREEN,
+  },
+  speakButtonTextActive: {
+    color: '#FFFFFF',
   },
 });

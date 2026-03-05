@@ -239,4 +239,8 @@ export const fr: TranslationKeys = {
   oneTimePurchase: 'Achat unique',
   buyNow: 'Acheter maintenant',
   restorePurchases: 'Restaurer les achats',
+  listenToAdhkar: 'Écouter',
+  listening: 'Écoute en cours...',
+  stopListening: 'Arrêter',
+  listenToDhikr: 'Écouter le Dhikr',
 };
