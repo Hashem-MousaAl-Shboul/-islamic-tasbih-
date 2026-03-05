@@ -4,6 +4,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Trash2, RotateCcw } from 'lucide-react-native';
 import { TasbihItem } from '@/hooks/useTasbihStore';
 
+const DEEP_GREEN = '#1B4332';
+const CARD_WHITE = '#FFFFFF';
+
 interface TasbihCardProps {
   item: TasbihItem;
   isSelected: boolean;
@@ -14,10 +17,10 @@ interface TasbihCardProps {
   isDeleted?: boolean;
 }
 
-const TasbihCard = memo<TasbihCardProps>(({ 
-  item, 
-  isSelected, 
-  onSelect, 
+const TasbihCard = memo<TasbihCardProps>(({
+  item,
+  isSelected,
+  onSelect,
   showTransliteration,
   onDelete,
   onRestore,
@@ -34,15 +37,14 @@ const TasbihCard = memo<TasbihCardProps>(({
 
   const gradientColors = useMemo(() => {
     if (isSelected) {
-      return [item.color, item.color + '80'] as const;
+      return [item.color, item.color + 'CC'] as const;
     }
-    return ['#d4ede5', '#c5e4da'] as const;
+    return [CARD_WHITE, '#F7F4EE'] as const;
   }, [isSelected, item.color]);
 
-  const textColor = useMemo(() => isSelected ? '#FFFFFF' : '#1a5c4c', [isSelected]);
-  const countColor = useMemo(() => isSelected ? '#FFFFFF' : '#1a5c4c', [isSelected]);
+  const textColor = useMemo(() => isSelected ? '#FFFFFF' : DEEP_GREEN, [isSelected]);
   const borderStyle = useMemo(() => ({
-    borderColor: isSelected ? item.color : 'rgba(26,92,76,0.2)',
+    borderColor: isSelected ? item.color : 'rgba(0,0,0,0.08)',
     borderWidth: isSelected ? 2 : 1,
   }), [isSelected, item.color]);
 
@@ -52,18 +54,12 @@ const TasbihCard = memo<TasbihCardProps>(({
     }
   }, [onSelect, item.id, isDeleted]);
 
-
-
   const handleDelete = useCallback(() => {
-    if (onDelete) {
-      onDelete(item.id);
-    }
+    if (onDelete) onDelete(item.id);
   }, [onDelete, item.id]);
 
   const handleRestore = useCallback(() => {
-    if (onRestore) {
-      onRestore(item.id);
-    }
+    if (onRestore) onRestore(item.id);
   }, [onRestore, item.id]);
 
   return (
@@ -85,11 +81,11 @@ const TasbihCard = memo<TasbihCardProps>(({
             testID={`delete-button-${item.id}`}
           >
             <View style={styles.deleteButtonInner}>
-              <Trash2 size={14} color="#EF4444" />
+              <Trash2 size={12} color="#E05252" />
             </View>
           </TouchableOpacity>
         )}
-        
+
         {isDeleted && (
           <TouchableOpacity
             style={styles.restoreButton}
@@ -97,42 +93,42 @@ const TasbihCard = memo<TasbihCardProps>(({
             testID={`restore-button-${item.id}`}
           >
             <View style={styles.restoreButtonInner}>
-              <RotateCcw size={14} color="#10B981" />
+              <RotateCcw size={12} color="#2D8B6F" />
             </View>
           </TouchableOpacity>
         )}
-        
+
         <View style={[styles.content, isDeleted && styles.deletedContent]}>
           <Text style={[styles.arabicText, { color: textColor }]} numberOfLines={2}>
             {item.arabicText}
           </Text>
-          
+
           {showTransliteration && (
             <Text style={[styles.transliterationText, { color: textColor }]} numberOfLines={1}>
               {item.transliteration}
             </Text>
           )}
-          
+
           <View style={styles.countContainer}>
-            <Text style={[styles.countText, { color: countColor }]}>
+            <Text style={[styles.countText, { color: isSelected ? 'rgba(255,255,255,0.9)' : DEEP_GREEN }]}>
               {item.count}/{item.targetCount}
             </Text>
             {item.isCompleted ? (
-              <View style={[styles.completedDot, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.completedDot, { backgroundColor: isSelected ? '#FFFFFF' : '#2D8B6F' }]} />
             ) : (
-              <Text style={[styles.percentageText, { color: isSelected ? '#FFFFFF' : '#64748B' }]}>
+              <Text style={[styles.percentageText, { color: isSelected ? 'rgba(255,255,255,0.7)' : '#8A9B91' }]}>
                 {progressPercentage}%
               </Text>
             )}
           </View>
-          
+
           {isSelected && (
             <View style={styles.progressContainer}>
-              <View style={[styles.progressBar, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-                <View 
+              <View style={[styles.progressBar, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
+                <View
                   style={[
                     styles.progressFill,
-                    { 
+                    {
                       width: `${Math.min(progress * 100, 100)}%`,
                       backgroundColor: '#FFFFFF'
                     }
@@ -151,16 +147,21 @@ TasbihCard.displayName = 'TasbihCard';
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 8,
+    marginHorizontal: 6,
     position: 'relative',
   },
   card: {
     minWidth: 80,
     width: 80,
-    height: 72,
-    borderRadius: 12,
+    height: 68,
+    borderRadius: 14,
     padding: 8,
     position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   deletedCard: {
     opacity: 0.5,
@@ -175,35 +176,40 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     position: 'absolute',
-    top: -6,
-    right: -6,
+    top: -5,
+    right: -5,
     zIndex: 10,
   },
   deleteButtonInner: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: CARD_WHITE,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#EF4444',
+    borderColor: '#E05252',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   restoreButton: {
     position: 'absolute',
-    top: -6,
-    right: -6,
+    top: -5,
+    right: -5,
     zIndex: 10,
   },
   restoreButtonInner: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: CARD_WHITE,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#10B981',
+    borderColor: '#2D8B6F',
   },
   arabicText: {
     fontSize: 12,
@@ -216,13 +222,13 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     textAlign: 'center',
     fontStyle: 'italic',
-    opacity: 0.85,
+    opacity: 0.8,
   },
   countContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
   },
   countText: {
     fontSize: 10,
@@ -240,7 +246,7 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     width: '100%',
-    marginTop: 4,
+    marginTop: 3,
   },
   progressBar: {
     width: '100%',

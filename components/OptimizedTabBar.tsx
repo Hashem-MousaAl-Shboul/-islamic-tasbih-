@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import * as Haptics from 'expo-haptics';
 
+const DEEP_GREEN = '#1B4332';
+const GOLD = '#D4A853';
 
 interface TabItemProps {
   route: any;
@@ -63,33 +65,33 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
   }, [isFocused, navigation, route.name, route.key]);
 
   const isDark = theme.mode === 'dark';
-  const activeColor = theme.primary;
-  const inactiveColor = isDark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.32)';
+  const activeColor = DEEP_GREEN;
+  const inactiveColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.28)';
 
   const staticIconColor = isFocused ? activeColor : inactiveColor;
 
   const icon = descriptor.options.tabBarIcon
-    ? descriptor.options.tabBarIcon({ color: staticIconColor, size: 24 })
+    ? descriptor.options.tabBarIcon({ color: staticIconColor, size: 22 })
     : null;
 
   const pillBg = focusAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['transparent', isDark ? `${activeColor}20` : `${activeColor}14`],
+    outputRange: ['transparent', GOLD + '20'],
   });
 
   const pillWidth = focusAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [48, 72],
+    outputRange: [44, 64],
   });
 
   const pillHeight = focusAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [48, 36],
+    outputRange: [44, 34],
   });
 
   const labelOpacity = focusAnim.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: [0.55, 0.8, 1],
+    outputRange: [0.5, 0.75, 1],
   });
 
   const labelTranslateY = focusAnim.interpolate({
@@ -99,7 +101,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
 
   const iconScale = focusAnim.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: [1, 1.15, 1.1],
+    outputRange: [1, 1.12, 1.08],
   });
 
   return (
@@ -113,9 +115,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
       <Animated.View
         style={[
           styles.tabContent,
-          {
-            transform: [{ scale: scaleAnim }],
-          },
+          { transform: [{ scale: scaleAnim }] },
         ]}
       >
         <Animated.View
@@ -139,7 +139,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
             {
               color: isFocused ? activeColor : inactiveColor,
               opacity: labelOpacity,
-              fontWeight: isFocused ? '700' as const : '400' as const,
+              fontWeight: isFocused ? '600' as const : '400' as const,
               transform: [{ translateY: labelTranslateY }],
             },
           ]}
@@ -167,8 +167,8 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
   const bottomPad = Math.max(insets.bottom, 8);
 
   const barStyle = useMemo(() => {
-    const bgColor = isDark ? 'rgba(15,20,36,0.96)' : 'rgba(255,255,255,0.97)';
-    const borderColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+    const bgColor = isDark ? 'rgba(15,20,30,0.97)' : 'rgba(255,255,255,0.98)';
+    const borderColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
 
     return {
       backgroundColor: bgColor,
@@ -219,15 +219,15 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
       },
       android: {
-        elevation: 16,
+        elevation: 12,
       },
       web: {
-        boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+        boxShadow: '0 -3px 12px rgba(0,0,0,0.06)',
       } as any,
     }),
   },
@@ -250,12 +250,12 @@ const styles = StyleSheet.create({
   iconPill: {
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    borderRadius: 18,
+    borderRadius: 16,
   },
   tabLabel: {
     fontSize: 11,
     textAlign: 'center' as const,
-    letterSpacing: 0.15,
+    letterSpacing: 0.1,
     ...Platform.select({
       android: {
         includeFontPadding: false,

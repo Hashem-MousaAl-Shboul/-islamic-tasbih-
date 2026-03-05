@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState, memo, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList } from 'react-native';
+import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, Alert, useWindowDimensions, Modal, TextInput, FlatList, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus, X, Check, Minus, RotateCcw } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
@@ -10,14 +10,22 @@ import TasbihCard from '@/components/TasbihCard';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 
-// Memoized header component for better performance
+const GOLD = '#D4A853';
+const DEEP_GREEN = '#1B4332';
+const IVORY = '#F7F4EE';
+const CARD_WHITE = '#FFFFFF';
+const TEXT_MUTED = '#8A9B91';
+
 const TasbihHeader = memo(() => {
   const { t } = useLanguageStore();
 
   return (
     <View style={styles.header}>
-      <View style={styles.headerLeft}>
-        <Text style={styles.headerTitle}>{t('tasbih')}</Text>
+      <Text style={styles.headerTitle}>{t('tasbih')}</Text>
+      <View style={styles.headerOrnament}>
+        <View style={styles.ornamentLine} />
+        <View style={styles.ornamentDiamond} />
+        <View style={styles.ornamentLine} />
       </View>
     </View>
   );
@@ -31,6 +39,8 @@ export default function TasbihScreen() {
   const insets = useSafeAreaInsets();
   useWindowDimensions();
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     console.log('[TasbihScreen] Screen mounted');
@@ -40,14 +50,16 @@ export default function TasbihScreen() {
       soundService.unload();
     };
   }, []);
+
   const [newTasbih, setNewTasbih] = useState({
     arabicText: '',
     transliteration: '',
     translation: '',
     targetCount: 33,
-    color: '#10B981',
+    color: '#2D8B6F',
     category: 'custom' as const
   });
+
   const {
     tasbihItems,
     settings,
@@ -56,24 +68,50 @@ export default function TasbihScreen() {
     isLoading,
     updateTasbihCount,
     resetTasbih,
-
     setSelectedItem,
     getSelectedItem,
-
     addCustomTasbih,
     deleteTasbih,
     restoreTasbih,
-
   } = useTasbihStore();
 
   const selectedItem = useMemo(() => getSelectedItem(), [getSelectedItem]);
 
-  
+  useEffect(() => {
+    if (selectedItem) {
+      const progress = selectedItem.targetCount > 0
+        ? Math.min(selectedItem.count / selectedItem.targetCount, 1)
+        : 0;
+      Animated.timing(progressAnim, {
+        toValue: progress,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [selectedItem?.count, selectedItem?.targetCount, progressAnim, selectedItem]);
+
+  const triggerPulse = useCallback(() => {
+    Animated.sequence([
+      Animated.timing(pulseAnim, {
+        toValue: 0.92,
+        duration: 80,
+        useNativeDriver: true,
+      }),
+      Animated.spring(pulseAnim, {
+        toValue: 1,
+        tension: 300,
+        friction: 10,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [pulseAnim]);
 
   const handleIncrement = useCallback(() => {
     if (selectedItem) {
       console.log(`[TasbihScreen] Increment count for: ${selectedItem.id}`);
-      
+
+      triggerPulse();
+
       if (settings.vibrationEnabled && Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(e => console.log('Haptic error', e));
       }
@@ -83,9 +121,9 @@ export default function TasbihScreen() {
       }
 
       const willComplete = selectedItem.count + 1 >= selectedItem.targetCount;
-      
+
       updateTasbihCount(selectedItem.id, true);
-      
+
       if (willComplete && !selectedItem.isCompleted) {
         if (settings.soundEnabled) {
           soundService.playCompletion();
@@ -95,12 +133,12 @@ export default function TasbihScreen() {
         }
       }
     }
-  }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled]);
+  }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled, triggerPulse]);
 
   const handleDecrement = useCallback(() => {
     if (selectedItem && selectedItem.count > 0) {
       console.log(`[TasbihScreen] Decrement count for: ${selectedItem.id}`);
-      
+
       if (settings.vibrationEnabled && Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(e => console.log('Haptic error', e));
       }
@@ -127,8 +165,8 @@ export default function TasbihScreen() {
           t('resetCounterConfirm', { dhikr: selectedItem.arabicText }),
           [
             { text: t('cancel'), style: 'cancel' },
-            { 
-              text: t('reset'), 
+            {
+              text: t('reset'),
               style: 'destructive',
               onPress: () => resetTasbih(selectedItem.id)
             }
@@ -137,10 +175,6 @@ export default function TasbihScreen() {
       }
     }
   }, [selectedItem, resetTasbih, t]);
-
-
-
-
 
   const handleSelectItem = useCallback(async (itemId: string) => {
     console.log(`[TasbihScreen] Selected item: ${itemId}`);
@@ -157,7 +191,7 @@ export default function TasbihScreen() {
   const handleDeleteTasbih = useCallback((itemId: string) => {
     console.log(`[TasbihScreen] Delete tasbih: ${itemId}`);
     deleteTasbih(itemId);
-    
+
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -170,7 +204,7 @@ export default function TasbihScreen() {
   const handleRestoreTasbih = useCallback((itemId: string) => {
     console.log(`[TasbihScreen] Restore tasbih: ${itemId}`);
     restoreTasbih(itemId);
-    
+
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -179,8 +213,6 @@ export default function TasbihScreen() {
       }
     }
   }, [restoreTasbih, settings.hapticFeedback]);
-
-
 
   const handleAddTasbih = useCallback(() => {
     console.log('[TasbihScreen] Add new tasbih clicked');
@@ -199,9 +231,9 @@ export default function TasbihScreen() {
       Alert.alert(t('error'), t('pleaseEnterArabicText'));
       return;
     }
-    
+
     console.log('[TasbihScreen] Saving new custom tasbih');
-    
+
     addCustomTasbih({
       arabicText: newTasbih.arabicText.trim(),
       transliteration: newTasbih.transliteration.trim() || newTasbih.arabicText.trim(),
@@ -210,19 +242,18 @@ export default function TasbihScreen() {
       color: newTasbih.color,
       category: newTasbih.category
     });
-    
-    // Reset form
+
     setNewTasbih({
       arabicText: '',
       transliteration: '',
       translation: '',
       targetCount: 33,
-      color: '#10B981',
+      color: '#2D8B6F',
       category: 'custom'
     });
-    
+
     setShowAddModal(false);
-    
+
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -234,23 +265,22 @@ export default function TasbihScreen() {
 
   const handleCloseModal = useCallback(() => {
     setShowAddModal(false);
-    // Reset form when closing
     setNewTasbih({
       arabicText: '',
       transliteration: '',
       translation: '',
       targetCount: 33,
-      color: '#10B981',
+      color: '#2D8B6F',
       category: 'custom'
     });
   }, []);
 
-  const predefinedColors = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'];
+  const predefinedColors = ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'];
 
   if (isLoading) {
     return (
       <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#1a5c4c" />
+        <ActivityIndicator size="large" color={GOLD} />
         <Text style={styles.loadingText}>{t('loading')}</Text>
       </View>
     );
@@ -264,11 +294,15 @@ export default function TasbihScreen() {
     );
   }
 
+  const progressPercent = selectedItem.targetCount > 0
+    ? Math.min((selectedItem.count / selectedItem.targetCount) * 100, 100)
+    : 0;
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.headerSection}>
         <TasbihHeader />
-        
+
         <FlatList
           horizontal
           data={tasbihItems}
@@ -291,8 +325,8 @@ export default function TasbihScreen() {
               activeOpacity={0.7}
               onPress={handleAddTasbih}
             >
-              <View style={styles.addCardGradient}>
-                <Plus size={20} color="#1a5c4c" />
+              <View style={styles.addCardInner}>
+                <Plus size={18} color={GOLD} />
                 <Text style={styles.addCardText}>{t('add')}</Text>
               </View>
             </TouchableOpacity>
@@ -325,45 +359,53 @@ export default function TasbihScreen() {
         </View>
 
         <View style={styles.counterSection}>
-          <TouchableOpacity
-            style={[styles.mainCounterButton, { backgroundColor: selectedItem.color }]}
-            onPress={handleIncrement}
-            activeOpacity={0.8}
-            testID="increment-button"
-          >
-            <View style={styles.counterDisplay}>
-              <Text style={styles.counterNumber}>{selectedItem.count}</Text>
-              <View style={styles.counterDivider} />
-              <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
-            </View>
-            
-            <View style={styles.counterProgressBar}>
-              <View 
-                style={[
-                  styles.counterProgressFill,
-                  { width: `${Math.min((selectedItem.count / selectedItem.targetCount) * 100, 100)}%` }
-                ]} 
-              />
-            </View>
-            
-            <Text style={styles.tapHint}>{t('tapToCount')}</Text>
-            
-            {selectedItem.isCompleted && (
-              <View style={styles.completedBadge}>
-                <Check size={16} color="#FFFFFF" />
-                <Text style={styles.completedText}>{t('completed')}</Text>
+          <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+            <TouchableOpacity
+              style={styles.mainCounterButton}
+              onPress={handleIncrement}
+              activeOpacity={0.9}
+              testID="increment-button"
+            >
+              <View style={[styles.counterRing, { borderColor: selectedItem.color + '40' }]}>
+                <View style={[styles.counterInner, { backgroundColor: selectedItem.color }]}>
+                  <Text style={styles.counterNumber}>{selectedItem.count}</Text>
+                  <View style={styles.counterDivider} />
+                  <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
+                </View>
               </View>
-            )}
-          </TouchableOpacity>
+
+              <View style={styles.counterProgressRing}>
+                <View style={styles.progressTrackCircle}>
+                  <View
+                    style={[
+                      styles.progressFillBar,
+                      { width: `${progressPercent}%`, backgroundColor: selectedItem.color }
+                    ]}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.tapHint}>{t('tapToCount')}</Text>
+
+              {selectedItem.isCompleted && (
+                <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
+                  <Check size={14} color="#FFFFFF" />
+                  <Text style={styles.completedText}>{t('completed')}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
 
           <View style={styles.controlButtonsRow}>
             <TouchableOpacity
-              style={[styles.controlButton, styles.decrementBtn]}
+              style={styles.controlButton}
               onPress={handleDecrement}
               activeOpacity={0.7}
               testID="decrement-button"
             >
-              <Minus size={20} color="#FFFFFF" />
+              <View style={styles.controlButtonInner}>
+                <Minus size={20} color="#E05252" />
+              </View>
             </TouchableOpacity>
 
             <View style={styles.statsDisplay}>
@@ -379,12 +421,14 @@ export default function TasbihScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.controlButton, styles.resetBtn]}
+              style={styles.controlButton}
               onPress={handleReset}
               activeOpacity={0.7}
               testID="reset-button"
             >
-              <RotateCcw size={20} color="#FFFFFF" />
+              <View style={styles.controlButtonInner}>
+                <RotateCcw size={20} color={GOLD} />
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -392,19 +436,20 @@ export default function TasbihScreen() {
 
       <Modal
         visible={showAddModal}
-        animationType="fade"
+        animationType="slide"
         transparent={true}
         onRequestClose={handleCloseModal}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
+                <X size={22} color={TEXT_MUTED} />
               </TouchableOpacity>
               <Text style={styles.modalTitle}>{t('addNewTasbih')}</Text>
               <TouchableOpacity onPress={handleSaveNewTasbih} style={styles.modalSaveButton}>
-                <Check size={24} color="#1a5c4c" />
+                <Check size={22} color={CARD_WHITE} />
               </TouchableOpacity>
             </View>
 
@@ -416,7 +461,7 @@ export default function TasbihScreen() {
                   value={newTasbih.arabicText}
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, arabicText: text }))}
                   placeholder={t('arabicTextPlaceholder')}
-                  placeholderTextColor="#999"
+                  placeholderTextColor={TEXT_MUTED}
                   multiline
                   textAlign="right"
                 />
@@ -429,7 +474,7 @@ export default function TasbihScreen() {
                   value={newTasbih.transliteration}
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, transliteration: text }))}
                   placeholder={t('transliterationPlaceholder')}
-                  placeholderTextColor="#999"
+                  placeholderTextColor={TEXT_MUTED}
                 />
               </View>
 
@@ -440,7 +485,7 @@ export default function TasbihScreen() {
                   value={newTasbih.translation}
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, translation: text }))}
                   placeholder={t('translationPlaceholder')}
-                  placeholderTextColor="#999"
+                  placeholderTextColor={TEXT_MUTED}
                   multiline
                 />
               </View>
@@ -455,7 +500,7 @@ export default function TasbihScreen() {
                     setNewTasbih(prev => ({ ...prev, targetCount: Math.max(1, num) }));
                   }}
                   placeholder="33"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={TEXT_MUTED}
                   keyboardType="numeric"
                 />
               </View>
@@ -476,6 +521,7 @@ export default function TasbihScreen() {
                   ))}
                 </View>
               </View>
+              <View style={{ height: 40 }} />
             </ScrollView>
           </View>
         </View>
@@ -487,15 +533,15 @@ export default function TasbihScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: IVORY,
   },
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   loadingText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    color: TEXT_MUTED,
     marginTop: 12,
     fontWeight: '500' as const,
   },
@@ -505,238 +551,320 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     textAlign: 'center',
     fontWeight: '600' as const,
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 16,
-  },
-  headerLeft: {
-    flex: 1,
+    paddingVertical: 14,
+    paddingTop: 18,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '700' as const,
-    color: '#fff',
-    textAlign: 'left',
+    color: CARD_WHITE,
+    textAlign: 'center',
     writingDirection: 'rtl',
+    letterSpacing: 1,
+  },
+  headerOrnament: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  ornamentLine: {
+    width: 32,
+    height: 1,
+    backgroundColor: GOLD,
+    opacity: 0.6,
+  },
+  ornamentDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: GOLD,
+    transform: [{ rotate: '45deg' }],
   },
   headerSection: {
-    backgroundColor: '#1a5c4c',
+    backgroundColor: DEEP_GREEN,
     paddingTop: 0,
-    paddingBottom: 8,
+    paddingBottom: 10,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   cardsScrollView: {
-    maxHeight: 80,
+    maxHeight: 82,
   },
   cardsContainer: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 8,
     paddingVertical: 4,
   },
   addCard: {
     marginHorizontal: 6,
   },
-  addCardGradient: {
+  addCardInner: {
     minWidth: 70,
     width: 70,
-    height: 65,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.4)',
+    height: 68,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: GOLD + '50',
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(212,168,83,0.08)',
   },
   addCardText: {
     fontSize: 10,
     fontWeight: '600' as const,
-    color: 'rgba(255,255,255,0.7)',
+    color: GOLD,
     textAlign: 'center',
   },
-
   mainContent: {
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'transparent',
-    paddingVertical: 12,
+    paddingVertical: 16,
     overflow: 'hidden',
   },
   dhikrDisplay: {
     alignItems: 'center',
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    backgroundColor: '#d4ede5',
-    borderRadius: 16,
-    paddingVertical: 10,
-    marginHorizontal: 16,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 20,
+    paddingVertical: 16,
+    marginHorizontal: 20,
     alignSelf: 'stretch',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(212,168,83,0.12)',
   },
   mainArabicText: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700' as const,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     textAlign: 'center',
-    marginBottom: 2,
-    lineHeight: 28,
+    marginBottom: 4,
+    lineHeight: 34,
     paddingHorizontal: 8,
     alignSelf: 'stretch',
     writingDirection: 'rtl',
   },
   transliterationText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500' as const,
-    color: '#1a5c4c',
-    opacity: 0.7,
-    textAlign: 'center',
-    marginTop: 2,
-    lineHeight: 20,
-  },
-  translationText: {
-    fontSize: 12,
-    fontWeight: '400' as const,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     opacity: 0.6,
     textAlign: 'center',
+    marginTop: 2,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
+  translationText: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    color: TEXT_MUTED,
+    textAlign: 'center',
     marginTop: 4,
-    lineHeight: 18,
+    lineHeight: 20,
   },
-
-  counterContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  counterSection: {
     flex: 1,
-    backgroundColor: 'transparent',
-  },
-
-  counterWithButtons: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 32,
+    paddingHorizontal: 20,
+    gap: 24,
   },
-  counterWithReset: {
-    flexDirection: 'row',
+  mainCounterButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 20,
   },
-  undoButtonLeft: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  counterRing: {
+    width: 192,
+    height: 192,
+    borderRadius: 96,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#EF4444',
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    backgroundColor: CARD_WHITE,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
     elevation: 10,
   },
-  undoButtonGradient: {
-    width: '100%',
+  counterInner: {
+    width: 168,
+    height: 168,
+    borderRadius: 84,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  counterNumber: {
+    fontSize: 52,
+    fontWeight: '800' as const,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  counterDivider: {
+    width: 36,
+    height: 1.5,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    marginVertical: 4,
+  },
+  counterTarget: {
+    fontSize: 20,
+    fontWeight: '600' as const,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  counterProgressRing: {
+    width: 200,
+    marginTop: 12,
+  },
+  progressTrackCircle: {
+    height: 4,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFillBar: {
     height: '100%',
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(239, 68, 68, 0.4)',
+    borderRadius: 2,
   },
-  resetButtonRight: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#F59E0B',
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
+  tapHint: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    color: TEXT_MUTED,
+    marginTop: 10,
   },
-  resetButtonGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
-  },
-  actionButtons: {
+  completedBadge: {
+    position: 'absolute' as const,
+    bottom: -14,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    marginBottom: 20,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 14,
     gap: 4,
-    minWidth: 80,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  decrementButton: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    borderColor: 'rgba(239, 68, 68, 0.3)',
+  completedText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
   },
-  resetButton: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+  controlButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 14,
+    width: '100%',
   },
-  actionButtonText: {
-    fontSize: 10,
-    fontWeight: '600' as const,
+  controlButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  resetButtonText: {
-    fontSize: 10,
-    fontWeight: '600' as const,
-    color: '#F59E0B',
+  controlButtonInner: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: CARD_WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
+  },
+  statsDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 20,
+    gap: 20,
+    backgroundColor: CARD_WHITE,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.03)',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: '500' as const,
+    marginBottom: 2,
+    color: TEXT_MUTED,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700' as const,
+    color: DEEP_GREEN,
+  },
+  statDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: 'rgba(0,0,0,0.06)',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
   modalContent: {
-    flex: 1,
-    marginTop: 50,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    backgroundColor: '#FFFFFF',
+    maxHeight: '90%',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    backgroundColor: IVORY,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(0,0,0,0.12)',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 4,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e8e5',
+    borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   modalCloseButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: CARD_WHITE,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -744,51 +872,50 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#d4ede5',
+    backgroundColor: DEEP_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700' as const,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     textAlign: 'center',
   },
   modalForm: {
-    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600' as const,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     marginBottom: 8,
     textAlign: 'right',
   },
   textInput: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     borderWidth: 1,
-    borderColor: '#e0e8e5',
+    borderColor: 'rgba(0,0,0,0.06)',
     minHeight: 48,
   },
   numberInput: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     borderWidth: 1,
-    borderColor: '#e0e8e5',
+    borderColor: 'rgba(0,0,0,0.06)',
     textAlign: 'center',
     width: 100,
   },
@@ -805,206 +932,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   selectedColor: {
-    borderColor: '#1a5c4c',
+    borderColor: DEEP_GREEN,
     borderWidth: 3,
-  },
-  completionModalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  completionModalBackdrop: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  completionModalContent: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: '#1E293B',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
-  },
-  completionModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  completionModalTitle: {
-    fontSize: 20,
-    fontWeight: '700' as const,
-    color: '#10B981',
-    textAlign: 'center',
-    flex: 1,
-  },
-  closeCompletionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    right: -10,
-    top: -10,
-  },
-  completionAdContainer: {
-    marginBottom: 20,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  continueButton: {
-    width: '100%',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  continueButtonGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continueButtonText: {
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-  },
-  counterSection: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    gap: 20,
-  },
-  mainCounterButton: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 4,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  counterDisplay: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  counterNumber: {
-    fontSize: 48,
-    fontWeight: '800' as const,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  counterDivider: {
-    width: 40,
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    marginVertical: 4,
-  },
-  counterTarget: {
-    fontSize: 20,
-    fontWeight: '600' as const,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  counterProgressBar: {
-    width: 100,
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 2,
-    marginTop: 8,
-    overflow: 'hidden',
-  },
-  counterProgressFill: {
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 2,
-  },
-  tapHint: {
-    fontSize: 11,
-    fontWeight: '500' as const,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginTop: 8,
-  },
-  completedBadge: {
-    position: 'absolute' as const,
-    bottom: -10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#10B981',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  completedText: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-  },
-  controlButtonsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    width: '100%',
-  },
-  controlButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  decrementBtn: {
-    backgroundColor: '#EF4444',
-  },
-  resetBtn: {
-    backgroundColor: '#F5A623',
-  },
-  statsDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    gap: 16,
-    backgroundColor: '#d4ede5',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 10,
-    fontWeight: '500' as const,
-    marginBottom: 2,
-    color: '#1a5c4c',
-    opacity: 0.7,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: '#1a5c4c',
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(26, 92, 76, 0.15)',
   },
 });

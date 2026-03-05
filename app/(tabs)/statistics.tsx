@@ -2,7 +2,6 @@ import React, { memo, useMemo, useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  BarChart3,
   TrendingUp,
   Calendar,
   Target,
@@ -10,7 +9,6 @@ import {
   Flame,
   Star,
   RefreshCw,
-
 } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
@@ -18,26 +16,29 @@ import i18n from '@/constants/translations';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+const GOLD = '#D4A853';
+const DEEP_GREEN = '#1B4332';
+const IVORY = '#F7F4EE';
+const CARD_WHITE = '#FFFFFF';
+const TEXT_MUTED = '#8A9B91';
+
 interface StatCardProps {
   icon: React.ReactNode;
   title: string;
   value: string | number;
   subtitle?: string;
   color: string;
-  iconBgColor: string;
 }
 
-const StatCard = memo(function StatCard({ icon, title, value, subtitle, color, iconBgColor }: StatCardProps) {
+const StatCard = memo(function StatCard({ icon, title, value, subtitle, color }: StatCardProps) {
   return (
-    <View style={[styles.statCard, { borderLeftColor: color }]}>
-      <View style={[styles.statIconContainer, { backgroundColor: iconBgColor }]}>
+    <View style={styles.statCard}>
+      <View style={[styles.statIconContainer, { backgroundColor: color + '14' }]}>
         {icon}
       </View>
-      <View style={styles.statContent}>
-        <Text style={styles.statTitle}>{title}</Text>
-        <Text style={[styles.statValue, { color }]}>{value}</Text>
-        {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
-      </View>
+      <Text style={styles.statTitle}>{title}</Text>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
     </View>
   );
 });
@@ -51,7 +52,7 @@ interface ProgressBarProps {
 
 const ProgressBar = memo(function ProgressBar({ progress, color, label, value }: ProgressBarProps) {
   const clampedProgress = Math.min(Math.max(progress, 0), 100);
-  
+
   return (
     <View style={styles.progressContainer}>
       <View style={styles.progressHeader}>
@@ -75,12 +76,12 @@ interface DhikrStatItemProps {
 
 const DhikrStatItem = memo(function DhikrStatItem({ arabicText, count, targetCount, totalCompletions, color }: DhikrStatItemProps) {
   const progress = targetCount > 0 ? (count / targetCount) * 100 : 0;
-  
+
   return (
     <View style={styles.dhikrStatItem}>
       <View style={styles.dhikrStatHeader}>
         <Text style={styles.dhikrArabicText}>{arabicText}</Text>
-        <View style={[styles.completionBadge, { backgroundColor: color + '20' }]}>
+        <View style={[styles.completionBadge, { backgroundColor: color + '14' }]}>
           <Text style={[styles.completionText, { color }]}>{totalCompletions}x</Text>
         </View>
       </View>
@@ -118,7 +119,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
   const mostUsedDhikr = useMemo(() => {
     if (activeItems.length === 0) return null;
-    return activeItems.reduce((max, item) => 
+    return activeItems.reduce((max, item) =>
       item.totalCompletions > (max?.totalCompletions || 0) ? item : max
     , activeItems[0]);
   }, [activeItems]);
@@ -138,14 +139,12 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
   const handleResetStats = useCallback(() => {
     console.log('[StatisticsScreen] Reset stats button pressed');
-    
+
     if (Platform.OS === 'web') {
       const confirmed = confirm(i18n.t('resetStatsConfirm') || 'هل تريد إعادة تعيين جميع الإحصائيات؟');
       if (confirmed) {
         resetStats();
-        setTimeout(() => {
-          saveData();
-        }, 100);
+        setTimeout(() => { saveData(); }, 100);
         alert(i18n.t('statsResetSuccess') || 'تم إعادة تعيين الإحصائيات بنجاح');
       }
     } else {
@@ -159,9 +158,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
             style: 'destructive',
             onPress: () => {
               resetStats();
-              setTimeout(() => {
-                saveData();
-              }, 100);
+              setTimeout(() => { saveData(); }, 100);
               Alert.alert(
                 i18n.t('success') || 'نجاح',
                 i18n.t('statsResetSuccess') || 'تم إعادة تعيين الإحصائيات بنجاح'
@@ -175,13 +172,12 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
   return (
     <View style={styles.container} testID="statistics-screen">
-      
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerContent}>
-          <View style={styles.headerTitleRow}>
-            <BarChart3 size={24} color="#fff" />
-            <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
-          </View>
+        <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
+        <View style={styles.headerOrnament}>
+          <View style={styles.ornamentLine} />
+          <View style={styles.ornamentDiamond} />
+          <View style={styles.ornamentLine} />
         </View>
       </View>
 
@@ -191,101 +187,91 @@ const StatisticsScreen = memo(function StatisticsScreen() {
         showsVerticalScrollIndicator={false}
         testID="statistics-scroll"
       >
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryHeader}>
-            <View style={styles.summaryIconContainer}>
-              <TrendingUp size={28} color="#1a5c4c" />
+        <View style={styles.heroCard}>
+          <View style={styles.heroTop}>
+            <View style={styles.heroIconCircle}>
+              <TrendingUp size={24} color={GOLD} />
             </View>
-            <View style={styles.summaryTextContainer}>
-              <Text style={styles.summaryTitle}>{i18n.t('totalDhikr') || 'إجمالي الذكر'}</Text>
-              <Text style={styles.summaryValue}>{stats.totalCount.toLocaleString()}</Text>
-            </View>
+            <Text style={styles.heroLabel}>{i18n.t('totalDhikr') || 'إجمالي الذكر'}</Text>
           </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryStats}>
-            <View style={styles.summaryStatItem}>
-              <Text style={styles.summaryStatValue}>{stats.todayCount}</Text>
-              <Text style={styles.summaryStatLabel}>{i18n.t('today') || 'اليوم'}</Text>
+          <Text style={styles.heroValue}>{stats.totalCount.toLocaleString()}</Text>
+          <View style={styles.heroDivider} />
+          <View style={styles.heroStats}>
+            <View style={styles.heroStatItem}>
+              <Text style={styles.heroStatValue}>{stats.todayCount}</Text>
+              <Text style={styles.heroStatLabel}>{i18n.t('today') || 'اليوم'}</Text>
             </View>
-            <View style={styles.summaryStatDivider} />
-            <View style={styles.summaryStatItem}>
-              <Text style={styles.summaryStatValue}>{stats.streakDays}</Text>
-              <Text style={styles.summaryStatLabel}>{i18n.t('streakDays') || 'أيام متتالية'}</Text>
+            <View style={styles.heroStatSep} />
+            <View style={styles.heroStatItem}>
+              <Text style={styles.heroStatValue}>{stats.streakDays}</Text>
+              <Text style={styles.heroStatLabel}>{i18n.t('streakDays') || 'أيام متتالية'}</Text>
             </View>
-            <View style={styles.summaryStatDivider} />
-            <View style={styles.summaryStatItem}>
-              <Text style={styles.summaryStatValue}>{stats.completedSessions}</Text>
-              <Text style={styles.summaryStatLabel}>{i18n.t('sessions') || 'جلسات'}</Text>
+            <View style={styles.heroStatSep} />
+            <View style={styles.heroStatItem}>
+              <Text style={styles.heroStatValue}>{stats.completedSessions}</Text>
+              <Text style={styles.heroStatLabel}>{i18n.t('sessions') || 'جلسات'}</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
-            {i18n.t('dailyProgress') || 'التقدم اليومي'}
-          </Text>
-          <View style={styles.progressCard}>
-            <ProgressBar
-              progress={dailyGoalProgress}
-              color="#1a5c4c"
-              label={i18n.t('dailyGoal') || 'الهدف اليومي'}
-              value={`${stats.todayCount}/${settings.dailyGoal || 300}`}
-            />
-            <View style={styles.progressDivider} />
-            <ProgressBar
-              progress={todayProgress}
-              color="#F5A623"
-              label={i18n.t('completedDhikr') || 'الأذكار المكتملة'}
-              value={`${activeItems.filter(i => i.isCompleted).length}/${activeItems.length}`}
-            />
-          </View>
+        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
+          {i18n.t('dailyProgress') || 'التقدم اليومي'}
+        </Text>
+        <View style={styles.progressCard}>
+          <ProgressBar
+            progress={dailyGoalProgress}
+            color={DEEP_GREEN}
+            label={i18n.t('dailyGoal') || 'الهدف اليومي'}
+            value={`${stats.todayCount}/${settings.dailyGoal || 300}`}
+          />
+          <View style={styles.progressDivider} />
+          <ProgressBar
+            progress={todayProgress}
+            color={GOLD}
+            label={i18n.t('completedDhikr') || 'الأذكار المكتملة'}
+            value={`${activeItems.filter(i => i.isCompleted).length}/${activeItems.length}`}
+          />
         </View>
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
-            {i18n.t('quickStats') || 'إحصائيات سريعة'}
-          </Text>
-          <View style={styles.statsGrid}>
-            <StatCard
-              icon={<Calendar size={22} color="#fff" />}
-              title={i18n.t('today') || 'اليوم'}
-              value={stats.todayCount}
-              color="#4A90D9"
-              iconBgColor="#4A90D9"
-            />
-            <StatCard
-              icon={<Flame size={22} color="#fff" />}
-              title={i18n.t('streak') || 'متتالية'}
-              value={stats.streakDays}
-              subtitle={i18n.t('days') || 'أيام'}
-              color="#E8734A"
-              iconBgColor="#E8734A"
-            />
-            <StatCard
-              icon={<Target size={22} color="#fff" />}
-              title={i18n.t('sessions') || 'جلسات'}
-              value={stats.completedSessions}
-              color="#27AE60"
-              iconBgColor="#27AE60"
-            />
-            <StatCard
-              icon={<Award size={22} color="#fff" />}
-              title={i18n.t('totalTarget') || 'الهدف الكلي'}
-              value={totalTargetCount}
-              color="#9B59B6"
-              iconBgColor="#9B59B6"
-            />
-          </View>
+        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
+          {i18n.t('quickStats') || 'إحصائيات سريعة'}
+        </Text>
+        <View style={styles.statsGrid}>
+          <StatCard
+            icon={<Calendar size={20} color="#3B7DD8" />}
+            title={i18n.t('today') || 'اليوم'}
+            value={stats.todayCount}
+            color="#3B7DD8"
+          />
+          <StatCard
+            icon={<Flame size={20} color="#E07A3A" />}
+            title={i18n.t('streak') || 'متتالية'}
+            value={stats.streakDays}
+            subtitle={i18n.t('days') || 'أيام'}
+            color="#E07A3A"
+          />
+          <StatCard
+            icon={<Target size={20} color="#2D8B6F" />}
+            title={i18n.t('sessions') || 'جلسات'}
+            value={stats.completedSessions}
+            color="#2D8B6F"
+          />
+          <StatCard
+            icon={<Award size={20} color="#8B6BC4" />}
+            title={i18n.t('totalTarget') || 'الهدف الكلي'}
+            value={totalTargetCount}
+            color="#8B6BC4"
+          />
         </View>
 
         {mostUsedDhikr && (
-          <View style={styles.section}>
+          <>
             <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
               {i18n.t('favoritedhikr') || 'الذكر المفضل'}
             </Text>
             <View style={styles.favoriteCard}>
-              <View style={styles.favoriteIconContainer}>
-                <Star size={24} color="#F5A623" fill="#F5A623" />
+              <View style={styles.favoriteIconCircle}>
+                <Star size={22} color={GOLD} fill={GOLD} />
               </View>
               <View style={styles.favoriteContent}>
                 <Text style={styles.favoriteArabic}>{mostUsedDhikr.arabicText}</Text>
@@ -294,31 +280,29 @@ const StatisticsScreen = memo(function StatisticsScreen() {
                 </Text>
               </View>
             </View>
-          </View>
+          </>
         )}
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
-            {i18n.t('dhikrDetails') || 'تفاصيل الأذكار'}
-          </Text>
-          <View style={styles.dhikrListCard}>
-            {sortedDhikrItems.map((item, index) => (
-              <View key={item.id}>
-                <DhikrStatItem
-                  arabicText={item.arabicText}
-                  count={item.count}
-                  targetCount={item.targetCount}
-                  totalCompletions={item.totalCompletions}
-                  color={item.color}
-                />
-                {index < sortedDhikrItems.length - 1 && <View style={styles.dhikrDivider} />}
-              </View>
-            ))}
-          </View>
+        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
+          {i18n.t('dhikrDetails') || 'تفاصيل الأذكار'}
+        </Text>
+        <View style={styles.dhikrListCard}>
+          {sortedDhikrItems.map((item, index) => (
+            <View key={item.id}>
+              <DhikrStatItem
+                arabicText={item.arabicText}
+                count={item.count}
+                targetCount={item.targetCount}
+                totalCompletions={item.totalCompletions}
+                color={item.color}
+              />
+              {index < sortedDhikrItems.length - 1 && <View style={styles.dhikrDivider} />}
+            </View>
+          ))}
         </View>
 
         <TouchableOpacity style={styles.resetButton} onPress={handleResetStats} activeOpacity={0.8}>
-          <RefreshCw size={20} color="#E74C3C" />
+          <RefreshCw size={18} color="#D45050" />
           <Text style={styles.resetButtonText}>{i18n.t('resetStats') || 'إعادة تعيين الإحصائيات'}</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -331,109 +315,122 @@ export default StatisticsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: IVORY,
   },
   header: {
-    backgroundColor: '#1a5c4c',
+    backgroundColor: DEEP_GREEN,
     paddingBottom: 20,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '700' as const,
     color: '#fff',
     writingDirection: 'rtl',
+    paddingTop: 18,
+    letterSpacing: 1,
   },
-
+  headerOrnament: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  ornamentLine: {
+    width: 32,
+    height: 1,
+    backgroundColor: GOLD,
+    opacity: 0.6,
+  },
+  ornamentDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: GOLD,
+    transform: [{ rotate: '45deg' }],
+  },
   scrollContainer: {
     flex: 1,
   },
   contentContainer: {
-    paddingTop: 16,
+    paddingTop: 20,
     paddingHorizontal: 16,
   },
-  summaryCard: {
-    backgroundColor: '#d4ede5',
-    borderRadius: 20,
-    padding: 20,
+  heroCard: {
+    backgroundColor: CARD_WHITE,
+    borderRadius: 24,
+    padding: 24,
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: GOLD + '18',
   },
-  summaryHeader: {
+  heroTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
+    gap: 10,
   },
-  summaryIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#fff',
+  heroIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: GOLD + '14',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  summaryTextContainer: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  summaryTitle: {
+  heroLabel: {
     fontSize: 14,
-    color: '#1a5c4c',
-    opacity: 0.8,
-    marginBottom: 4,
+    color: TEXT_MUTED,
+    fontWeight: '500' as const,
     writingDirection: 'rtl',
   },
-  summaryValue: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    color: '#1a5c4c',
+  heroValue: {
+    fontSize: 44,
+    fontWeight: '800' as const,
+    color: DEEP_GREEN,
+    marginTop: 4,
+    textAlign: 'center',
   },
-  summaryDivider: {
+  heroDivider: {
     height: 1,
-    backgroundColor: 'rgba(26, 92, 76, 0.15)',
-    marginVertical: 16,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    marginVertical: 18,
   },
-  summaryStats: {
+  heroStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
-  summaryStatItem: {
+  heroStatItem: {
     alignItems: 'center',
   },
-  summaryStatValue: {
-    fontSize: 24,
+  heroStatValue: {
+    fontSize: 22,
     fontWeight: '700' as const,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
   },
-  summaryStatLabel: {
+  heroStatLabel: {
     fontSize: 12,
-    color: '#1a5c4c',
-    opacity: 0.7,
+    color: TEXT_MUTED,
     marginTop: 4,
   },
-  summaryStatDivider: {
+  heroStatSep: {
     width: 1,
-    backgroundColor: 'rgba(26, 92, 76, 0.15)',
-  },
-  section: {
-    marginBottom: 24,
+    backgroundColor: 'rgba(0,0,0,0.06)',
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600' as const,
-    color: '#666',
-    marginBottom: 10,
+    color: TEXT_MUTED,
+    marginBottom: 12,
     marginLeft: 4,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
   },
   sectionTitleRTL: {
     textAlign: 'right',
@@ -441,9 +438,15 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   progressCard: {
-    backgroundColor: '#d4ede5',
-    borderRadius: 16,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 20,
     padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
   progressContainer: {
     marginBottom: 8,
@@ -452,20 +455,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   progressLabel: {
     fontSize: 14,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     fontWeight: '500' as const,
   },
   progressValue: {
     fontSize: 14,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
   },
   progressTrack: {
     height: 8,
-    backgroundColor: 'rgba(26, 92, 76, 0.15)',
+    backgroundColor: 'rgba(0,0,0,0.04)',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -480,15 +483,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
+    marginBottom: 24,
   },
   statCard: {
-    backgroundColor: '#d4ede5',
-    borderRadius: 16,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 18,
     padding: 16,
     width: (SCREEN_WIDTH - 44) / 2,
-    flexDirection: 'row',
     alignItems: 'center',
-    borderLeftWidth: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   statIconContainer: {
     width: 44,
@@ -496,37 +503,42 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  statContent: {
-    marginLeft: 12,
-    flex: 1,
+    marginBottom: 10,
   },
   statTitle: {
     fontSize: 12,
-    color: '#1a5c4c',
-    opacity: 0.7,
+    color: TEXT_MUTED,
+    marginBottom: 4,
   },
   statValue: {
-    fontSize: 22,
-    fontWeight: '700' as const,
+    fontSize: 26,
+    fontWeight: '800' as const,
   },
   statSubtitle: {
     fontSize: 11,
-    color: '#1a5c4c',
-    opacity: 0.6,
+    color: TEXT_MUTED,
+    marginTop: 2,
   },
   favoriteCard: {
-    backgroundColor: '#d4ede5',
-    borderRadius: 16,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 20,
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: GOLD + '18',
   },
-  favoriteIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#fff',
+  favoriteIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: GOLD + '14',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -536,35 +548,40 @@ const styles = StyleSheet.create({
   },
   favoriteArabic: {
     fontSize: 20,
-    fontWeight: '600' as const,
-    color: '#1a5c4c',
+    fontWeight: '700' as const,
+    color: DEEP_GREEN,
     marginBottom: 4,
     writingDirection: 'rtl',
     textAlign: 'right',
   },
   favoriteStats: {
-    fontSize: 14,
-    color: '#1a5c4c',
-    opacity: 0.7,
+    fontSize: 13,
+    color: TEXT_MUTED,
   },
   dhikrListCard: {
-    backgroundColor: '#d4ede5',
-    borderRadius: 16,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 20,
     padding: 16,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
   },
   dhikrStatItem: {
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   dhikrStatHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   dhikrArabicText: {
     fontSize: 16,
     fontWeight: '600' as const,
-    color: '#1a5c4c',
+    color: DEEP_GREEN,
     flex: 1,
     writingDirection: 'rtl',
     textAlign: 'right',
@@ -572,11 +589,11 @@ const styles = StyleSheet.create({
   completionBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 10,
   },
   completionText: {
     fontSize: 12,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
   },
   dhikrProgressContainer: {
     flexDirection: 'row',
@@ -586,7 +603,7 @@ const styles = StyleSheet.create({
   dhikrProgressTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: 'rgba(26, 92, 76, 0.15)',
+    backgroundColor: 'rgba(0,0,0,0.04)',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -596,29 +613,29 @@ const styles = StyleSheet.create({
   },
   dhikrCountText: {
     fontSize: 12,
-    color: '#1a5c4c',
-    opacity: 0.7,
+    color: TEXT_MUTED,
     minWidth: 50,
     textAlign: 'right',
   },
   dhikrDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(26, 92, 76, 0.15)',
+    backgroundColor: 'rgba(0,0,0,0.06)',
   },
   resetButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fee2e2',
-    borderRadius: 12,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 16,
     padding: 16,
     gap: 8,
-    marginTop: 8,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
   resetButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600' as const,
-    color: '#E74C3C',
+    color: '#D45050',
   },
 });

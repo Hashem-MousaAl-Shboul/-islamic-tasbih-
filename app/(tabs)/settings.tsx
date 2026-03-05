@@ -29,7 +29,6 @@ import {
   Info,
   Coins,
   ChevronRight,
-  Settings,
 } from 'lucide-react-native';
 import * as StoreReview from 'expo-store-review';
 import * as Haptics from 'expo-haptics';
@@ -42,11 +41,11 @@ import { CreditsPurchaseModal } from '@/components/CreditsPurchaseModal';
 import { useCreditsStore } from '@/hooks/useCreditsStore';
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
-const PRIMARY = '#1a5c4c';
-const CARD_BG = '#d4ede5';
-const SCREEN_BG = '#f5f5f5';
-const TEXT_PRIMARY = '#1a5c4c';
-const TEXT_SECONDARY = '#666666';
+const GOLD = '#D4A853';
+const DEEP_GREEN = '#1B4332';
+const IVORY = '#F7F4EE';
+const CARD_WHITE = '#FFFFFF';
+const TEXT_MUTED = '#8A9B91';
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -91,11 +90,11 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
             value={Boolean(value)}
             onValueChange={() => onToggle?.()}
             trackColor={{
-              false: Platform.OS === 'android' ? '#d0d0d0' : 'rgba(0,0,0,0.1)',
-              true: PRIMARY,
+              false: Platform.OS === 'android' ? '#d0d0d0' : 'rgba(0,0,0,0.08)',
+              true: DEEP_GREEN,
             }}
-            thumbColor={Platform.OS === 'android' ? (value ? PRIMARY : '#f4f3f4') : '#FFFFFF'}
-            ios_backgroundColor="rgba(0,0,0,0.1)"
+            thumbColor={Platform.OS === 'android' ? (value ? DEEP_GREEN : '#f4f3f4') : '#FFFFFF'}
+            ios_backgroundColor="rgba(0,0,0,0.08)"
             style={Platform.OS === 'android' ? styles.switchAndroid : styles.switchIOS}
             pointerEvents="none"
           />
@@ -103,11 +102,11 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
         {type === 'select' ? (
           <View style={styles.selectContainer}>
             <Text style={styles.selectValue}>{String(value ?? '')}</Text>
-            <ChevronRight size={16} color={TEXT_SECONDARY} />
+            <ChevronRight size={16} color={TEXT_MUTED} />
           </View>
         ) : null}
         {type === 'action' ? (
-          <ChevronRight size={18} color={danger ? '#E74C3C' : TEXT_SECONDARY} />
+          <ChevronRight size={18} color={danger ? '#D45050' : TEXT_MUTED} />
         ) : null}
       </View>
     </TouchableOpacity>
@@ -129,7 +128,6 @@ export default function SettingsScreen() {
   const handleToggleDarkMode = useCallback(() => {
     const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
     updateSettings({ theme: newTheme });
-
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
@@ -145,7 +143,6 @@ export default function SettingsScreen() {
   const handleToggleSound = useCallback(() => {
     updateSettings({ soundEnabled: !settings.soundEnabled });
   }, [settings.soundEnabled, updateSettings]);
-
 
   const handleSelectColorTheme = useCallback((themeKey: ColorThemeKey) => {
     updateSettings({ colorTheme: themeKey });
@@ -172,10 +169,7 @@ export default function SettingsScreen() {
 
   const handleShareApp = useCallback(async () => {
     try {
-      await Share.share({
-        message: t('shareMessage'),
-        title: t('appName'),
-      });
+      await Share.share({ message: t('shareMessage'), title: t('appName') });
     } catch (e) {
       console.log('[Settings] Share error:', e);
     }
@@ -189,7 +183,6 @@ export default function SettingsScreen() {
         });
         return;
       }
-
       const MailComposer = await import('expo-mail-composer');
       const isAvailable = await MailComposer.isAvailableAsync();
       if (isAvailable) {
@@ -272,12 +265,11 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container} testID="settings-screen">
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerContent}>
-          <View style={styles.headerTitleRow}>
-            <Settings size={24} color="#fff" />
-            <Text style={styles.headerTitle}>{t('settings')}</Text>
-          </View>
-          <Text style={styles.headerSubtitle}>{t('customizeApp')}</Text>
+        <Text style={styles.headerTitle}>{t('settings')}</Text>
+        <View style={styles.headerOrnament}>
+          <View style={styles.ornamentLine} />
+          <View style={styles.ornamentDiamond} />
+          <View style={styles.ornamentLine} />
         </View>
       </View>
 
@@ -291,8 +283,8 @@ export default function SettingsScreen() {
         <View style={styles.card}>
           <SettingsRow
             icon={settings.theme === 'dark'
-              ? <Moon size={20} color={PRIMARY} />
-              : <Sun size={20} color={PRIMARY} />}
+              ? <Moon size={20} color={DEEP_GREEN} />
+              : <Sun size={20} color={GOLD} />}
             title={t('darkMode')}
             subtitle={settings.theme === 'dark' ? t('darkModeEnabled') : t('lightModeEnabled')}
             type="toggle"
@@ -300,14 +292,14 @@ export default function SettingsScreen() {
             onToggle={handleToggleDarkMode}
           />
           <SettingsRow
-            icon={<Palette size={20} color={PRIMARY} />}
+            icon={<Palette size={20} color="#8B6BC4" />}
             title={t('colorTheme')}
             type="select"
             value={t(settings.colorTheme || 'gold')}
             onPress={() => setShowColorPicker(true)}
           />
           <SettingsRow
-            icon={<Globe size={20} color={PRIMARY} />}
+            icon={<Globe size={20} color="#3B7DD8" />}
             title={t('language')}
             type="select"
             value={languageInfo?.nativeName || 'العربية'}
@@ -319,7 +311,7 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>{t('buyCredits') || 'Credits'}</Text>
         <View style={styles.card}>
           <SettingsRow
-            icon={<Coins size={20} color="#F5A623" />}
+            icon={<Coins size={20} color={GOLD} />}
             title={t('buyCredits') || 'Buy Credits'}
             subtitle={`${credits} ${t('credits') || 'credits'}`}
             type="action"
@@ -331,7 +323,7 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>{t('interaction')}</Text>
         <View style={styles.card}>
           <SettingsRow
-            icon={<Vibrate size={20} color={PRIMARY} />}
+            icon={<Vibrate size={20} color="#E07A3A" />}
             title={t('vibration')}
             subtitle={t('vibrationOnTap')}
             type="toggle"
@@ -339,7 +331,7 @@ export default function SettingsScreen() {
             onToggle={handleToggleVibration}
           />
           <SettingsRow
-            icon={<Volume2 size={20} color={PRIMARY} />}
+            icon={<Volume2 size={20} color="#2D8B6F" />}
             title={t('sound')}
             subtitle={t('soundOnInteraction')}
             type="toggle"
@@ -352,21 +344,21 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>{t('contactSupport')}</Text>
         <View style={styles.card}>
           <SettingsRow
-            icon={<Star size={20} color="#F5A623" />}
+            icon={<Star size={20} color={GOLD} />}
             title={t('rateApp')}
             subtitle={t('rateAppDescription')}
             type="action"
             onPress={handleRateApp}
           />
           <SettingsRow
-            icon={<Share2 size={20} color="#4A90D9" />}
+            icon={<Share2 size={20} color="#3B7DD8" />}
             title={t('shareApp')}
             subtitle={t('shareAppDescription')}
             type="action"
             onPress={handleShareApp}
           />
           <SettingsRow
-            icon={<Mail size={20} color="#27AE60" />}
+            icon={<Mail size={20} color="#2D8B6F" />}
             title={t('contactUs')}
             subtitle={t('contactUsDescription')}
             type="action"
@@ -378,21 +370,21 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>{t('about')}</Text>
         <View style={styles.card}>
           <SettingsRow
-            icon={<Shield size={20} color={PRIMARY} />}
+            icon={<Shield size={20} color={DEEP_GREEN} />}
             title={t('privacy')}
             subtitle={t('viewPrivacyPolicy')}
             type="action"
             onPress={handleOpenPrivacy}
           />
           <SettingsRow
-            icon={<FileText size={20} color={PRIMARY} />}
+            icon={<FileText size={20} color={DEEP_GREEN} />}
             title={t('terms')}
             subtitle={t('viewTerms')}
             type="action"
             onPress={handleOpenTerms}
           />
           <SettingsRow
-            icon={<Info size={20} color={TEXT_SECONDARY} />}
+            icon={<Info size={20} color={TEXT_MUTED} />}
             title={t('version')}
             subtitle="1.0.0"
             type="action"
@@ -404,14 +396,14 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>{t('dataManagement')}</Text>
         <View style={styles.card}>
           <SettingsRow
-            icon={<RotateCcw size={20} color="#F5A623" />}
+            icon={<RotateCcw size={20} color={GOLD} />}
             title={t('resetSettings')}
             subtitle={t('resetSettingsDescription')}
             type="action"
             onPress={handleResetSettings}
           />
           <SettingsRow
-            icon={<Trash2 size={20} color="#E74C3C" />}
+            icon={<Trash2 size={20} color="#D45050" />}
             title={t('deleteAllData')}
             subtitle={t('deleteAllDataDescription')}
             type="action"
@@ -422,6 +414,11 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.footer}>
+          <View style={styles.footerOrnament}>
+            <View style={styles.footerLine} />
+            <View style={styles.footerDiamond} />
+            <View style={styles.footerLine} />
+          </View>
           <Text style={styles.footerText}>{t('appName')}</Text>
           <Text style={styles.footerVersion}>v1.0.0</Text>
         </View>
@@ -450,52 +447,67 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SCREEN_BG,
+    backgroundColor: IVORY,
   },
   header: {
-    backgroundColor: PRIMARY,
+    backgroundColor: DEEP_GREEN,
     paddingBottom: 20,
-  },
-  headerContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '700' as const,
     color: '#fff',
     writingDirection: 'rtl',
+    paddingTop: 18,
+    letterSpacing: 1,
   },
-  headerSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.65)',
-    marginTop: 4,
-    marginLeft: 34,
+  headerOrnament: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  ornamentLine: {
+    width: 32,
+    height: 1,
+    backgroundColor: GOLD,
+    opacity: 0.6,
+  },
+  ornamentDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: GOLD,
+    transform: [{ rotate: '45deg' }],
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 20,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
-    color: TEXT_SECONDARY,
+    color: TEXT_MUTED,
     marginTop: 20,
     marginBottom: 10,
     marginLeft: 4,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.8,
   },
   card: {
-    backgroundColor: CARD_BG,
-    borderRadius: 16,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 18,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   row: {
     flexDirection: 'row',
@@ -503,11 +515,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    minHeight: 60,
+    minHeight: 62,
   },
   rowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(26, 92, 76, 0.15)',
+    borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   rowLeft: {
     flexDirection: 'row',
@@ -518,13 +530,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: IVORY,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
   },
   rowIconDanger: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: '#FEF2F2',
   },
   rowTextContainer: {
     flex: 1,
@@ -532,15 +544,14 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 16,
     fontWeight: '500' as const,
-    color: TEXT_PRIMARY,
+    color: DEEP_GREEN,
   },
   dangerText: {
-    color: '#E74C3C',
+    color: '#D45050',
   },
   rowSubtitle: {
     fontSize: 13,
-    color: TEXT_PRIMARY,
-    opacity: 0.6,
+    color: TEXT_MUTED,
     marginTop: 2,
   },
   rowRight: {
@@ -555,7 +566,7 @@ const styles = StyleSheet.create({
   },
   selectValue: {
     fontSize: 14,
-    color: TEXT_SECONDARY,
+    color: TEXT_MUTED,
     fontWeight: '500' as const,
   },
   switchIOS: {
@@ -567,17 +578,36 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     paddingVertical: 32,
-    gap: 4,
+    gap: 6,
+  },
+  footerOrnament: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  footerLine: {
+    width: 24,
+    height: 1,
+    backgroundColor: GOLD,
+    opacity: 0.3,
+  },
+  footerDiamond: {
+    width: 5,
+    height: 5,
+    backgroundColor: GOLD,
+    opacity: 0.3,
+    transform: [{ rotate: '45deg' }],
   },
   footerText: {
     fontSize: 14,
-    fontWeight: '500' as const,
-    color: PRIMARY,
-    opacity: 0.5,
+    fontWeight: '600' as const,
+    color: DEEP_GREEN,
+    opacity: 0.4,
   },
   footerVersion: {
     fontSize: 12,
-    color: TEXT_SECONDARY,
-    opacity: 0.4,
+    color: TEXT_MUTED,
+    opacity: 0.5,
   },
 });
