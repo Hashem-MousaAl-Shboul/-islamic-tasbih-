@@ -27,7 +27,7 @@ import {
   Moon,
   Sun,
   Info,
-  Coins,
+
   ChevronRight,
 } from 'lucide-react-native';
 import * as StoreReview from 'expo-store-review';
@@ -37,8 +37,7 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
-import { CreditsPurchaseModal } from '@/components/CreditsPurchaseModal';
-import { useCreditsStore } from '@/hooks/useCreditsStore';
+
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
 const GOLD = '#D4A853';
@@ -117,11 +116,8 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { t, getCurrentLanguageInfo } = useLanguageStore();
   const { settings, updateSettings, resetAllData } = useTasbihStore();
-  const { credits } = useCreditsStore();
-
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
-  const [showCreditsPurchase, setShowCreditsPurchase] = useState<boolean>(false);
 
   const languageInfo = useMemo(() => getCurrentLanguageInfo(), [getCurrentLanguageInfo]);
 
@@ -308,18 +304,6 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>{t('buyCredits') || 'Credits'}</Text>
-        <View style={styles.card}>
-          <SettingsRow
-            icon={<Coins size={20} color={GOLD} />}
-            title={t('buyCredits') || 'Buy Credits'}
-            subtitle={`${credits} ${t('credits') || 'credits'}`}
-            type="action"
-            onPress={() => setShowCreditsPurchase(true)}
-            isLast
-          />
-        </View>
-
         <Text style={styles.sectionTitle}>{t('interaction')}</Text>
         <View style={styles.card}>
           <SettingsRow
@@ -422,6 +406,8 @@ export default function SettingsScreen() {
           <Text style={styles.footerText}>{t('appName')}</Text>
           <Text style={styles.footerVersion}>v1.0.0</Text>
         </View>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       <LanguagePicker
@@ -436,10 +422,7 @@ export default function SettingsScreen() {
         onSelectTheme={handleSelectColorTheme}
       />
 
-      <CreditsPurchaseModal
-        visible={showCreditsPurchase}
-        onClose={() => setShowCreditsPurchase(false)}
-      />
+
     </View>
   );
 }

@@ -305,6 +305,8 @@ const StatisticsScreen = memo(function StatisticsScreen() {
           <RefreshCw size={18} color="#D45050" />
           <Text style={styles.resetButtonText}>{i18n.t('resetStats') || 'إعادة تعيين الإحصائيات'}</Text>
         </TouchableOpacity>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );

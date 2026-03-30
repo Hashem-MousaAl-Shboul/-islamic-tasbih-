@@ -485,6 +485,8 @@ export default function TasbihScreen() {
         </View>
       </View>
 
+      <View style={{ height: 100 }} />
+
       <Modal
         visible={showAddModal}
         animationType="slide"
