@@ -174,7 +174,7 @@ const TasbihHeader = memo(() => {
     >
       <View style={styles.headerContent}>
         <View style={styles.headerIconContainer}>
-          <Sparkles size={24} color={GOLD} />
+          <Sparkles size={18} color={GOLD} />
         </View>
         <Text style={styles.headerTitle}>{t('tasbih')}</Text>
         <View style={styles.headerOrnament}>
@@ -889,42 +889,42 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    paddingTop: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    paddingTop: 8,
   },
   headerIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: 'rgba(212,168,83,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700' as const,
     color: CARD_WHITE,
     textAlign: 'center',
     writingDirection: 'rtl',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   headerOrnament: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
-    gap: 10,
+    marginTop: 4,
+    gap: 8,
   },
   ornamentLine: {
-    width: 40,
+    width: 30,
     height: 1,
     backgroundColor: GOLD,
     opacity: 0.5,
   },
   ornamentDiamond: {
-    width: 8,
-    height: 8,
+    width: 6,
+    height: 6,
     backgroundColor: GOLD,
     transform: [{ rotate: '45deg' }],
   },
