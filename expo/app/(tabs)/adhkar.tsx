@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useMemo, memo, useDeferredValue, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, Platform, ScrollView, Pressable, Share } from 'react-native';
+import React, { useState, useCallback, useMemo, memo, useDeferredValue, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, FlatList, Platform, ScrollView, Pressable, Share, Animated, Easing } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
-import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Volume2, VolumeX } from 'lucide-react-native';
+import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Volume2, VolumeX, Square, Headphones } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { ttsService } from '@/utils/ttsService';
 
@@ -338,6 +338,139 @@ const AdhkarCard = memo(
 
 AdhkarCard.displayName = 'AdhkarCard';
 
+const AudioWaveAnimation: React.FC<{ color: string; isPlaying: boolean }> = memo(({ color, isPlaying }) => {
+  const bars = useRef([0, 1, 2, 3].map(() => new Animated.Value(0.3))).current;
+
+  useEffect(() => {
+    if (isPlaying) {
+      const animations = bars.map((bar, i) =>
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(bar, {
+              toValue: 1,
+              duration: 300 + i * 100,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: false,
+            }),
+            Animated.timing(bar, {
+              toValue: 0.3,
+              duration: 300 + i * 100,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: false,
+            }),
+          ])
+        )
+      );
+      animations.forEach(a => a.start());
+      return () => animations.forEach(a => a.stop());
+    } else {
+      bars.forEach(bar => bar.setValue(0.3));
+    }
+  }, [isPlaying, bars]);
+
+  return (
+    <View style={styles.audioWaveContainer}>
+      {bars.map((bar, i) => (
+        <Animated.View
+          key={i}
+          style={[
+            styles.audioWaveBar,
+            {
+              backgroundColor: color,
+              height: bar.interpolate({
+                inputRange: [0.3, 1],
+                outputRange: [6, 16],
+              }),
+            },
+          ]}
+        />
+      ))}
+    </View>
+  );
+});
+
+AudioWaveAnimation.displayName = 'AudioWaveAnimation';
+
+interface PlayAllButtonProps {
+  isPlayingAll: boolean;
+  onPlayAll: () => void;
+  onStopAll: () => void;
+  itemCount: number;
+  currentIndex: number;
+}
+
+const PlayAllButtonComponent: React.FC<PlayAllButtonProps> = ({ isPlayingAll, onPlayAll, onStopAll, itemCount, currentIndex }) => {
+  const { t } = useLanguageStore();
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (isPlayingAll) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.03, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isPlayingAll, pulseAnim]);
+
+  const handlePress = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (e) { console.log('Haptic error:', e); }
+    }
+    if (isPlayingAll) {
+      onStopAll();
+    } else {
+      onPlayAll();
+    }
+  }, [isPlayingAll, onPlayAll, onStopAll]);
+
+  if (itemCount === 0) return null;
+
+  return (
+    <Animated.View style={[styles.playAllContainer, { transform: [{ scale: pulseAnim }] }]}>
+      <Pressable
+        style={[styles.playAllButton, isPlayingAll && styles.playAllButtonActive]}
+        onPress={handlePress}
+        testID="play-all-button"
+        accessibilityRole="button"
+      >
+        <View style={styles.playAllLeft}>
+          <View style={[styles.playAllIconCircle, isPlayingAll && styles.playAllIconCircleActive]}>
+            {isPlayingAll ? (
+              <Square size={16} color="#FFFFFF" fill="#FFFFFF" />
+            ) : (
+              <Headphones size={18} color={DEEP_GREEN} />
+            )}
+          </View>
+          <View style={styles.playAllTextContainer}>
+            <Text style={[styles.playAllTitle, isPlayingAll && styles.playAllTitleActive]}>
+              {isPlayingAll ? t('stopListening') : t('listenToAdhkar')}
+            </Text>
+            {isPlayingAll ? (
+              <Text style={styles.playAllProgress}>
+                {currentIndex + 1} / {itemCount}
+              </Text>
+            ) : (
+              <Text style={styles.playAllSubtitle}>
+                {itemCount} {t('adhkar')}
+              </Text>
+            )}
+          </View>
+        </View>
+        {isPlayingAll && <AudioWaveAnimation color="#FFFFFF" isPlaying={true} />}
+      </Pressable>
+    </Animated.View>
+  );
+};
+
+const PlayAllButton = memo(PlayAllButtonComponent);
+PlayAllButton.displayName = 'PlayAllButton';
+
 const AdhkarHeader = memo<{ selectedFilter: FilterType; onFilterChange: (filter: FilterType) => void }>(({ selectedFilter, onFilterChange }) => {
   const { t } = useLanguageStore();
 
@@ -421,10 +554,15 @@ export default function AdhkarScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const deferredFilter = useDeferredValue<FilterType>(selectedFilter);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [isPlayingAll, setIsPlayingAll] = useState<boolean>(false);
+  const [playAllIndex, setPlayAllIndex] = useState<number>(0);
+  const playAllCancelledRef = useRef<boolean>(false);
+  const flatListRef = useRef<FlatList<AdhkarItem>>(null);
 
   useEffect(() => {
     console.log(ADHKAR_TAG, 'Screen mounted');
     return () => {
+      playAllCancelledRef.current = true;
       ttsService.stop().catch(() => {});
     };
   }, []);
@@ -445,6 +583,11 @@ export default function AdhkarScreen() {
 
   const handleSpeakAdhkar = useCallback(async (item: AdhkarItem) => {
     try {
+      if (isPlayingAll) {
+        playAllCancelledRef.current = true;
+        await ttsService.stop();
+        setIsPlayingAll(false);
+      }
       console.log(`${ADHKAR_TAG} Speaking adhkar: ${item.id}`);
       setSpeakingId(item.id);
       await ttsService.playDhikr(item.arabicText);
@@ -453,18 +596,69 @@ export default function AdhkarScreen() {
       console.error(ADHKAR_TAG, 'Speech error:', error);
       setSpeakingId(null);
     }
-  }, []);
+  }, [isPlayingAll]);
 
   const handleStopSpeak = useCallback(async () => {
     try {
       console.log(ADHKAR_TAG, 'Stopping speech');
+      playAllCancelledRef.current = true;
       await ttsService.stop();
       setSpeakingId(null);
+      setIsPlayingAll(false);
+      setPlayAllIndex(0);
     } catch (error) {
       console.error(ADHKAR_TAG, 'Stop speech error:', error);
       setSpeakingId(null);
+      setIsPlayingAll(false);
     }
   }, []);
+
+  const handlePlayAll = useCallback(async () => {
+    if (filteredAdhkar.length === 0) return;
+    try {
+      console.log(`${ADHKAR_TAG} Playing all ${filteredAdhkar.length} adhkar`);
+      playAllCancelledRef.current = false;
+      setIsPlayingAll(true);
+      setPlayAllIndex(0);
+
+      for (let i = 0; i < filteredAdhkar.length; i++) {
+        if (playAllCancelledRef.current) {
+          console.log(`${ADHKAR_TAG} Play all cancelled at index ${i}`);
+          break;
+        }
+        const item = filteredAdhkar[i];
+        setPlayAllIndex(i);
+        setSpeakingId(item.id);
+
+        try {
+          flatListRef.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.3 });
+        } catch (scrollErr) {
+          console.log(`${ADHKAR_TAG} Scroll error:`, scrollErr);
+        }
+
+        await ttsService.playDhikr(item.arabicText);
+
+        if (i < filteredAdhkar.length - 1 && !playAllCancelledRef.current) {
+          await new Promise(resolve => setTimeout(resolve, 1200));
+        }
+      }
+
+      setSpeakingId(null);
+      setIsPlayingAll(false);
+      setPlayAllIndex(0);
+      console.log(`${ADHKAR_TAG} Play all completed`);
+    } catch (error) {
+      console.error(ADHKAR_TAG, 'Play all error:', error);
+      setSpeakingId(null);
+      setIsPlayingAll(false);
+      setPlayAllIndex(0);
+    }
+  }, [filteredAdhkar]);
+
+  const handleStopAll = useCallback(async () => {
+    playAllCancelledRef.current = true;
+    await handleStopSpeak();
+  }, [handleStopSpeak]);
 
   const handleShareAdhkar = useCallback(async (item: AdhkarItem) => {
     try {
@@ -503,11 +697,29 @@ export default function AdhkarScreen() {
   const keyExtractor = useCallback((item: AdhkarItem) => item.id, []);
 
   const handleFilterChange = useCallback((filter: FilterType) => {
+    if (isPlayingAll) {
+      playAllCancelledRef.current = true;
+      ttsService.stop().catch(() => {});
+      setIsPlayingAll(false);
+      setSpeakingId(null);
+      setPlayAllIndex(0);
+    }
     setSelectedFilter(filter);
     console.log(`${ADHKAR_TAG} Filter changed to: ${filter}`);
-  }, []);
+  }, [isPlayingAll]);
 
   const { t } = useLanguageStore();
+
+  const onScrollToIndexFailed = useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+    console.log(`${ADHKAR_TAG} scrollToIndex failed:`, info);
+    setTimeout(() => {
+      try {
+        flatListRef.current?.scrollToIndex({ index: info.index, animated: true, viewPosition: 0.3 });
+      } catch (e) {
+        console.log(`${ADHKAR_TAG} Retry scroll failed:`, e);
+      }
+    }, 500);
+  }, []);
 
   if (isLoading) {
     return (
@@ -532,8 +744,17 @@ export default function AdhkarScreen() {
         </View>
         <AdhkarHeader selectedFilter={selectedFilter} onFilterChange={handleFilterChange} />
 
+        <PlayAllButton
+          isPlayingAll={isPlayingAll}
+          onPlayAll={handlePlayAll}
+          onStopAll={handleStopAll}
+          itemCount={filteredAdhkar.length}
+          currentIndex={playAllIndex}
+        />
+
         <View style={styles.contentContainer}>
           <FlatList
+            ref={flatListRef}
             testID="adhkar-list"
             data={filteredAdhkar}
             renderItem={renderAdhkarItem}
@@ -547,6 +768,7 @@ export default function AdhkarScreen() {
             initialNumToRender={5}
             updateCellsBatchingPeriod={100}
             onEndReachedThreshold={0.3}
+            onScrollToIndexFailed={onScrollToIndexFailed}
           />
         </View>
       </ErrorBoundary>
@@ -837,5 +1059,79 @@ const styles = StyleSheet.create({
   },
   speakButtonTextActive: {
     color: '#FFFFFF',
+  },
+  audioWaveContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    height: 18,
+  },
+  audioWaveBar: {
+    width: 3,
+    borderRadius: 2,
+  },
+  playAllContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+    backgroundColor: IVORY,
+  },
+  playAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: CARD_WHITE,
+    borderWidth: 1.5,
+    borderColor: DEEP_GREEN + '20',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  playAllButtonActive: {
+    backgroundColor: DEEP_GREEN,
+    borderColor: DEEP_GREEN,
+    shadowOpacity: 0.15,
+  },
+  playAllLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  playAllIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: DEEP_GREEN + '10',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playAllIconCircleActive: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  playAllTextContainer: {
+    gap: 2,
+  },
+  playAllTitle: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: DEEP_GREEN,
+  },
+  playAllTitleActive: {
+    color: '#FFFFFF',
+  },
+  playAllSubtitle: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    color: TEXT_MUTED,
+  },
+  playAllProgress: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: GOLD,
   },
 });

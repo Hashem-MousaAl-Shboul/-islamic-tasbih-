@@ -2,10 +2,12 @@ import { Platform } from 'react-native';
 
 let Speech: any = null;
 let speechLoadAttempted = false;
+let speechLoadRetries = 0;
+const MAX_RETRIES = 3;
 
 async function getSpeech(): Promise<any> {
   if (Speech) return Speech;
-  if (speechLoadAttempted) return null;
+  if (speechLoadAttempted && speechLoadRetries >= MAX_RETRIES) return null;
   speechLoadAttempted = true;
   try {
     const mod = await import('expo-speech');
@@ -13,7 +15,8 @@ async function getSpeech(): Promise<any> {
     console.log('[TTS] expo-speech loaded successfully');
     return Speech;
   } catch (e) {
-    console.log('[TTS] expo-speech not available:', e);
+    speechLoadRetries++;
+    console.log(`[TTS] expo-speech not available (attempt ${speechLoadRetries}):`, e);
     return null;
   }
 }
@@ -377,10 +380,12 @@ class TTSService {
     try {
       const normalized = this.preprocessArabicText(text);
 
+      const splitPattern = /(،|\.|!|\?|؛|:|—|-|\(|\)|\[|\]|\{|\}|\n|\r|\u06D6|\u06D7|\u06D8|\u06D9|\u06DA|\u06DB|\u06DC|\u06DD|\u06DE|\u06DF|\u06E0|\u06E2|\u06E3|\u06E5|\u06E6)/g;
       const parts = normalized
-        .split(/(\،|\.|\!|\?|\؛|\:|\—|\-|\(|\)|\[|\]|\{|\}|\n|\r|\u06D6|\u06D7|\u06D8|\u06D9|\u06DA|\u06DB|\u06DC|\u06DD|\u06DE|\u06DF|\u06E0|\u06E2|\u06E3|\u06E5|\u06E6)/g)
+        .split(splitPattern)
         .reduce<string[]>((acc, cur) => {
-          if (/^(\،|\.|\!|\?|\؛|\:|\—|\-|\(|\)|\[|\]|\{|\}|\n|\r|\u06D6|\u06D7|\u06D8|\u06D9|\u06DA|\u06DB|\u06DC|\u06DD|\u06DE|\u06DF|\u06E0|\u06E2|\u06E3|\u06E5|\u06E6)$/.test(cur)) {
+          if (splitPattern.test(cur)) {
+            splitPattern.lastIndex = 0;
             if (acc.length > 0) acc[acc.length - 1] = `${acc[acc.length - 1]}${cur}`;
           } else if (cur && cur.trim().length > 0) {
             acc.push(cur.trim());
@@ -531,50 +536,12 @@ class TTSService {
       let processedText = text ?? '';
 
       processedText = processedText.replace(/[ــ]+/g, '');
-      processedText = processedText.replace(/[\u064B-\u0652]/g, '');
 
       processedText = processedText
         .replace(/,\s?/g, '، ')
         .replace(/;/g, '؛')
         .replace(/\s*\.\s*/g, '. ')
         .replace(/\?/g, '؟');
-
-      processedText = processedText
-        .replace(/\s+و\s+/g, ' و ')
-        .replace(/\bثم\s+/g, 'ثم، ')
-        .replace(/\bاللهم\s+/g, 'اللَّهُمَّ، ');
-
-      const commonWords: Record<string, string> = {
-        'الله': 'اللَّه',
-        'اللهم': 'اللَّهُمَّ',
-        'سبحان': 'سُبْحَان',
-        'استغفر': 'أَسْتَغْفِر',
-        'اكبر': 'أَكْبَر',
-        'الاكبر': 'الأَكْبَر',
-        'لا اله الا الله': 'لَا إِلَهَ إِلَّا اللَّه',
-        'محمد': 'مُحَمَّد',
-        'رسول': 'رَسُول',
-        'صلى': 'صَلَّى',
-        'عليه': 'عَلَيْه',
-        'وسلم': 'وَسَلَّم',
-        'السلام': 'السَّلَام',
-        'ومنك': 'وَمِنْك',
-        'تباركت': 'تَبَارَكْت',
-        'الجلال': 'الْجَلَال',
-        'والاكرام': 'وَالإِكْرَام',
-        'انت': 'أَنْت',
-        'وحده': 'وَحْدَه',
-        'شريك': 'شَرِيك',
-        'الملك': 'الْمُلْك',
-        'قدير': 'قَدِير',
-        'يغفر': 'يَغْفِر',
-        'الذنوب': 'الذُّنُوب',
-      };
-
-      Object.entries(commonWords).forEach(([word, vocalized]) => {
-        const regex = new RegExp(`${word}`, 'g');
-        processedText = processedText.replace(regex, vocalized);
-      });
 
       processedText = processedText.replace(/\s+/g, ' ').trim();
 
