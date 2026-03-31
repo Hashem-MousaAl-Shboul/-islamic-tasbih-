@@ -7,7 +7,6 @@ import {
   Platform,
   Alert,
   Linking,
-  Share,
   TouchableOpacity,
   Switch,
 } from 'react-native';
@@ -30,11 +29,11 @@ import {
 
   ChevronRight,
 } from 'lucide-react-native';
-import * as StoreReview from 'expo-store-review';
 import * as Haptics from 'expo-haptics';
 
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
+import { rateApp, shareApp } from '@/utils/globalUtils';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 
@@ -150,30 +149,14 @@ export default function SettingsScreen() {
   }, [updateSettings]);
 
   const handleRateApp = useCallback(async () => {
-    try {
-      if (Platform.OS === 'web') {
-        Alert.alert(t('rateApp'), t('rateAppDescription'));
-        return;
-      }
-      const isAvailable = await StoreReview.isAvailableAsync();
-      if (isAvailable) {
-        await StoreReview.requestReview();
-      } else {
-        Alert.alert(t('rateApp'), t('cantOpenStore'));
-      }
-    } catch (e) {
-      console.log(SETTINGS_TAG, 'Store review error:', e);
-      Alert.alert(t('error'), t('cantOpenStore'));
-    }
-  }, [t]);
+    console.log(SETTINGS_TAG, 'Rate app tapped');
+    await rateApp();
+  }, []);
 
   const handleShareApp = useCallback(async () => {
-    try {
-      await Share.share({ message: t('shareMessage'), title: t('appName') });
-    } catch (e) {
-      console.log(SETTINGS_TAG, 'Share error:', e);
-    }
-  }, [t]);
+    console.log(SETTINGS_TAG, 'Share app tapped');
+    await shareApp();
+  }, []);
 
   const handleContactUs = useCallback(async () => {
     try {

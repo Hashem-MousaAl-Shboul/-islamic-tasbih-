@@ -1,5 +1,6 @@
 import { Platform, Linking, Share, Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import * as StoreReview from 'expo-store-review';
 import i18n from '@/constants/translations';
 
 // App Store URLs for different platforms
@@ -47,6 +48,20 @@ export const shareApp = async () => {
 // Rate app functionality
 export const rateApp = async () => {
   try {
+    if (Platform.OS === 'web') {
+      const url = APP_STORE_URLS.web;
+      await WebBrowser.openBrowserAsync(url);
+      return;
+    }
+
+    const isAvailable = await StoreReview.isAvailableAsync();
+    if (isAvailable) {
+      console.log('[RateApp] Requesting native store review');
+      await StoreReview.requestReview();
+      return;
+    }
+
+    console.log('[RateApp] Native review not available, opening store URL');
     const url = Platform.select({
       ios: APP_STORE_URLS.ios,
       android: APP_STORE_URLS.android,
@@ -57,12 +72,11 @@ export const rateApp = async () => {
     if (supported) {
       await Linking.openURL(url);
     } else {
-      // Fallback to web browser
       await WebBrowser.openBrowserAsync(url);
     }
   } catch (error) {
-    console.error('Error opening app store:', error);
-    Alert.alert(i18n.t('error'), 'Failed to open app store');
+    console.error('[RateApp] Error:', error);
+    Alert.alert(i18n.t('error'), i18n.t('cantOpenStore'));
   }
 };
 

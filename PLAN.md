@@ -1,21 +1,17 @@
-# Fix Tasbih Counter for Android
+# Activate App Rating and Sharing Features
 
-## What will be fixed
+## What will change
 
-**Counter Store (`useTasbihStore`)**
-- Fix the count update logic so the counter number and statistics always update together reliably on Android
-- Remove the problematic pattern where state is read through a fake state update after completion
-- Use a proper ref-based approach for auto-navigation after completing a dhikr
-- Reduce unnecessary re-renders caused by the auto-save watcher reacting to every tap
+**Features:**
 
-**Counter Button (Tasbih Screen)**
-- Replace the main counter button with a more responsive touch handler that works better on Android (switch from TouchableOpacity to Pressable)
-- Make sound playback non-blocking so it never delays the counter increment
-- Pre-load click sound during initialization instead of lazily on first tap
-- Add proper error boundaries around haptics calls for Android devices that don't support them
+- **Rate App** — Tapping "Rate App" in settings will open the native in-app review dialog on iPhone/Android. If the dialog isn't available, it falls back to opening the App Store or Google Play page directly
+- **Share App** — Tapping "Share App" will open the system share sheet with a friendly message and a direct link to download the app from the App Store / Google Play
+- Both features will work gracefully on web with appropriate fallbacks (alert for rating, web share API for sharing)
 
-**Sound Service**
-- Pre-load the click sound during app initialization so the first tap isn't delayed by a network download
-- Make all sound calls fully fire-and-forget so they never block the counter
+**Changes:**
 
-These changes will make the counter feel instant and reliable on Android without changing the look or design of the screen.
+- Update the settings screen to use the improved rating and sharing functions from the utility file
+- The rating function will first try the native review popup, then fall back to opening the store link
+- The share message will include the app download link so recipients can easily install the app
+- Add the app store link to the share message for each platform (iOS App Store, Google Play)
+
