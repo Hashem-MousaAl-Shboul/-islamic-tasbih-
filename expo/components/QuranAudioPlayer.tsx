@@ -4,7 +4,6 @@ import { Audio } from 'expo-av';
 import { Play, Pause, Square, Volume2, RotateCcw } from 'lucide-react-native';
 import { getQuranRecitationUrl, getAvailableReciters, type ReciterId, RECITER_NAMES } from '@/utils/ttsService';
 import { stopAudio as stopYasAI } from '@/utils/yasAI';
-import { Colors } from '@/constants/colors';
 
 interface QuranAudioPlayerProps {
   surahNumber: number;
@@ -12,14 +11,6 @@ interface QuranAudioPlayerProps {
   selectedReciter?: ReciterId;
   onReciterChange?: (reciter: ReciterId) => void;
 }
-
-type PlaybackStatus = {
-  isLoaded: boolean;
-  isPlaying: boolean;
-  positionMillis: number;
-  durationMillis: number;
-  shouldPlay: boolean;
-};
 
 export default function QuranAudioPlayer({ 
   surahNumber, 
@@ -305,7 +296,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     flex: 1,
   },
   reciterButton: {
@@ -320,7 +311,7 @@ const styles = StyleSheet.create({
   reciterText: {
     color: '#10B981',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   recitersContainer: {
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -344,7 +335,7 @@ const styles = StyleSheet.create({
   },
   reciterOptionTextActive: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   progressContainer: {
     marginBottom: 16,
@@ -396,6 +387,6 @@ const styles = StyleSheet.create({
   loadingText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
 });

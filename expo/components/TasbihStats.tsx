@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 3,
     },
-    shadowOpacity: Platform.select({ ios: 0.2, android: 0.3, web: 0.1 }),
+    shadowOpacity: Platform.select({ ios: 0.2, android: 0.3, web: 0.1 }) ?? 0.2,
     shadowRadius: 6,
     elevation: 6,
     gap: 3,

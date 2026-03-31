@@ -120,7 +120,7 @@ export const SettingsItem = memo(function SettingsItem({
         onPress={() => onToggle?.(!isOn)}
         android_ripple={Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.06)', borderless: false } : undefined}
       >
-        {({ pressed }) => (
+        {() => (
           <View style={[styles.touchableContent, variant === 'grouped' && styles.touchableGrouped]}>
             <View style={styles.leftContent}>
               <View style={iconContainerStyle}>
