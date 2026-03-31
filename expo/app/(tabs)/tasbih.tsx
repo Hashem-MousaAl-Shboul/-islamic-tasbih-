@@ -14,7 +14,8 @@ import { ttsService } from '@/utils/ttsService';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
-const DEEP_GREEN_LIGHT = '#2D5A45';
+const DEEP_GREEN_LIGHT = "#2D5A45";
+const SCREEN_TAG = "[TasbihScreen]";
 const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
@@ -233,7 +234,7 @@ GlowEffect.displayName = 'GlowEffect';
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
-  useWindowDimensions();
+  const windowDimensions = useWindowDimensions();
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -260,7 +261,7 @@ export default function TasbihScreen() {
   }, [floatAnim]);
 
   useEffect(() => {
-    console.log('[TasbihScreen] Screen mounted');
+    console.log(SCREEN_TAG, 'Screen mounted, dimensions:', windowDimensions.width, 'x', windowDimensions.height);
     void soundService.initialize();
 
     return () => {
@@ -607,7 +608,7 @@ export default function TasbihScreen() {
       </View>
 
       {/* Main Content */}
-      <View style={[styles.mainContent, { paddingBottom: Platform.OS === 'android' ? 120 : 110 }]}>
+      <View style={styles.mainContent}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
@@ -665,6 +666,8 @@ export default function TasbihScreen() {
                   onPress={handleIncrement}
                   activeOpacity={0.9}
                   testID="increment-button"
+                  accessibilityRole="button"
+                  accessibilityLabel="Increment counter"
                 >
                   <AnimatedCounter count={selectedItem.count} targetCount={selectedItem.targetCount} />
                   <View style={styles.counterDivider} />
@@ -710,6 +713,8 @@ export default function TasbihScreen() {
               onPress={handleDecrement}
               activeOpacity={0.7}
               testID="decrement-button"
+              accessibilityRole="button"
+              accessibilityLabel="Decrement counter"
             >
               <LinearGradient
                 colors={['#FFE4E4', '#FFF0F0']}
@@ -742,6 +747,8 @@ export default function TasbihScreen() {
               onPress={handleReset}
               activeOpacity={0.7}
               testID="reset-button"
+              accessibilityRole="button"
+              accessibilityLabel="Reset counter"
             >
               <LinearGradient
                 colors={['#FFF8E7', '#FFF4DB']}
@@ -877,26 +884,26 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
   },
   headerGradient: {
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   headerContent: {
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 20,
+    paddingVertical: 10,
+    paddingTop: 14,
   },
   headerIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(212,168,83,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700' as const,
     color: CARD_WHITE,
     textAlign: 'center',
@@ -906,7 +913,7 @@ const styles = StyleSheet.create({
   headerOrnament: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 6,
     gap: 10,
   },
   ornamentLine: {
@@ -923,7 +930,9 @@ const styles = StyleSheet.create({
   },
   cardsSection: {
     backgroundColor: DEEP_GREEN,
-    paddingBottom: 12,
+    paddingBottom: 14,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   cardsScrollView: {
     maxHeight: 90,
@@ -957,15 +966,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingVertical: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
     paddingHorizontal: 16,
   },
   dhikrDisplay: {
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderRadius: 24,
-    marginBottom: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: 20,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
@@ -975,23 +985,23 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212,168,83,0.1)',
   },
   dhikrIconContainer: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   dhikrIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(27,67,50,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   mainArabicText: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700' as const,
     color: DEEP_GREEN,
     textAlign: 'center',
-    marginBottom: 6,
-    lineHeight: 38,
+    marginBottom: 4,
+    lineHeight: 34,
     paddingHorizontal: 8,
     alignSelf: 'stretch',
     writingDirection: 'rtl',
@@ -1016,11 +1026,11 @@ const styles = StyleSheet.create({
   },
   counterSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   progressRingContainer: {
-    width: 240,
-    height: 240,
+    width: 220,
+    height: 220,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1103,15 +1113,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   tapHint: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500' as const,
     color: TEXT_MUTED,
-    marginTop: 16,
+    marginTop: 8,
   },
   progressBarContainer: {
     width: '100%',
-    maxWidth: 280,
-    marginTop: 16,
+    maxWidth: 260,
+    marginTop: 10,
   },
   progressBarTrack: {
     height: 6,
@@ -1134,8 +1144,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 16,
-    marginTop: 8,
+    gap: 12,
+    marginTop: 4,
   },
   controlButton: {
     shadowColor: '#000',
@@ -1156,10 +1166,10 @@ const styles = StyleSheet.create({
   statsDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 24,
-    gap: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    gap: 20,
     backgroundColor: CARD_WHITE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1182,7 +1192,7 @@ const styles = StyleSheet.create({
     color: TEXT_MUTED,
   },
   statValue: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '800' as const,
     color: DEEP_GREEN,
   },
@@ -1319,11 +1329,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
     backgroundColor: 'rgba(27,67,50,0.08)',
-    marginTop: 14,
+    marginTop: 10,
   },
   speakDhikrButtonActive: {
     backgroundColor: DEEP_GREEN,

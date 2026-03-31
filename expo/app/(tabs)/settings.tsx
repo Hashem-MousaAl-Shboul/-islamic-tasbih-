@@ -44,7 +44,8 @@ const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
 const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
-const TEXT_MUTED = '#8A9B91';
+const TEXT_MUTED = "#8A9B91";
+const SETTINGS_TAG = "[SettingsScreen]";
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -125,19 +126,22 @@ export default function SettingsScreen() {
     const newTheme = settings.theme === 'dark' ? 'light' : 'dark';
     updateSettings({ theme: newTheme });
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    console.log(SETTINGS_TAG, "Theme toggled to:", newTheme);
     }
   }, [settings.theme, updateSettings]);
 
   const handleToggleVibration = useCallback(() => {
     updateSettings({ vibrationEnabled: !settings.vibrationEnabled });
     if (!settings.vibrationEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    console.log(SETTINGS_TAG, "Vibration toggled");
     }
   }, [settings.vibrationEnabled, updateSettings]);
 
   const handleToggleSound = useCallback(() => {
     updateSettings({ soundEnabled: !settings.soundEnabled });
+    console.log(SETTINGS_TAG, 'Sound toggled to:', !settings.soundEnabled);
   }, [settings.soundEnabled, updateSettings]);
 
   const handleSelectColorTheme = useCallback((themeKey: ColorThemeKey) => {
@@ -158,7 +162,7 @@ export default function SettingsScreen() {
         Alert.alert(t('rateApp'), t('cantOpenStore'));
       }
     } catch (e) {
-      console.log('[Settings] Store review error:', e);
+      console.log(SETTINGS_TAG, 'Store review error:', e);
       Alert.alert(t('error'), t('cantOpenStore'));
     }
   }, [t]);
@@ -167,7 +171,7 @@ export default function SettingsScreen() {
     try {
       await Share.share({ message: t('shareMessage'), title: t('appName') });
     } catch (e) {
-      console.log('[Settings] Share error:', e);
+      console.log(SETTINGS_TAG, 'Share error:', e);
     }
   }, [t]);
 
@@ -193,7 +197,7 @@ export default function SettingsScreen() {
         });
       }
     } catch (e) {
-      console.log('[Settings] Mail error:', e);
+      console.log(SETTINGS_TAG, 'Mail error:', e);
       Linking.openURL('mailto:support@subbah.app').catch(() => {
         Alert.alert(t('error'), t('contactError'));
       });
@@ -214,7 +218,7 @@ export default function SettingsScreen() {
               await resetAllData();
               Alert.alert(t('success'), t('settingsResetSuccess'));
             } catch (e) {
-              console.log('[Settings] Reset error:', e);
+              console.log(SETTINGS_TAG, 'Reset error:', e);
               Alert.alert(t('error'), t('resetError'));
             }
           },
@@ -237,7 +241,7 @@ export default function SettingsScreen() {
               await resetAllData();
               Alert.alert(t('success'), t('dataResetSuccess'));
             } catch (e) {
-              console.log('[Settings] Delete data error:', e);
+              console.log(SETTINGS_TAG, 'Delete data error:', e);
               Alert.alert(t('error'), t('resetError'));
             }
           },
@@ -259,7 +263,8 @@ export default function SettingsScreen() {
   }, [t]);
 
   return (
-    <View style={styles.container} testID="settings-screen">
+    <View style={styles.container} testID="settings-screen"
+      accessibilityLabel="Settings Screen">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Text style={styles.headerTitle}>{t('settings')}</Text>
         <View style={styles.headerOrnament}>
@@ -372,7 +377,7 @@ export default function SettingsScreen() {
             title={t('version')}
             subtitle="1.0.0"
             type="action"
-            onPress={() => {}}
+            onPress={() => { console.log(SETTINGS_TAG, "Version tapped"); }}
             isLast
           />
         </View>

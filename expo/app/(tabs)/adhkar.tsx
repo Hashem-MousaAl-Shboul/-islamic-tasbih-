@@ -15,7 +15,8 @@ const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
 
-console.log('[AdhkarScreen] module loaded');
+const ADHKAR_TAG = '[AdhkarScreen]';
+console.log(ADHKAR_TAG, 'module loaded');
 
 interface AdhkarItem {
   id: string;
@@ -51,7 +52,7 @@ const FilterButtonComponent: React.FC<FilterButtonProps> = ({ filter, selectedFi
 
   const handlePress = useCallback(() => {
     if (Platform.OS !== 'web') {
-      try { Haptics.selectionAsync(); } catch (error) { console.log('Haptic error:', error); }
+      try { void Haptics.selectionAsync(); } catch (error) { console.log('Haptic error:', error); }
     }
     onPress(filter);
   }, [filter, onPress]);
@@ -112,13 +113,13 @@ interface AdhkarCardProps {
   onStopSpeak: () => void;
 }
 
-const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMotion, isFavorite, onToggleFavorite, onShare, speakingId, onSpeak, onStopSpeak }) => {
+const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, reducedMotion: _reducedMotion, isFavorite, onToggleFavorite, onShare, speakingId, onSpeak, onStopSpeak }) => {
   const { t } = useLanguageStore();
   const [expanded, setExpanded] = useState<boolean>(false);
 
   const handleCardPress = useCallback(() => {
     if (Platform.OS !== 'web') {
-      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
+      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
     }
     setExpanded(prev => !prev);
   }, []);
@@ -126,7 +127,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
   const handleToggleFavorite = useCallback((e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
     if (Platform.OS !== 'web') {
-      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (error) { console.log('Haptic error:', error); }
+      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (error) { console.log('Haptic error:', error); }
     }
     onToggleFavorite(item.id);
   }, [item.id, onToggleFavorite]);
@@ -134,7 +135,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
   const handleShare = useCallback((e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
     if (Platform.OS !== 'web') {
-      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
+      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
     }
     onShare(item);
   }, [item, onShare]);
@@ -144,7 +145,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index, reducedMo
   const handleSpeak = useCallback((e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
     if (Platform.OS !== 'web') {
-      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
+      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
     }
     if (isSpeaking) {
       onStopSpeak();
@@ -422,21 +423,21 @@ export default function AdhkarScreen() {
   const [speakingId, setSpeakingId] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('[AdhkarScreen] Screen mounted');
+    console.log(ADHKAR_TAG, 'Screen mounted');
     return () => {
       ttsService.stop().catch(() => {});
     };
   }, []);
 
   const filteredAdhkar = useMemo(() => {
-    console.log(`[AdhkarScreen] Filtering adhkar for category: ${deferredFilter}`);
+    console.log(`${ADHKAR_TAG} Filtering adhkar for category: ${deferredFilter}`);
     let filtered = ADHKAR_LIST;
     if (deferredFilter === 'favorites') {
       filtered = ADHKAR_LIST.filter(item => isFavorite(item.id));
     } else if (deferredFilter !== 'all') {
       filtered = ADHKAR_LIST.filter(item => item.category === deferredFilter);
     }
-    console.log(`[AdhkarScreen] Found ${filtered.length} adhkar items`);
+    console.log(`${ADHKAR_TAG} Found ${filtered.length} adhkar items`);
     return filtered;
   }, [deferredFilter, isFavorite]);
 
@@ -444,23 +445,23 @@ export default function AdhkarScreen() {
 
   const handleSpeakAdhkar = useCallback(async (item: AdhkarItem) => {
     try {
-      console.log(`[AdhkarScreen] Speaking adhkar: ${item.id}`);
+      console.log(`${ADHKAR_TAG} Speaking adhkar: ${item.id}`);
       setSpeakingId(item.id);
       await ttsService.playDhikr(item.arabicText);
       setSpeakingId(null);
     } catch (error) {
-      console.error('[AdhkarScreen] Speech error:', error);
+      console.error(ADHKAR_TAG, 'Speech error:', error);
       setSpeakingId(null);
     }
   }, []);
 
   const handleStopSpeak = useCallback(async () => {
     try {
-      console.log('[AdhkarScreen] Stopping speech');
+      console.log(ADHKAR_TAG, 'Stopping speech');
       await ttsService.stop();
       setSpeakingId(null);
     } catch (error) {
-      console.error('[AdhkarScreen] Stop speech error:', error);
+      console.error(ADHKAR_TAG, 'Stop speech error:', error);
       setSpeakingId(null);
     }
   }, []);
@@ -477,9 +478,9 @@ export default function AdhkarScreen() {
       } else {
         await Share.share({ message });
       }
-      console.log(`[AdhkarScreen] Shared adhkar: ${item.id}`);
+      console.log(`${ADHKAR_TAG} Shared adhkar: ${item.id}`);
     } catch (error) {
-      console.error('[AdhkarScreen] Share error:', error);
+      console.error(ADHKAR_TAG, 'Share error:', error);
     }
   }, []);
 
@@ -503,7 +504,7 @@ export default function AdhkarScreen() {
 
   const handleFilterChange = useCallback((filter: FilterType) => {
     setSelectedFilter(filter);
-    console.log(`[AdhkarScreen] Filter changed to: ${filter}`);
+    console.log(`${ADHKAR_TAG} Filter changed to: ${filter}`);
   }, []);
 
   const { t } = useLanguageStore();
@@ -518,7 +519,8 @@ export default function AdhkarScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]} testID="adhkar-screen">
+    <View style={[styles.container, { paddingTop: insets.top }]} testID="adhkar-screen"
+      accessibilityLabel="Adhkar Screen">
       <ErrorBoundary t={t}>
         <View style={styles.topBar}>
           <Text style={styles.topBarTitle}>{t('adhkar')}</Text>

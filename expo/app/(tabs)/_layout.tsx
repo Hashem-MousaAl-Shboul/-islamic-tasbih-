@@ -8,7 +8,6 @@ import { AudioProgressBar } from "@/components/AudioProgressBar";
 import { yasAI } from "@/utils/yasAI";
 import OptimizedTabBar from "@/components/OptimizedTabBar";
 
-
 export default function TabLayout() {
   const { t } = useLanguageStore();
   const [isBarVisible, setIsBarVisible] = useState<boolean>(false);
@@ -27,6 +26,8 @@ export default function TabLayout() {
 
   useEffect(() => {
     let mounted = true;
+    console.log('[TabLayout] Mounting tab layout');
+
     const handlePlaybackChange = (state: { isPlaying: boolean; currentId: string | null }) => {
       if (mounted) {
         setIsBarVisible(state.isPlaying);
@@ -55,8 +56,9 @@ export default function TabLayout() {
   const handleCloseBar = useCallback(async () => {
     try {
       await yasAI.stop();
+      console.log('[TabLayout] Audio bar closed');
     } catch (e) {
-      console.log('[TabsLayout] stop error', e);
+      console.log('[TabLayout] stop error', e);
     } finally {
       setIsBarVisible(false);
     }
@@ -65,36 +67,42 @@ export default function TabLayout() {
   return (
     <View style={styles.root} testID="tabs-root">
       <Tabs screenOptions={screenOptions}>
-
-          <Tabs.Screen
-            name="tasbih"
-            options={{
-              title: t("tasbih") || "التسبيح",
-              tabBarIcon: ({ color, size }) => <Fingerprint size={size} color={color} strokeWidth={1.8} />,
-            }}
-          />
-          <Tabs.Screen
-            name="adhkar"
-            options={{
-              title: t("adhkar") || "الأذكار",
-              tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} strokeWidth={1.8} />,
-            }}
-          />
-          <Tabs.Screen
-            name="statistics"
-            options={{
-              title: t("statistics") || "الإحصائيات",
-              tabBarIcon: ({ color, size }) => <TrendingUp size={size} color={color} strokeWidth={1.8} />,
-            }}
-          />
-          <Tabs.Screen
-            name="settings"
-            options={{
-              title: t("settings") || "الإعدادات",
-              tabBarIcon: ({ color, size }) => <SlidersHorizontal size={size} color={color} strokeWidth={1.8} />,
-            }}
-          />
-
+        <Tabs.Screen
+          name="tasbih"
+          options={{
+            title: t("tasbih") || "التسبيح",
+            tabBarIcon: ({ color, size }) => (
+              <Fingerprint size={size} color={color} strokeWidth={1.8} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="adhkar"
+          options={{
+            title: t("adhkar") || "الأذكار",
+            tabBarIcon: ({ color, size }) => (
+              <BookOpen size={size} color={color} strokeWidth={1.8} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="statistics"
+          options={{
+            title: t("statistics") || "الإحصائيات",
+            tabBarIcon: ({ color, size }) => (
+              <TrendingUp size={size} color={color} strokeWidth={1.8} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: t("settings") || "الإعدادات",
+            tabBarIcon: ({ color, size }) => (
+              <SlidersHorizontal size={size} color={color} strokeWidth={1.8} />
+            ),
+          }}
+        />
       </Tabs>
       <AudioProgressBar isVisible={isBarVisible} onClose={handleCloseBar} />
     </View>
@@ -104,5 +112,6 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: '#F7F4EE',
   },
 });

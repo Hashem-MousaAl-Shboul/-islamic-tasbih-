@@ -20,7 +20,8 @@ const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
 const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
-const TEXT_MUTED = '#8A9B91';
+const TEXT_MUTED = "#8A9B91";
+const STATS_TAG = "[StatisticsScreen]";
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -103,8 +104,8 @@ const StatisticsScreen = memo(function StatisticsScreen() {
   const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
 
   useEffect(() => {
-    console.log('[StatisticsScreen] Screen mounted - Stats:', JSON.stringify(stats));
-    console.log('[StatisticsScreen] TasbihItems count:', tasbihItems.length);
+    console.log(STATS_TAG, 'Screen mounted - Stats:', JSON.stringify(stats));
+    console.log(STATS_TAG, 'TasbihItems count:', tasbihItems.length);
   }, [stats, tasbihItems]);
 
   const activeItems = useMemo(() => {
@@ -138,13 +139,13 @@ const StatisticsScreen = memo(function StatisticsScreen() {
   }, [activeItems]);
 
   const handleResetStats = useCallback(() => {
-    console.log('[StatisticsScreen] Reset stats button pressed');
+    console.log(STATS_TAG, 'Reset stats button pressed');
 
     if (Platform.OS === 'web') {
       const confirmed = confirm(i18n.t('resetStatsConfirm') || 'هل تريد إعادة تعيين جميع الإحصائيات؟');
       if (confirmed) {
         resetStats();
-        setTimeout(() => { saveData(); }, 100);
+        setTimeout(() => { void saveData(); }, 100);
         alert(i18n.t('statsResetSuccess') || 'تم إعادة تعيين الإحصائيات بنجاح');
       }
     } else {
@@ -158,7 +159,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
             style: 'destructive',
             onPress: () => {
               resetStats();
-              setTimeout(() => { saveData(); }, 100);
+              setTimeout(() => { void saveData(); }, 100);
               Alert.alert(
                 i18n.t('success') || 'نجاح',
                 i18n.t('statsResetSuccess') || 'تم إعادة تعيين الإحصائيات بنجاح'
@@ -171,7 +172,8 @@ const StatisticsScreen = memo(function StatisticsScreen() {
   }, [resetStats, saveData]);
 
   return (
-    <View style={styles.container} testID="statistics-screen">
+    <View style={styles.container} testID="statistics-screen"
+      accessibilityLabel="Statistics Screen">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
         <View style={styles.headerOrnament}>
@@ -186,6 +188,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
         contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
         testID="statistics-scroll"
+        accessibilityLabel="Statistics scroll view"
       >
         <View style={styles.heroCard}>
           <View style={styles.heroTop}>
@@ -301,7 +304,9 @@ const StatisticsScreen = memo(function StatisticsScreen() {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.resetButton} onPress={handleResetStats} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.resetButton} onPress={handleResetStats} activeOpacity={0.8}
+          testID="reset-stats-button"
+          accessibilityRole="button">
           <RefreshCw size={18} color="#D45050" />
           <Text style={styles.resetButtonText}>{i18n.t('resetStats') || 'إعادة تعيين الإحصائيات'}</Text>
         </TouchableOpacity>

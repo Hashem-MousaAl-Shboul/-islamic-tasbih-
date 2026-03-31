@@ -1,57 +1,61 @@
 import { useRouter } from 'expo-router';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
+const GOLD = '#D4A853';
+const BG_COLOR = '#0A1A14';
 
 export default function Index() {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(true);
   const hasNavigated = useRef<boolean>(false);
 
-  useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
+  const navigateToApp = useCallback(async () => {
+    try {
+      console.log('[Index] Checking welcome screen status');
+      const val = await AsyncStorage.getItem(WELCOME_SEEN_KEY);
+      const seen = val === 'true';
 
-    const navigate = async () => {
-      try {
-        const val = await AsyncStorage.getItem(WELCOME_SEEN_KEY);
-        const seen = val === 'true';
+      if (hasNavigated.current) return;
+      hasNavigated.current = true;
+      setLoading(false);
 
-        if (hasNavigated.current) return;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, Platform.OS === 'android' ? 150 : 50);
+      });
+
+      if (seen) {
+        console.log('[Index] Welcome seen, navigating to tabs');
+        router.replace('/(tabs)/tasbih');
+      } else {
+        console.log('[Index] First launch, showing welcome');
+        router.replace('/welcome');
+      }
+    } catch (e) {
+      console.log('[Index] Navigation error:', e);
+      if (!hasNavigated.current) {
         hasNavigated.current = true;
         setLoading(false);
-
-        await new Promise<void>((resolve) => {
-          timeout = setTimeout(resolve, Platform.OS === 'android' ? 150 : 50);
-        });
-
-        if (seen) {
-          router.replace('/(tabs)/tasbih');
-        } else {
-          router.replace('/welcome');
-        }
-      } catch (e) {
-        console.log('[Index] Navigation error:', e);
-        if (!hasNavigated.current) {
-          hasNavigated.current = true;
-          setLoading(false);
-          router.replace('/welcome');
-        }
+        router.replace('/welcome');
       }
-    };
+    }
+  }, [router]);
 
-    const startTimeout = setTimeout(navigate, 100);
+  useEffect(() => {
+    const startTimeout = setTimeout(() => {
+      void navigateToApp();
+    }, 100);
 
     return () => {
       clearTimeout(startTimeout);
-      if (timeout) clearTimeout(timeout);
     };
-  }, []);
+  }, [navigateToApp]);
 
   return (
-    <View style={styles.loader}>
-      {loading && <ActivityIndicator size="large" color="#D4A54A" />}
+    <View style={styles.loader} testID="index-screen">
+      {loading && <ActivityIndicator size="large" color={GOLD} />}
     </View>
   );
 }
@@ -61,6 +65,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0A1A14',
+    backgroundColor: BG_COLOR,
   },
 });

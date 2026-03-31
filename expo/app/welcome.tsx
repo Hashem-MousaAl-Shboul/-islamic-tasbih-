@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,15 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 
 const { width, height } = Dimensions.get('window');
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
+const WELCOME_TAG = '[WelcomeScreen]';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -20,8 +23,10 @@ export default function WelcomeScreen() {
   const slideAnim = useRef(new Animated.Value(40)).current;
   const buttonFade = useRef(new Animated.Value(0)).current;
   const buttonSlide = useRef(new Animated.Value(30)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    console.log(WELCOME_TAG, 'Screen mounted');
     Animated.sequence([
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -48,22 +53,48 @@ export default function WelcomeScreen() {
         }),
       ]),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim, buttonFade, buttonSlide]);
 
-  const handleContinue = async () => {
+  const handleContinue = useCallback(async () => {
+    console.log(WELCOME_TAG, 'Continue button pressed');
+
+    Animated.sequence([
+      Animated.timing(buttonScale, {
+        toValue: 0.95,
+        duration: 80,
+        useNativeDriver: true,
+      }),
+      Animated.spring(buttonScale, {
+        toValue: 1,
+        tension: 200,
+        friction: 10,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    if (Platform.OS !== 'web') {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (e) {
+        console.log(WELCOME_TAG, 'Haptic error:', e);
+      }
+    }
+
     try {
       await AsyncStorage.setItem(WELCOME_SEEN_KEY, 'true');
+      console.log(WELCOME_TAG, 'Welcome seen state saved');
     } catch (e) {
-      console.log('[Welcome] Error saving welcome seen state:', e);
+      console.log(WELCOME_TAG, 'Error saving welcome seen state:', e);
     }
     router.replace('/(tabs)/tasbih');
-  };
+  }, [router, buttonScale]);
 
   return (
     <ImageBackground
       source={require('@/assets/images/welcome-bg.jpg')}
       style={styles.background}
       resizeMode="cover"
+      testID="welcome-background"
     >
       <View style={styles.overlay} />
 
@@ -77,9 +108,13 @@ export default function WelcomeScreen() {
             },
           ]}
         >
-          <Text style={styles.bismillah}>بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</Text>
-          <Text style={styles.title}>سبّح</Text>
-          <Text style={styles.subtitle}>تطبيق التسبيح والأذكار</Text>
+          <Text style={styles.bismillah} testID="welcome-bismillah">
+            بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+          </Text>
+          <Text style={styles.title} testID="welcome-title">سبّح</Text>
+          <Text style={styles.subtitle} testID="welcome-subtitle">
+            تطبيق التسبيح والأذكار
+          </Text>
         </Animated.View>
 
         <Animated.View
@@ -91,14 +126,18 @@ export default function WelcomeScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleContinue}
-            activeOpacity={0.8}
-            testID="welcome-continue-btn"
-          >
-            <Text style={styles.buttonText}>ابدأ الآن</Text>
-          </TouchableOpacity>
+          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleContinue}
+              activeOpacity={0.8}
+              testID="welcome-continue-btn"
+              accessibilityRole="button"
+              accessibilityLabel="ابدأ الآن"
+            >
+              <Text style={styles.buttonText}>ابدأ الآن</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </Animated.View>
       </View>
     </ImageBackground>
@@ -113,7 +152,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 40, 20, 0.3)',
+    backgroundColor: 'rgba(0, 40, 20, 0.35)',
   },
   content: {
     flex: 1,
@@ -131,6 +170,7 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     marginBottom: 16,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   title: {
     fontSize: 52,
@@ -147,6 +187,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
     fontWeight: '400' as const,
+    letterSpacing: 0.3,
   },
   bottomSection: {
     alignItems: 'center',
@@ -170,5 +211,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: '700' as const,
+    letterSpacing: 0.5,
   },
 });
