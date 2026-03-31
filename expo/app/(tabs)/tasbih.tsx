@@ -7,9 +7,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Plus, X, Check, Minus, RotateCcw, Volume2, VolumeX,
-  Sparkles, Moon, TrendingUp, Calendar, Target, Award,
-  Flame, Star, RefreshCw
+  Sparkles, Moon, TrendingUp, ChevronRight
 } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
@@ -17,9 +17,8 @@ import TasbihCard from '@/components/TasbihCard';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
-import i18n from '@/constants/translations';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: _SCREEN_WIDTH } = Dimensions.get('window');
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
 const DEEP_GREEN_LIGHT = '#2D5A45';
@@ -27,39 +26,7 @@ const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
 
-type ActiveTab = 'counter' | 'stats';
 
-// ─── Segment Control ──────────────────────────────────────────────────────────
-const SegmentControl = memo(({ active, onChange }: { active: ActiveTab; onChange: (t: ActiveTab) => void }) => {
-  const slideAnim = useRef(new Animated.Value(active === 'counter' ? 0 : 1)).current;
-
-  useEffect(() => {
-    Animated.spring(slideAnim, {
-      toValue: active === 'counter' ? 0 : 1,
-      useNativeDriver: true,
-      tension: 180,
-      friction: 14,
-    }).start();
-  }, [active, slideAnim]);
-
-  const translateX = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, SCREEN_WIDTH / 2 - 32],
-  });
-
-  return (
-    <View style={seg.wrapper}>
-      <Animated.View style={[seg.pill, { transform: [{ translateX }] }]} />
-      <TouchableOpacity style={seg.btn} onPress={() => onChange('counter')} activeOpacity={0.8}>
-        <Text style={[seg.label, active === 'counter' && seg.labelActive]}>التسبيح</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={seg.btn} onPress={() => onChange('stats')} activeOpacity={0.8}>
-        <Text style={[seg.label, active === 'stats' && seg.labelActive]}>الإحصائيات</Text>
-      </TouchableOpacity>
-    </View>
-  );
-});
-SegmentControl.displayName = 'SegmentControl';
 
 // ─── Animated Counter Number ──────────────────────────────────────────────────
 const AnimatedCounter = memo(({ count, _targetCount }: { count: number; _targetCount?: number }) => {
@@ -126,7 +93,7 @@ const CircularProgress = memo(({ progress, color, size = 220 }: { progress: numb
 CircularProgress.displayName = 'CircularProgress';
 
 // ─── Compact header ───────────────────────────────────────────────────────────
-const TasbihHeader = memo(({ activeTab, onTabChange }: { activeTab: ActiveTab; onTabChange: (t: ActiveTab) => void }) => {
+const TasbihHeader = memo(() => {
   return (
     <LinearGradient colors={[DEEP_GREEN, DEEP_GREEN_LIGHT]} style={styles.headerGradient}>
       <View style={styles.headerContent}>
@@ -134,226 +101,27 @@ const TasbihHeader = memo(({ activeTab, onTabChange }: { activeTab: ActiveTab; o
           <View style={styles.headerIconContainer}>
             <Sparkles size={16} color={GOLD} />
           </View>
-          <Text style={styles.headerTitle}>{activeTab === 'counter' ? 'التسبيح' : 'الإحصائيات'}</Text>
+          <Text style={styles.headerTitle}>التسبيح</Text>
           <View style={styles.headerOrnament}>
             <View style={styles.ornamentLine} />
             <View style={styles.ornamentDiamond} />
             <View style={styles.ornamentLine} />
           </View>
         </View>
-        <SegmentControl active={activeTab} onChange={onTabChange} />
       </View>
     </LinearGradient>
   );
 });
 TasbihHeader.displayName = 'TasbihHeader';
 
-// ─── Stats Sub-components ─────────────────────────────────────────────────────
-interface StatCardProps { icon: React.ReactNode; title: string; value: string | number; subtitle?: string; color: string; }
-const StatCard = memo(({ icon, title, value, subtitle, color }: StatCardProps) => (
-  <View style={st.statCard}>
-    <View style={[st.statIconContainer, { backgroundColor: color + '14' }]}>{icon}</View>
-    <Text style={st.statTitle}>{title}</Text>
-    <Text style={[st.statValue, { color }]}>{value}</Text>
-    {subtitle && <Text style={st.statSubtitle}>{subtitle}</Text>}
-  </View>
-));
-StatCard.displayName = 'StatCard';
 
-interface ProgressBarProps { progress: number; color: string; label: string; value: string; }
-const ProgressBar = memo(({ progress, color, label, value }: ProgressBarProps) => {
-  const clamp = Math.min(Math.max(progress, 0), 100);
-  return (
-    <View style={st.progressContainer}>
-      <View style={st.progressHeader}>
-        <Text style={st.progressLabel}>{label}</Text>
-        <Text style={[st.progressValue, { color }]}>{value}</Text>
-      </View>
-      <View style={st.progressTrack}>
-        <View style={[st.progressFill, { width: `${clamp}%`, backgroundColor: color }]} />
-      </View>
-    </View>
-  );
-});
-ProgressBar.displayName = 'ProgressBar';
-
-interface DhikrStatItemProps { arabicText: string; count: number; targetCount: number; totalCompletions: number; color: string; }
-const DhikrStatItem = memo(({ arabicText, count, targetCount, totalCompletions, color }: DhikrStatItemProps) => {
-  const progress = targetCount > 0 ? (count / targetCount) * 100 : 0;
-  return (
-    <View style={st.dhikrStatItem}>
-      <View style={st.dhikrStatHeader}>
-        <Text style={st.dhikrArabicText}>{arabicText}</Text>
-        <View style={[st.completionBadge, { backgroundColor: color + '14' }]}>
-          <Text style={[st.completionText, { color }]}>{totalCompletions}x</Text>
-        </View>
-      </View>
-      <View style={st.dhikrProgressContainer}>
-        <View style={st.dhikrProgressTrack}>
-          <View style={[st.dhikrProgressFill, { width: `${Math.min(progress, 100)}%`, backgroundColor: color }]} />
-        </View>
-        <Text style={st.dhikrCountText}>{count}/{targetCount}</Text>
-      </View>
-    </View>
-  );
-});
-DhikrStatItem.displayName = 'DhikrStatItem';
-
-// ─── Statistics Panel ─────────────────────────────────────────────────────────
-const StatisticsPanel = memo(({ bottomPad }: { bottomPad: number }) => {
-  const { stats, tasbihItems, settings, resetStats, saveData } = useTasbihStore();
-  const { currentLanguage } = useLanguageStore();
-  const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
-
-  const activeItems = useMemo(() => tasbihItems.filter(item => !item.isDeleted), [tasbihItems]);
-
-  const todayProgress = useMemo(() => {
-    const completed = activeItems.filter(i => i.isCompleted).length;
-    return activeItems.length > 0 ? Math.round((completed / activeItems.length) * 100) : 0;
-  }, [activeItems]);
-
-  const mostUsedDhikr = useMemo(() => {
-    if (!activeItems.length) return null;
-    return activeItems.reduce((max, item) => item.totalCompletions > (max?.totalCompletions || 0) ? item : max, activeItems[0]);
-  }, [activeItems]);
-
-  const totalTargetCount = useMemo(() => activeItems.reduce((s, i) => s + i.targetCount, 0), [activeItems]);
-
-  const dailyGoalProgress = useMemo(() => {
-    const goal = settings.dailyGoal || 300;
-    return Math.min(Math.round((stats.todayCount / goal) * 100), 100);
-  }, [stats.todayCount, settings.dailyGoal]);
-
-  const sortedDhikrItems = useMemo(() => [...activeItems].sort((a, b) => b.totalCompletions - a.totalCompletions), [activeItems]);
-
-  const handleResetStats = useCallback(() => {
-    if (Platform.OS === 'web') {
-      if (confirm(i18n.t('resetStatsConfirm') || 'هل تريد إعادة تعيين جميع الإحصائيات؟')) {
-        resetStats();
-        setTimeout(() => { void saveData(); }, 100);
-      }
-    } else {
-      Alert.alert(
-        i18n.t('resetStats') || 'إعادة تعيين الإحصائيات',
-        i18n.t('resetStatsConfirm') || 'هل تريد إعادة تعيين جميع الإحصائيات؟',
-        [
-          { text: i18n.t('cancel') || 'إلغاء', style: 'cancel' },
-          {
-            text: i18n.t('delete') || 'حذف',
-            style: 'destructive',
-            onPress: () => { resetStats(); setTimeout(() => { void saveData(); }, 100); },
-          },
-        ]
-      );
-    }
-  }, [resetStats, saveData]);
-
-  return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={[st.contentContainer, { paddingBottom: bottomPad + 24 }]}
-    >
-      {/* Hero */}
-      <View style={st.heroCard}>
-        <View style={st.heroTop}>
-          <View style={st.heroIconCircle}><TrendingUp size={24} color={GOLD} /></View>
-          <Text style={st.heroLabel}>{i18n.t('totalDhikr') || 'إجمالي الذكر'}</Text>
-        </View>
-        <Text style={st.heroValue}>{stats.totalCount.toLocaleString()}</Text>
-        <View style={st.heroDivider} />
-        <View style={st.heroStats}>
-          <View style={st.heroStatItem}>
-            <Text style={st.heroStatValue}>{stats.todayCount}</Text>
-            <Text style={st.heroStatLabel}>{i18n.t('today') || 'اليوم'}</Text>
-          </View>
-          <View style={st.heroStatSep} />
-          <View style={st.heroStatItem}>
-            <Text style={st.heroStatValue}>{stats.streakDays}</Text>
-            <Text style={st.heroStatLabel}>{i18n.t('streakDays') || 'أيام متتالية'}</Text>
-          </View>
-          <View style={st.heroStatSep} />
-          <View style={st.heroStatItem}>
-            <Text style={st.heroStatValue}>{stats.completedSessions}</Text>
-            <Text style={st.heroStatLabel}>{i18n.t('sessions') || 'جلسات'}</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Daily Progress */}
-      <Text style={[st.sectionTitle, isRTL && st.sectionTitleRTL]}>{i18n.t('dailyProgress') || 'التقدم اليومي'}</Text>
-      <View style={st.progressCard}>
-        <ProgressBar
-          progress={dailyGoalProgress}
-          color={DEEP_GREEN}
-          label={i18n.t('dailyGoal') || 'الهدف اليومي'}
-          value={`${stats.todayCount}/${settings.dailyGoal || 300}`}
-        />
-        <View style={st.progressDivider} />
-        <ProgressBar
-          progress={todayProgress}
-          color={GOLD}
-          label={i18n.t('completedDhikr') || 'الأذكار المكتملة'}
-          value={`${activeItems.filter(i => i.isCompleted).length}/${activeItems.length}`}
-        />
-      </View>
-
-      {/* Quick Stats Grid */}
-      <Text style={[st.sectionTitle, isRTL && st.sectionTitleRTL]}>{i18n.t('quickStats') || 'إحصائيات سريعة'}</Text>
-      <View style={st.statsGrid}>
-        <StatCard icon={<Calendar size={20} color="#3B7DD8" />} title={i18n.t('today') || 'اليوم'} value={stats.todayCount} color="#3B7DD8" />
-        <StatCard icon={<Flame size={20} color="#E07A3A" />} title={i18n.t('streak') || 'متتالية'} value={stats.streakDays} subtitle={i18n.t('days') || 'أيام'} color="#E07A3A" />
-        <StatCard icon={<Target size={20} color="#2D8B6F" />} title={i18n.t('sessions') || 'جلسات'} value={stats.completedSessions} color="#2D8B6F" />
-        <StatCard icon={<Award size={20} color="#8B6BC4" />} title={i18n.t('totalTarget') || 'الهدف الكلي'} value={totalTargetCount} color="#8B6BC4" />
-      </View>
-
-      {/* Favorite */}
-      {mostUsedDhikr && (
-        <>
-          <Text style={[st.sectionTitle, isRTL && st.sectionTitleRTL]}>{i18n.t('favoritedhikr') || 'الذكر المفضل'}</Text>
-          <View style={st.favoriteCard}>
-            <View style={st.favoriteIconCircle}><Star size={22} color={GOLD} fill={GOLD} /></View>
-            <View style={st.favoriteContent}>
-              <Text style={st.favoriteArabic}>{mostUsedDhikr.arabicText}</Text>
-              <Text style={st.favoriteStats}>
-                {i18n.t('completedTimes') || 'مكتمل'} {mostUsedDhikr.totalCompletions} {i18n.t('times') || 'مرات'}
-              </Text>
-            </View>
-          </View>
-        </>
-      )}
-
-      {/* Dhikr List */}
-      <Text style={[st.sectionTitle, isRTL && st.sectionTitleRTL]}>{i18n.t('dhikrDetails') || 'تفاصيل الأذكار'}</Text>
-      <View style={st.dhikrListCard}>
-        {sortedDhikrItems.map((item, index) => (
-          <View key={item.id}>
-            <DhikrStatItem
-              arabicText={item.arabicText}
-              count={item.count}
-              targetCount={item.targetCount}
-              totalCompletions={item.totalCompletions}
-              color={item.color}
-            />
-            {index < sortedDhikrItems.length - 1 && <View style={st.dhikrDivider} />}
-          </View>
-        ))}
-      </View>
-
-      <TouchableOpacity style={st.resetButton} onPress={handleResetStats} activeOpacity={0.8} testID="reset-stats-button">
-        <RefreshCw size={18} color="#D45050" />
-        <Text style={st.resetButtonText}>{i18n.t('resetStats') || 'إعادة تعيين الإحصائيات'}</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-});
-StatisticsPanel.displayName = 'StatisticsPanel';
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
   const windowDimensions = useWindowDimensions();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('counter');
+  const router = useRouter();
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
@@ -549,11 +317,9 @@ export default function TasbihScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TasbihHeader activeTab={activeTab} onTabChange={setActiveTab} />
+      <TasbihHeader />
 
-      {activeTab === 'counter' ? (
-        <>
-          {/* Tasbih Cards */}
+      {/* Tasbih Cards */}
           <View style={styles.cardsSection}>
             <FlatList
               horizontal
@@ -686,13 +452,22 @@ export default function TasbihScreen() {
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
+
+              {/* Link to Statistics */}
+              <TouchableOpacity
+                style={styles.statsLinkButton}
+                onPress={() => router.push('/statistics')}
+                activeOpacity={0.7}
+                testID="stats-link-button"
+              >
+                <View style={styles.statsLinkContent}>
+                  <TrendingUp size={18} color={DEEP_GREEN} />
+                  <Text style={styles.statsLinkText}>{t('statistics') || 'الإحصائيات'}</Text>
+                </View>
+                <ChevronRight size={18} color={TEXT_MUTED} />
+              </TouchableOpacity>
             </ScrollView>
           </View>
-        </>
-      ) : (
-        <StatisticsPanel bottomPad={insets.bottom} />
-      )}
-
       {/* Add Modal */}
       <Modal visible={showAddModal} animationType="slide" transparent onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
@@ -776,40 +551,6 @@ export default function TasbihScreen() {
   );
 }
 
-// ─── Segment Styles ───────────────────────────────────────────────────────────
-const seg = StyleSheet.create({
-  wrapper: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 10,
-    height: 36,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  pill: {
-    position: 'absolute',
-    width: '50%',
-    height: '100%',
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    borderRadius: 20,
-  },
-  btn: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-    color: 'rgba(255,255,255,0.6)',
-  },
-  labelActive: {
-    color: '#FFFFFF',
-  },
-});
 
 // ─── Counter Styles ───────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -898,58 +639,13 @@ const styles = StyleSheet.create({
   speakDhikrButtonActive: { backgroundColor: DEEP_GREEN },
   speakDhikrText: { fontSize: 13, fontWeight: '600' as const, color: DEEP_GREEN },
   speakDhikrTextActive: { color: '#FFFFFF' },
-});
-
-// ─── Statistics Styles ────────────────────────────────────────────────────────
-const st = StyleSheet.create({
-  contentContainer: { paddingTop: 20, paddingHorizontal: 16 },
-  heroCard: {
-    backgroundColor: CARD_WHITE, borderRadius: 24, padding: 24, marginBottom: 24,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 3,
+  statsLinkButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: CARD_WHITE, borderRadius: 16, paddingHorizontal: 18, paddingVertical: 14,
+    marginTop: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     borderWidth: 1, borderColor: GOLD + '18',
   },
-  heroTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 10 },
-  heroIconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: GOLD + '14', justifyContent: 'center', alignItems: 'center' },
-  heroLabel: { fontSize: 14, color: TEXT_MUTED, fontWeight: '500' as const },
-  heroValue: { fontSize: 44, fontWeight: '800' as const, color: DEEP_GREEN, marginTop: 4, textAlign: 'center' },
-  heroDivider: { height: 1, backgroundColor: 'rgba(0,0,0,0.05)', marginVertical: 18 },
-  heroStats: { flexDirection: 'row', justifyContent: 'space-around' },
-  heroStatItem: { alignItems: 'center' },
-  heroStatValue: { fontSize: 22, fontWeight: '700' as const, color: DEEP_GREEN },
-  heroStatLabel: { fontSize: 12, color: TEXT_MUTED, marginTop: 4 },
-  heroStatSep: { width: 1, backgroundColor: 'rgba(0,0,0,0.06)' },
-  sectionTitle: { fontSize: 15, fontWeight: '600' as const, color: TEXT_MUTED, marginBottom: 12, marginLeft: 4, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
-  sectionTitleRTL: { textAlign: 'right', marginLeft: 0, marginRight: 4 },
-  progressCard: { backgroundColor: CARD_WHITE, borderRadius: 20, padding: 20, marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 10, elevation: 2 },
-  progressContainer: { marginBottom: 8 },
-  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  progressLabel: { fontSize: 14, color: DEEP_GREEN, fontWeight: '500' as const },
-  progressValue: { fontSize: 14, fontWeight: '700' as const },
-  progressTrack: { height: 8, backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 4 },
-  progressDivider: { height: 16 },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
-  statCard: { backgroundColor: CARD_WHITE, borderRadius: 18, padding: 16, width: (SCREEN_WIDTH - 44) / 2, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
-  statIconContainer: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-  statTitle: { fontSize: 12, color: TEXT_MUTED, marginBottom: 4 },
-  statValue: { fontSize: 26, fontWeight: '800' as const },
-  statSubtitle: { fontSize: 11, color: TEXT_MUTED, marginTop: 2 },
-  favoriteCard: { backgroundColor: CARD_WHITE, borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 10, elevation: 2, borderWidth: 1, borderColor: GOLD + '18' },
-  favoriteIconCircle: { width: 52, height: 52, borderRadius: 26, backgroundColor: GOLD + '14', justifyContent: 'center', alignItems: 'center' },
-  favoriteContent: { marginLeft: 16, flex: 1 },
-  favoriteArabic: { fontSize: 20, fontWeight: '700' as const, color: DEEP_GREEN, marginBottom: 4, writingDirection: 'rtl', textAlign: 'right' },
-  favoriteStats: { fontSize: 13, color: TEXT_MUTED },
-  dhikrListCard: { backgroundColor: CARD_WHITE, borderRadius: 20, padding: 16, marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 10, elevation: 2 },
-  dhikrStatItem: { paddingVertical: 14 },
-  dhikrStatHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  dhikrArabicText: { fontSize: 16, fontWeight: '600' as const, color: DEEP_GREEN, flex: 1, writingDirection: 'rtl', textAlign: 'right' },
-  completionBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-  completionText: { fontSize: 12, fontWeight: '700' as const },
-  dhikrProgressContainer: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  dhikrProgressTrack: { flex: 1, height: 6, backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 3, overflow: 'hidden' },
-  dhikrProgressFill: { height: '100%', borderRadius: 3 },
-  dhikrCountText: { fontSize: 12, color: TEXT_MUTED, minWidth: 50, textAlign: 'right' },
-  dhikrDivider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(0,0,0,0.06)' },
-  resetButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FEF2F2', borderRadius: 16, padding: 16, gap: 8, marginBottom: 20, borderWidth: 1, borderColor: '#FECACA' },
-  resetButtonText: { fontSize: 15, fontWeight: '600' as const, color: '#D45050' },
+  statsLinkContent: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  statsLinkText: { fontSize: 15, fontWeight: '600' as const, color: DEEP_GREEN },
 });
