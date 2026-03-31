@@ -1,32 +1,21 @@
-# تحسين شاشة الترحيب لعرض جميع الشاشات والمزايا
+# Fix Tasbih Counter for Android
 
-## Features
+## What will be fixed
 
-- **Welcome screen showcases all 4 app screens** with their icons and descriptions
-- **Tasbih feature card** — icon with title "عداد التسبيح" and description about the digital counter for dhikr
-- **Adhkar feature card** — icon with title "الأذكار" and description about morning/evening adhkar and duas
-- **Statistics feature card** — icon with title "الإحصائيات" and description about tracking your dhikr progress
-- **Settings feature card** — icon with title "الإعدادات" and description about customizing language, theme, sounds
-- **Smooth entrance animations** — each feature card animates in sequentially with a staggered fade + slide effect
-- **Start button** at the bottom to begin using the app
+**Counter Store (`useTasbihStore`)**
+- Fix the count update logic so the counter number and statistics always update together reliably on Android
+- Remove the problematic pattern where state is read through a fake state update after completion
+- Use a proper ref-based approach for auto-navigation after completing a dhikr
+- Reduce unnecessary re-renders caused by the auto-save watcher reacting to every tap
 
-## Design
+**Counter Button (Tasbih Screen)**
+- Replace the main counter button with a more responsive touch handler that works better on Android (switch from TouchableOpacity to Pressable)
+- Make sound playback non-blocking so it never delays the counter increment
+- Pre-load click sound during initialization instead of lazily on first tap
+- Add proper error boundaries around haptics calls for Android devices that don't support them
 
-- **Scrollable single page** with a rich green gradient background (matching existing app theme)
-- **App logo area** at the top with the sparkle icon and "تسبيح" title + subtitle
-- **4 feature cards** stacked vertically, each with:
-  - A circular icon container on the right (RTL layout)
-  - Feature title in bold white
-  - Short description in lighter white below
-  - Slightly transparent card background with subtle border for depth
-- Each card uses a **unique accent color** for its icon circle (gold for tasbih, purple for adhkar, green for statistics, warm tone for settings)
-- **"ابدأ التسبيح" button** at the bottom — dark green rounded pill with white text
-- **"اضغط للبدء" hint** below the button in faded text
-- Overall feel: elegant, Islamic-inspired, calm and welcoming
+**Sound Service**
+- Pre-load the click sound during app initialization so the first tap isn't delayed by a network download
+- Make all sound calls fully fire-and-forget so they never block the counter
 
-## Screens
-
-- **Welcome Screen** (single scrollable page):
-  - Top: Sparkle icon + "تسبيح" title + subtitle
-  - Middle: 4 feature cards (Tasbih, Adhkar, Statistics, Settings)
-  - Bottom: Start button + hint text
+These changes will make the counter feel instant and reliable on Android without changing the look or design of the screen.

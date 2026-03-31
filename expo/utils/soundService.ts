@@ -49,12 +49,19 @@ class SoundService {
 
       this.isLoaded = true;
       console.log('[SoundService] Audio mode set successfully');
+
+      this.preloadSounds();
     } catch (error) {
       console.log('[SoundService] Error initializing audio (non-blocking):', error);
       this.isLoaded = true;
     } finally {
       this.isInitializing = false;
     }
+  }
+
+  private preloadSounds() {
+    this.ensureClickSound().catch(e => console.log('[SoundService] Preload click failed:', e));
+    this.ensureCompletionSound().catch(e => console.log('[SoundService] Preload completion failed:', e));
   }
 
   private async ensureClickSound(): Promise<void> {
@@ -89,7 +96,7 @@ class SoundService {
     }
   }
 
-  async playClick() {
+  playClickSync() {
     if (Platform.OS === 'web') {
       try {
         const audio = new window.Audio('https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3');
@@ -101,20 +108,25 @@ class SoundService {
       return;
     }
 
-    if (!this.isLoaded) {
-      await this.initialize();
-    }
+    if (!this.isLoaded) return;
 
-    try {
-      await this.ensureClickSound();
-      await this.clickSound?.replayAsync();
-    } catch (error) {
-      console.log('[SoundService] Click sound error:', error);
-      this.clickSound = null;
+    if (this.clickSound) {
+      this.clickSound.replayAsync().catch((error: unknown) => {
+        console.log('[SoundService] Click sound replay error:', error);
+        this.clickSound = null;
+      });
+    } else {
+      this.ensureClickSound().then(() => {
+        this.clickSound?.replayAsync().catch(() => {});
+      }).catch(() => {});
     }
   }
 
-  async playCompletion() {
+  async playClick() {
+    this.playClickSync();
+  }
+
+  playCompletionSync() {
     if (Platform.OS === 'web') {
       try {
         const audio = new window.Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
@@ -126,17 +138,22 @@ class SoundService {
       return;
     }
 
-    if (!this.isLoaded) {
-      await this.initialize();
-    }
+    if (!this.isLoaded) return;
 
-    try {
-      await this.ensureCompletionSound();
-      await this.completionSound?.replayAsync();
-    } catch (error) {
-      console.log('[SoundService] Completion sound error:', error);
-      this.completionSound = null;
+    if (this.completionSound) {
+      this.completionSound.replayAsync().catch((error: unknown) => {
+        console.log('[SoundService] Completion sound replay error:', error);
+        this.completionSound = null;
+      });
+    } else {
+      this.ensureCompletionSound().then(() => {
+        this.completionSound?.replayAsync().catch(() => {});
+      }).catch(() => {});
     }
+  }
+
+  async playCompletion() {
+    this.playCompletionSync();
   }
 
   async unload() {

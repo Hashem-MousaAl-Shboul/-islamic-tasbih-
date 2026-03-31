@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable,
   ActivityIndicator, Platform, Alert, useWindowDimensions,
   Modal, TextInput, FlatList, Animated, Dimensions
 } from 'react-native';
@@ -415,33 +415,33 @@ export default function TasbihScreen() {
   const handleIncrement = useCallback(() => {
     if (!selectedItem) return;
 
+    updateTasbihCount(selectedItem.id, true);
+
     triggerPulse();
 
     if (settings.vibrationEnabled && Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); } catch {}
     }
     if (settings.soundEnabled) {
-      void soundService.playClick();
+      soundService.playClickSync();
     }
 
     const willComplete = selectedItem.count + 1 >= selectedItem.targetCount;
-    updateTasbihCount(selectedItem.id, true);
-
     if (willComplete && !selectedItem.isCompleted) {
-      if (settings.soundEnabled) void soundService.playCompletion();
+      if (settings.soundEnabled) soundService.playCompletionSync();
       if (settings.vibrationEnabled && Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}); } catch {}
       }
     }
   }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled, triggerPulse]);
 
   const handleDecrement = useCallback(() => {
     if (!selectedItem || selectedItem.count <= 0) return;
-    if (settings.vibrationEnabled && Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    }
-    if (settings.soundEnabled) void soundService.playClick();
     updateTasbihCount(selectedItem.id, false);
+    if (settings.vibrationEnabled && Platform.OS !== 'web') {
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); } catch {}
+    }
+    if (settings.soundEnabled) soundService.playClickSync();
   }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled]);
 
   const handleReset = useCallback(() => {
@@ -623,10 +623,14 @@ export default function TasbihScreen() {
                 <View style={styles.progressRingContainer}>
                   <CircularProgress progress={progressPercent / 100} color={selectedItem.color} />
                   <Animated.View style={[styles.counterButtonContainer, { transform: [{ scale: pulseAnim }] }]}>
-                    <TouchableOpacity
-                      style={[styles.mainCounterButton, { backgroundColor: selectedItem.color }]}
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.mainCounterButton,
+                        { backgroundColor: selectedItem.color },
+                        pressed && styles.counterButtonPressed,
+                      ]}
                       onPress={handleIncrement}
-                      activeOpacity={0.9}
+                      android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true, radius: 90 }}
                       testID="increment-button"
                       accessibilityRole="button"
                       accessibilityLabel="Increment counter"
@@ -634,7 +638,7 @@ export default function TasbihScreen() {
                       <AnimatedCounter count={selectedItem.count} />
                       <View style={styles.counterDivider} />
                       <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </Animated.View>
                   {selectedItem.isCompleted && (
                     <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
@@ -855,7 +859,8 @@ const styles = StyleSheet.create({
   progressArc: { position: 'absolute' },
   progressArcFill: { position: 'absolute', borderLeftColor: 'transparent', borderBottomColor: 'transparent' },
   counterButtonContainer: { position: 'absolute', zIndex: 10 },
-  mainCounterButton: { width: 180, height: 180, borderRadius: 90, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 12 },
+  mainCounterButton: { width: 180, height: 180, borderRadius: 90, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 12, overflow: 'hidden' as const },
+  counterButtonPressed: { opacity: 0.92 },
   counterNumber: { fontSize: 56, fontWeight: '800' as const, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
   counterDivider: { width: 40, height: 2, backgroundColor: 'rgba(255,255,255,0.5)', marginVertical: 6 },
   counterTarget: { fontSize: 22, fontWeight: '600' as const, color: 'rgba(255,255,255,0.85)' },

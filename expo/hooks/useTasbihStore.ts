@@ -256,93 +256,73 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
 
   const updateTasbihCount = useCallback((id: string, increment: boolean = true) => {
     console.log(`[TasbihStore] updateTasbihCount called - ID: ${id}, Increment: ${increment}`);
-    let completionAchieved = false;
-    let statsUpdate = false;
-    let currentCount = 0;
-    let targetCount = 0;
-    let completedItemId: string | null = null;
-    
+
     setTasbihItems(prev => {
+      let didComplete = false;
       const newItems = prev.map(item => {
-        if (item.id === id) {
-          const newCount = increment ? item.count + 1 : Math.max(0, item.count - 1);
-          const isCompleted = newCount >= item.targetCount;
-          const wasCompleted = item.isCompleted;
-          
-          currentCount = newCount;
-          targetCount = item.targetCount;
-          
-          if (isCompleted && !wasCompleted) {
-            completionAchieved = true;
-            completedItemId = id;
-          }
-          
-          if (increment) {
-            statsUpdate = true;
-          } else if (item.count > 0) {
-            statsUpdate = true;
-          }
-          
-          return {
-            ...item,
-            count: newCount,
-            isCompleted,
-            completedAt: isCompleted && !wasCompleted ? new Date() : item.completedAt,
-            totalCompletions: isCompleted && !wasCompleted ? item.totalCompletions + 1 : item.totalCompletions,
-          };
-        }
-        return item;
-      });
-      
-      return newItems;
-    });
-    
-    if (statsUpdate) {
-      setStats(prev => {
-        const newTodayCount = increment ? prev.todayCount + 1 : Math.max(0, prev.todayCount - 1);
-        const newTotalCount = increment ? prev.totalCount + 1 : Math.max(0, prev.totalCount - 1);
-        
-        console.log(`[TasbihStore] Stats updated - Today: ${newTodayCount}, Total: ${newTotalCount}, Completed Sessions: ${completionAchieved ? prev.completedSessions + 1 : prev.completedSessions}`);
-        
+        if (item.id !== id) return item;
+
+        const newCount = increment ? item.count + 1 : Math.max(0, item.count - 1);
+        const isCompleted = newCount >= item.targetCount;
+        const wasCompleted = item.isCompleted;
+        const justCompleted = isCompleted && !wasCompleted;
+
+        if (justCompleted) didComplete = true;
+
+        console.log(`[TasbihStore] Count ${increment ? 'incremented' : 'decremented'}: ${newCount}/${item.targetCount}`);
+
         return {
-          ...prev,
-          totalCount: newTotalCount,
-          todayCount: newTodayCount,
-          completedSessions: completionAchieved ? prev.completedSessions + 1 : prev.completedSessions,
+          ...item,
+          count: newCount,
+          isCompleted,
+          completedAt: justCompleted ? new Date() : item.completedAt,
+          totalCompletions: justCompleted ? item.totalCompletions + 1 : item.totalCompletions,
         };
       });
-      
-      console.log(`[TasbihStore] Count ${increment ? 'incremented' : 'decremented'}: ${currentCount}/${targetCount}`);
-      
-      if (completionAchieved && completedItemId) {
-        console.log(`[TasbihStore] Dhikr completed: ${completedItemId}, navigating to next incomplete dhikr`);
+
+      const shouldUpdateStats = increment || prev.find(i => i.id === id && i.count > 0);
+      if (shouldUpdateStats) {
+        setStats(prevStats => {
+          const newTodayCount = increment ? prevStats.todayCount + 1 : Math.max(0, prevStats.todayCount - 1);
+          const newTotalCount = increment ? prevStats.totalCount + 1 : Math.max(0, prevStats.totalCount - 1);
+          console.log(`[TasbihStore] Stats updated - Today: ${newTodayCount}, Total: ${newTotalCount}`);
+          return {
+            ...prevStats,
+            totalCount: newTotalCount,
+            todayCount: newTodayCount,
+            completedSessions: didComplete ? prevStats.completedSessions + 1 : prevStats.completedSessions,
+          };
+        });
+      }
+
+      if (didComplete) {
+        console.log(`[TasbihStore] Dhikr completed: ${id}, scheduling auto-navigation`);
         setTimeout(() => {
-          setTasbihItems(currentItems => {
-            const activeItems = currentItems.filter(item => !item.isDeleted);
-            const currentIndex = activeItems.findIndex(item => item.id === completedItemId);
-            
-            const nextIncompleteItem = activeItems
-              .slice(currentIndex + 1)
-              .find(item => !item.isCompleted);
-            
-            const previousIncompleteItem = activeItems
-              .slice(0, currentIndex)
-              .find(item => !item.isCompleted);
-            
-            const nextItem = nextIncompleteItem || previousIncompleteItem;
-            
-            if (nextItem) {
-              console.log(`[TasbihStore] Auto-navigating to: ${nextItem.id}`);
-              setSelectedItemId(nextItem.id);
-            } else {
-              console.log(`[TasbihStore] All dhikr completed! Staying on current item`);
-            }
-            
-            return currentItems;
-          });
+          const currentItems = tasbihItemsRef.current;
+          const activeItems = currentItems.filter(item => !item.isDeleted);
+          const currentIndex = activeItems.findIndex(item => item.id === id);
+
+          const nextIncompleteItem = activeItems
+            .slice(currentIndex + 1)
+            .find(item => !item.isCompleted);
+
+          const previousIncompleteItem = activeItems
+            .slice(0, currentIndex)
+            .find(item => !item.isCompleted);
+
+          const nextItem = nextIncompleteItem || previousIncompleteItem;
+
+          if (nextItem) {
+            console.log(`[TasbihStore] Auto-navigating to: ${nextItem.id}`);
+            setSelectedItemId(nextItem.id);
+          } else {
+            console.log(`[TasbihStore] All dhikr completed! Staying on current item`);
+          }
         }, 500);
       }
-    }
+
+      return newItems;
+    });
   }, []);
 
   const resetTasbih = useCallback((id: string) => {
