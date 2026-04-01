@@ -28,7 +28,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.sabbah-tasbeh-application",
+      "package": "app.islamic-dhikr.sabbah-tasbeh",
       "permissions": [
         "android.permission.VIBRATE",
         "RECORD_AUDIO",
