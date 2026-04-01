@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.sabbah-tasbeh-application",
+      "bundleIdentifier": "app.islamic-dhikr.sabbah-tasbeh",
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
