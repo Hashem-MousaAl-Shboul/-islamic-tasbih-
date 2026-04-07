@@ -46,14 +46,7 @@
       "expo-localization",
       "expo-av",
       "expo-web-browser",
-      "expo-mail-composer",
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-4282819777610118~7403522538",
-          "iosAppId": "ca-app-pub-4282819777610118~7403522538"
-        }
-      ]
+      "expo-mail-composer"
     ],
     "experiments": {
       "typedRoutes": true
