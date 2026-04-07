@@ -14,7 +14,7 @@ export default function Index() {
 
   const navigateToApp = useCallback(async () => {
     try {
-      console.log('[Index] Checking welcome screen status');
+      console.log('[Index] Checking welcome screen status...');
       const val = await AsyncStorage.getItem(WELCOME_SEEN_KEY);
       const seen = val === 'true';
 

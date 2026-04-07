@@ -136,7 +136,7 @@ export default function TasbihScreen() {
   const selectedItem = useMemo(() => getSelectedItem(), [getSelectedItem]);
 
   useEffect(() => {
-    console.log('[TasbihScreen] mounted', windowDimensions.width, 'x', windowDimensions.height);
+    console.log('[TasbihScreen] mounted, initializing sound service', windowDimensions.width, 'x', windowDimensions.height);
     void soundService.initialize();
     return () => { void soundService.unload(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps

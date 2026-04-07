@@ -2,7 +2,7 @@ export function redirectSystemPath({
   path,
   initial,
 }: { path: string; initial: boolean }) {
-  console.log('[NativeIntent] Redirecting path:', path, 'initial:', initial);
+  console.log('[NativeIntent] Redirecting system path:', path, 'initial:', initial);
   if (initial) {
     return '/';
   }

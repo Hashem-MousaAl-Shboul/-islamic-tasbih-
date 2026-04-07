@@ -50,24 +50,28 @@ const TasbihCard = memo<TasbihCardProps>(({
 
   const handlePress = useCallback(() => {
     if (!isDeleted) {
+      console.log('[TasbihCard] Card pressed:', item.id);
       onSelect(item.id);
     }
   }, [onSelect, item.id, isDeleted]);
 
   const handleDelete = useCallback(() => {
+    console.log('[TasbihCard] Delete pressed:', item.id);
     if (onDelete) onDelete(item.id);
   }, [onDelete, item.id]);
 
   const handleRestore = useCallback(() => {
+    console.log('[TasbihCard] Restore pressed:', item.id);
     if (onRestore) onRestore(item.id);
   }, [onRestore, item.id]);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        activeOpacity={0.7}
         onPress={handlePress}
         testID={`tasbih-card-${item.id}`}
+        activeOpacity={isDeleted ? 1 : 0.7}
+        disabled={isDeleted}
       >
         <LinearGradient
           colors={gradientColors}
@@ -124,6 +128,7 @@ const TasbihCard = memo<TasbihCardProps>(({
           onPress={handleDelete}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           testID={`delete-button-${item.id}`}
+          activeOpacity={0.6}
         >
           <View style={styles.deleteButtonInner}>
             <Trash2 size={12} color="#E05252" />
@@ -137,6 +142,7 @@ const TasbihCard = memo<TasbihCardProps>(({
           onPress={handleRestore}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           testID={`restore-button-${item.id}`}
+          activeOpacity={0.6}
         >
           <View style={styles.restoreButtonInner}>
             <RotateCcw size={12} color="#2D8B6F" />
@@ -152,7 +158,7 @@ TasbihCard.displayName = 'TasbihCard';
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 6,
-    position: 'relative',
+    position: 'relative' as const,
   },
   card: {
     minWidth: 80,
@@ -160,7 +166,7 @@ const styles = StyleSheet.create({
     height: 68,
     borderRadius: 14,
     padding: 8,
-    position: 'relative',
+    position: 'relative' as const,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -172,14 +178,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
   },
   deletedContent: {
     opacity: 0.6,
   },
   deleteButton: {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: -5,
     right: -5,
     zIndex: 10,
@@ -189,8 +195,8 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     backgroundColor: CARD_WHITE,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     borderWidth: 1.5,
     borderColor: '#E05252',
     shadowColor: '#000',
@@ -200,7 +206,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   restoreButton: {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: -5,
     right: -5,
     zIndex: 10,
@@ -210,34 +216,34 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     backgroundColor: CARD_WHITE,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     borderWidth: 1.5,
     borderColor: '#2D8B6F',
   },
   arabicText: {
     fontSize: 12,
     fontWeight: '700' as const,
-    textAlign: 'center',
+    textAlign: 'center' as const,
     lineHeight: 16,
   },
   transliterationText: {
     fontSize: 9,
     fontWeight: '500' as const,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    textAlign: 'center' as const,
+    fontStyle: 'italic' as const,
     opacity: 0.8,
   },
   countContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     gap: 5,
   },
   countText: {
     fontSize: 10,
     fontWeight: '600' as const,
-    textAlign: 'center',
+    textAlign: 'center' as const,
   },
   completedDot: {
     width: 5,
@@ -256,7 +262,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 2,
     borderRadius: 1,
-    overflow: 'hidden',
+    overflow: 'hidden' as const,
   },
   progressFill: {
     height: '100%',

@@ -26,7 +26,7 @@ export default function TabLayout() {
 
   useEffect(() => {
     let mounted = true;
-    console.log('[TabLayout] Mounting tab layout');
+    console.log('[TabLayout] Mounting tab layout, initializing audio listener');
 
     const handlePlaybackChange = (state: { isPlaying: boolean; currentId: string | null }) => {
       if (mounted) {
@@ -36,10 +36,14 @@ export default function TabLayout() {
 
     const timer = setTimeout(() => {
       if (!mounted) return;
-      unsubscribeRef.current = yasAI.addListener(handlePlaybackChange);
-      const initialState = yasAI.getPlaybackState();
-      if (mounted) {
-        setIsBarVisible(initialState.isPlaying);
+      try {
+        unsubscribeRef.current = yasAI.addListener(handlePlaybackChange);
+        const initialState = yasAI.getPlaybackState();
+        if (mounted) {
+          setIsBarVisible(initialState.isPlaying);
+        }
+      } catch (e) {
+        console.log('[TabLayout] Error setting up audio listener:', e);
       }
     }, 1000);
 

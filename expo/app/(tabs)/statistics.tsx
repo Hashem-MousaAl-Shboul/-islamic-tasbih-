@@ -104,7 +104,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
   const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
 
   useEffect(() => {
-    console.log(STATS_TAG, 'Screen mounted - Stats:', JSON.stringify(stats));
+    console.log(STATS_TAG, 'Statistics screen mounted - Stats:', JSON.stringify(stats));
     console.log(STATS_TAG, 'TasbihItems count:', tasbihItems.length);
   }, [stats, tasbihItems]);
 

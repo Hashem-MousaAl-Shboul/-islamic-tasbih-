@@ -16,7 +16,7 @@ const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
 
 const ADHKAR_TAG = '[AdhkarScreen]';
-console.log(ADHKAR_TAG, 'module loaded');
+console.log(ADHKAR_TAG, 'module loaded, initializing adhkar screen');
 
 interface AdhkarItem {
   id: string;

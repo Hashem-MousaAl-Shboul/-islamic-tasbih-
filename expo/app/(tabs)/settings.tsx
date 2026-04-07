@@ -18,7 +18,7 @@ import {
   Volume2,
   Star,
   Share2,
-  Mail,
+  MessageCircle,
   Shield,
   FileText,
   Trash2,
@@ -34,7 +34,7 @@ import Constants from 'expo-constants';
 
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
-import { rateApp, shareApp } from '@/utils/globalUtils';
+import { rateApp, shareApp, contactViaWhatsApp } from '@/utils/globalUtils';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 
@@ -130,7 +130,7 @@ export default function SettingsScreen() {
     updateSettings({ theme: newTheme });
     if (Platform.OS !== 'web') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    console.log(SETTINGS_TAG, "Theme toggled to:", newTheme);
+        console.log(SETTINGS_TAG, "Theme toggled to:", newTheme);
     }
   }, [settings.theme, updateSettings]);
 
@@ -163,33 +163,9 @@ export default function SettingsScreen() {
   }, []);
 
   const handleContactUs = useCallback(async () => {
-    try {
-      if (Platform.OS === 'web') {
-        Linking.openURL('mailto:support@subbah.app?subject=Subbah%20App%20Support').catch(() => {
-          Alert.alert(t('error'), t('noEmailApp'));
-        });
-        return;
-      }
-      const MailComposer = await import('expo-mail-composer');
-      const isAvailable = await MailComposer.isAvailableAsync();
-      if (isAvailable) {
-        await MailComposer.composeAsync({
-          recipients: ['support@subbah.app'],
-          subject: `${t('appName')} - ${t('contactSupport')}`,
-          body: t('contactMessage'),
-        });
-      } else {
-        Linking.openURL('mailto:support@subbah.app?subject=Subbah%20App%20Support').catch(() => {
-          Alert.alert(t('error'), t('noEmailApp'));
-        });
-      }
-    } catch (e) {
-      console.log(SETTINGS_TAG, 'Mail error:', e);
-      Linking.openURL('mailto:support@subbah.app').catch(() => {
-        Alert.alert(t('error'), t('contactError'));
-      });
-    }
-  }, [t]);
+    console.log(SETTINGS_TAG, 'Contact us via WhatsApp tapped');
+    await contactViaWhatsApp();
+  }, []);
 
   const handleResetSettings = useCallback(() => {
     Alert.alert(
@@ -332,9 +308,9 @@ export default function SettingsScreen() {
             onPress={handleShareApp}
           />
           <SettingsRow
-            icon={<Mail size={20} color="#2D8B6F" />}
+            icon={<MessageCircle size={20} color="#25D366" />}
             title={t('contactUs')}
-            subtitle={t('contactUsDescription')}
+            subtitle={t('contactUsWhatsApp')}
             type="action"
             onPress={handleContactUs}
             isLast

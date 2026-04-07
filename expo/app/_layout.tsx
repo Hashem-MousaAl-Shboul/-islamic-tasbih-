@@ -47,7 +47,7 @@ export default function RootLayout() {
   const hideSplash = useCallback(async () => {
     try {
       await SplashScreen.hideAsync();
-      console.log('[RootLayout] Splash screen hidden');
+      console.log('[RootLayout] Splash screen hidden successfully');
     } catch (e) {
       console.log('[RootLayout] hide splash error:', e);
     }

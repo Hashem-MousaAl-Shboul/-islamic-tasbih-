@@ -24,7 +24,7 @@ export default function PrivacyPolicyScreen() {
   const { t } = useLanguageStore();
 
   return (
-    <View style={styles.container} testID="privacy-policy-screen">
+    <View style={styles.container} testID="privacy-policy-screen" accessibilityLabel="Privacy Policy Screen">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
           <TouchableOpacity

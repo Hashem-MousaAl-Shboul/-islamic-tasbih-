@@ -78,7 +78,7 @@ export default function WelcomeScreen() {
   const buttonScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    console.log(WELCOME_TAG, 'Screen mounted');
+    console.log(WELCOME_TAG, 'Welcome screen mounted');
 
     const cardSequence = cardAnims.map((anim) =>
       Animated.parallel([

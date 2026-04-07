@@ -24,7 +24,7 @@ export default function TermsOfUseScreen() {
   const { t } = useLanguageStore();
 
   return (
-    <View style={styles.container} testID="terms-of-use-screen">
+    <View style={styles.container} testID="terms-of-use-screen" accessibilityLabel="Terms of Use Screen">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
           <TouchableOpacity

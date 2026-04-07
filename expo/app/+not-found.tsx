@@ -15,7 +15,7 @@ export default function NotFoundScreen() {
         </View>
         <Text style={styles.title}>هذه الصفحة غير موجودة</Text>
         <Text style={styles.subtitle}>الصفحة التي تبحث عنها غير متوفرة</Text>
-        <Link href="/" style={styles.link}>
+        <Link href="/" style={styles.link} testID="not-found-home-link">
           <Text style={styles.linkText}>العودة للرئيسية</Text>
         </Link>
       </View>
