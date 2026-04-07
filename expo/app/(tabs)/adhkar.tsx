@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, memo, useDeferredValue, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, Platform, ScrollView, Pressable, Share, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, FlatList, Platform, ScrollView, Pressable, Share, Animated, Easing, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 
@@ -665,10 +665,19 @@ export default function AdhkarScreen() {
     try {
       const message = `${item.arabicText}\n\n${item.transliteration || ''}\n\n${item.translation || ''}\n\n— تطبيق الأذكار`;
       if (Platform.OS === 'web') {
-        if (navigator.share) {
-          await navigator.share({ title: 'ذكر', text: message });
-        } else {
+        try {
+          if (typeof navigator !== 'undefined' && navigator.share) {
+            await navigator.share({ title: 'ذكر', text: message });
+            console.log(`${ADHKAR_TAG} Shared adhkar via Web Share: ${item.id}`);
+            return;
+          }
+        } catch (webError: any) {
+          if (webError?.name === 'AbortError') return;
+          console.warn(ADHKAR_TAG, 'Web Share API failed, falling back to clipboard:', webError);
+        }
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
           await navigator.clipboard.writeText(message);
+          Alert.alert('', 'تم النسخ');
         }
       } else {
         await Share.share({ message });

@@ -21,6 +21,20 @@ const CONTACT_INFO = {
 };
 
 // Share app functionality
+const copyToClipboardFallback = async (text: string) => {
+  try {
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+      Alert.alert('', i18n.t('copiedToClipboard') || 'Copied to clipboard');
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.error('Clipboard fallback failed:', e);
+    return false;
+  }
+};
+
 export const shareApp = async () => {
   try {
     const shareMessage = i18n.t('shareMessage');
@@ -29,10 +43,26 @@ export const shareApp = async () => {
       android: APP_STORE_URLS.android,
       default: APP_STORE_URLS.web,
     });
+    const fullMessage = `${shareMessage}\n\n${appUrl}`;
+
+    if (Platform.OS === 'web') {
+      try {
+        if (typeof navigator !== 'undefined' && navigator.share) {
+          await navigator.share({ title: i18n.t('appName'), text: fullMessage });
+          console.log('App shared successfully via Web Share API');
+          return;
+        }
+      } catch (webError: any) {
+        if (webError?.name === 'AbortError') return;
+        console.warn('Web Share API failed, falling back to clipboard:', webError);
+      }
+      await copyToClipboardFallback(fullMessage);
+      return;
+    }
 
     const result = await Share.share({
-      message: `${shareMessage}\n\n${appUrl}`,
-      url: appUrl, // iOS only
+      message: fullMessage,
+      url: appUrl,
       title: i18n.t('appName'),
     });
 
