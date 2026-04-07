@@ -13,6 +13,7 @@ import {
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import i18n from '@/constants/translations';
+import AdBanner from '@/components/AdBanner';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -313,6 +314,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+      <AdBanner />
     </View>
   );
 });

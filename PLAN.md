@@ -1,16 +1,30 @@
-# Fix Settings: Rate App, Share App & WhatsApp Contact
+# إضافة إعلانات بانر AdMob في أسفل الشاشات الأربع
 
-## What will change
+## ما سيتم تنفيذه
 
-**Features:**
+### الميزات
 
-- **Rate the App** — Tapping opens the native App Store / Google Play rating dialog directly within the app
-- **Share the App** — Tapping opens the system share sheet with a message and download link for the app
-- **Contact Us via WhatsApp** — Tapping opens WhatsApp directly with a pre-filled message to your support number (+962788625580). If WhatsApp isn't installed, it falls back to the WhatsApp web link
+- إضافة إعلان بانر من Google AdMob في أسفل كل شاشة من الشاشات الأربع (التسبيح، الأذكار، الإحصائيات، الإعدادات)
+- استخدام معرّف الإعلان: `ca-app-pub-4282819777610118/7510239834`
+- تسجيل معرّف التطبيق: `ca-app-pub-4282819777610118~7403522538`
+- الإعلان يظهر دائماً في أسفل الشاشة بشكل ثابت
 
-**Design:**
+### التصميم
 
-- The Contact Us row icon changes from the email (✉️) icon to the WhatsApp-green messaging icon
-- The subtitle text updates to indicate WhatsApp contact (e.g. "تواصل معنا عبر واتساب")
-- The section keeps the same clean card style as the rest of the settings screen
+- إعلان بانر مثبت في أسفل كل شاشة فوق شريط التبويب (Tab Bar)
+- يظهر الإعلان بحجم مناسب يتكيف مع حجم الشاشة (Adaptive Banner)
+- في حالة عدم تحميل الإعلان، لا يظهر أي مساحة فارغة
+- مكوّن إعلان موحّد يُستخدم في جميع الشاشات
+
+### التفاصيل التقنية
+
+- تثبيت مكتبة `react-native-google-mobile-ads`
+- إضافة إعداد المكتبة في ملف إعدادات التطبيق مع معرّف التطبيق لكل من iOS و Android
+- إنشاء مكوّن بانر إعلاني قابل لإعادة الاستخدام
+- في بيئة التطوير، يُستخدم معرّف اختباري تلقائياً
+
+### ⚠️ ملاحظة مهمة
+
+- هذه المكتبة تحتاج **بناء تطبيق مخصص (Development Build)** ولن تعمل في Expo Go
+- الإعلانات لن تظهر في المعاينة على الويب، لكنها ستعمل عند بناء التطبيق للنشر
 

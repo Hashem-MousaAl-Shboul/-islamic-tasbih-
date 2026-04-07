@@ -37,6 +37,7 @@ import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { rateApp, shareApp, contactViaWhatsApp } from '@/utils/globalUtils';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
+import AdBanner from '@/components/AdBanner';
 
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
@@ -388,7 +389,7 @@ export default function SettingsScreen() {
         onSelectTheme={handleSelectColorTheme}
       />
 
-
+      <AdBanner />
     </View>
   );
 }

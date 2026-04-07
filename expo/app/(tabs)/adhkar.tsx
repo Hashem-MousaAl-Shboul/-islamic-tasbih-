@@ -8,6 +8,7 @@ import { ADHKAR_LIST } from '@/constants/dhikr';
 import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Volume2, VolumeX, Square, Headphones } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { ttsService } from '@/utils/ttsService';
+import AdBanner from '@/components/AdBanner';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -772,6 +773,7 @@ export default function AdhkarScreen() {
           />
         </View>
       </ErrorBoundary>
+      <AdBanner />
     </View>
   );
 }

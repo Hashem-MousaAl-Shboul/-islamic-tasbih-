@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCard from '@/components/TasbihCard';
+import AdBanner from '@/components/AdBanner';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
@@ -537,6 +538,7 @@ export default function TasbihScreen() {
           </View>
         </View>
       </Modal>
+      <AdBanner />
     </View>
   );
 }
