@@ -26,10 +26,11 @@ import {
   Moon,
   Sun,
   Info,
-
   ChevronRight,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import Constants from 'expo-constants';
 
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
@@ -116,8 +117,11 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { t, getCurrentLanguageInfo } = useLanguageStore();
   const { settings, updateSettings, resetAllData } = useTasbihStore();
+  const router = useRouter();
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
+
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   const languageInfo = useMemo(() => getCurrentLanguageInfo(), [getCurrentLanguageInfo]);
 
@@ -234,16 +238,14 @@ export default function SettingsScreen() {
   }, [t, resetAllData]);
 
   const handleOpenPrivacy = useCallback(() => {
-    Linking.openURL('https://subbah.app/privacy').catch(() => {
-      Alert.alert(t('error'), t('cantOpenLink'));
-    });
-  }, [t]);
+    console.log(SETTINGS_TAG, 'Opening in-app privacy policy');
+    router.push('/privacy-policy');
+  }, [router]);
 
   const handleOpenTerms = useCallback(() => {
-    Linking.openURL('https://subbah.app/terms').catch(() => {
-      Alert.alert(t('error'), t('cantOpenLink'));
-    });
-  }, [t]);
+    console.log(SETTINGS_TAG, 'Opening in-app terms of use');
+    router.push('/terms-of-use');
+  }, [router]);
 
   return (
     <View style={styles.container} testID="settings-screen"
@@ -358,9 +360,9 @@ export default function SettingsScreen() {
           <SettingsRow
             icon={<Info size={20} color={TEXT_MUTED} />}
             title={t('version')}
-            subtitle="1.0.0"
+            subtitle={`v${appVersion}`}
             type="action"
-            onPress={() => { console.log(SETTINGS_TAG, "Version tapped"); }}
+            onPress={() => { console.log(SETTINGS_TAG, "Version:", appVersion); }}
             isLast
           />
         </View>
@@ -392,7 +394,7 @@ export default function SettingsScreen() {
             <View style={styles.footerLine} />
           </View>
           <Text style={styles.footerText}>{t('appName')}</Text>
-          <Text style={styles.footerVersion}>v1.0.0</Text>
+          <Text style={styles.footerVersion}>v{appVersion}</Text>
         </View>
 
         <View style={{ height: 100 }} />
