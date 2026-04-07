@@ -76,20 +76,20 @@ export default function TabLayout() {
     <View style={styles.root} testID="tabs-root">
       <Tabs screenOptions={screenOptions}>
         <Tabs.Screen
-          name="tasbih"
-          options={{
-            title: t("tasbih") || "التسبيح",
-            tabBarIcon: ({ color, size }) => (
-              <Fingerprint size={size} color={color} strokeWidth={1.8} />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="adhkar"
           options={{
             title: t("adhkar") || "الأذكار",
             tabBarIcon: ({ color, size }) => (
               <BookOpen size={size} color={color} strokeWidth={1.8} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="tasbih"
+          options={{
+            title: t("tasbih") || "التسبيح",
+            tabBarIcon: ({ color, size }) => (
+              <Fingerprint size={size} color={color} strokeWidth={1.8} />
             ),
           }}
         />
