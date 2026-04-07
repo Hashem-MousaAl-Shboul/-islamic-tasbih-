@@ -459,6 +459,7 @@ export default function TasbihScreen() {
               </TouchableOpacity>
             </ScrollView>
           </View>
+      <AdBanner />
       {/* Add Modal */}
       <Modal visible={showAddModal} animationType="slide" transparent onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
@@ -538,7 +539,6 @@ export default function TasbihScreen() {
           </View>
         </View>
       </Modal>
-      <AdBanner />
     </View>
   );
 }

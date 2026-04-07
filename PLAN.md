@@ -1,30 +1,9 @@
-# إضافة إعلانات بانر AdMob في أسفل الشاشات الأربع
+# Add banner ad to the Tasbih screen
 
-## ما سيتم تنفيذه
+The banner ad component is imported in the Tasbih screen but was never placed in the layout. 
 
-### الميزات
+**Fix:**
 
-- إضافة إعلان بانر من Google AdMob في أسفل كل شاشة من الشاشات الأربع (التسبيح، الأذكار، الإحصائيات، الإعدادات)
-- استخدام معرّف الإعلان: `ca-app-pub-4282819777610118/7510239834`
-- تسجيل معرّف التطبيق: `ca-app-pub-4282819777610118~7403522538`
-- الإعلان يظهر دائماً في أسفل الشاشة بشكل ثابت
-
-### التصميم
-
-- إعلان بانر مثبت في أسفل كل شاشة فوق شريط التبويب (Tab Bar)
-- يظهر الإعلان بحجم مناسب يتكيف مع حجم الشاشة (Adaptive Banner)
-- في حالة عدم تحميل الإعلان، لا يظهر أي مساحة فارغة
-- مكوّن إعلان موحّد يُستخدم في جميع الشاشات
-
-### التفاصيل التقنية
-
-- تثبيت مكتبة `react-native-google-mobile-ads`
-- إضافة إعداد المكتبة في ملف إعدادات التطبيق مع معرّف التطبيق لكل من iOS و Android
-- إنشاء مكوّن بانر إعلاني قابل لإعادة الاستخدام
-- في بيئة التطوير، يُستخدم معرّف اختباري تلقائياً
-
-### ⚠️ ملاحظة مهمة
-
-- هذه المكتبة تحتاج **بناء تطبيق مخصص (Development Build)** ولن تعمل في Expo Go
-- الإعلانات لن تظهر في المعاينة على الويب، لكنها ستعمل عند بناء التطبيق للنشر
+- Add the banner ad at the bottom of the Tasbih screen, just like it appears on the Adhkar, Statistics, and Settings screens
+- The ad will appear anchored at the bottom, above the tab bar
 
