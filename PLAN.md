@@ -1,15 +1,10 @@
-# Match the Tasbih top bar to the other screens
+# Fix "Cannot find single active touch" error
 
-**What will change:**
+The error happens because there are buttons (delete/restore) nested inside another pressable area on the tasbih cards. When you tap, the system gets confused about which touch to handle.
 
-- The top bar on the Tasbih screen will be updated to match the consistent style used on the Statistics, Adhkar, and Settings screens
-- It will have the same deep green solid background with rounded bottom corners
-- The title "التسبيح" will be larger and centered, matching the other screens' title size
-- The gold ornament decoration (line–diamond–line) will appear below the title, same as the other screens
-- The small sparkle icon next to the title will be removed to keep things consistent
+**Fix:**
 
-**What stays the same:**
-
-- All other content on the Tasbih screen (cards, counter, controls) remains unchanged
-- The green section that wraps around the tasbih cards at the top will still be present below the header
+- Replace the outer pressable wrapper on each tasbih card with a simple tappable view that doesn't conflict with the inner delete/restore buttons
+- Ensure the horizontal card list and the main scrollable area don't fight over touch events
+- This will eliminate the "Cannot find single active touch" crash when interacting with the tasbih screen
 

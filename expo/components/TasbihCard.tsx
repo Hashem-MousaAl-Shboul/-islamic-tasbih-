@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Trash2, RotateCcw } from 'lucide-react-native';
 import { TasbihItem } from '@/hooks/useTasbihStore';
@@ -63,83 +63,87 @@ const TasbihCard = memo<TasbihCardProps>(({
   }, [onRestore, item.id]);
 
   return (
-    <Pressable
-      style={styles.container}
-      onPress={handlePress}
-      testID={`tasbih-card-${item.id}`}
-    >
-      <LinearGradient
-        colors={gradientColors}
-        style={[styles.card, borderStyle, isDeleted && styles.deletedCard]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+    <View style={styles.container}>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={handlePress}
+        testID={`tasbih-card-${item.id}`}
       >
-        {!isDeleted && (
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={handleDelete}
-            testID={`delete-button-${item.id}`}
-          >
-            <View style={styles.deleteButtonInner}>
-              <Trash2 size={12} color="#E05252" />
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {isDeleted && (
-          <TouchableOpacity
-            style={styles.restoreButton}
-            onPress={handleRestore}
-            testID={`restore-button-${item.id}`}
-          >
-            <View style={styles.restoreButtonInner}>
-              <RotateCcw size={12} color="#2D8B6F" />
-            </View>
-          </TouchableOpacity>
-        )}
-
-        <View style={[styles.content, isDeleted && styles.deletedContent]}>
-          <Text style={[styles.arabicText, { color: textColor }]} numberOfLines={2}>
-            {item.arabicText}
-          </Text>
-
-          {showTransliteration && (
-            <Text style={[styles.transliterationText, { color: textColor }]} numberOfLines={1}>
-              {item.transliteration}
+        <LinearGradient
+          colors={gradientColors}
+          style={[styles.card, borderStyle, isDeleted && styles.deletedCard]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={[styles.content, isDeleted && styles.deletedContent]}>
+            <Text style={[styles.arabicText, { color: textColor }]} numberOfLines={2}>
+              {item.arabicText}
             </Text>
-          )}
 
-          <View style={styles.countContainer}>
-            <Text style={[styles.countText, { color: isSelected ? 'rgba(255,255,255,0.9)' : DEEP_GREEN }]}>
-              {item.count}/{item.targetCount}
-            </Text>
-            {item.isCompleted ? (
-              <View style={[styles.completedDot, { backgroundColor: isSelected ? '#FFFFFF' : '#2D8B6F' }]} />
-            ) : (
-              <Text style={[styles.percentageText, { color: isSelected ? 'rgba(255,255,255,0.7)' : '#8A9B91' }]}>
-                {progressPercentage}%
+            {showTransliteration && (
+              <Text style={[styles.transliterationText, { color: textColor }]} numberOfLines={1}>
+                {item.transliteration}
               </Text>
             )}
-          </View>
 
-          {isSelected && (
-            <View style={styles.progressContainer}>
-              <View style={[styles.progressBar, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${Math.min(progress * 100, 100)}%`,
-                      backgroundColor: '#FFFFFF'
-                    }
-                  ]}
-                />
-              </View>
+            <View style={styles.countContainer}>
+              <Text style={[styles.countText, { color: isSelected ? 'rgba(255,255,255,0.9)' : DEEP_GREEN }]}>
+                {item.count}/{item.targetCount}
+              </Text>
+              {item.isCompleted ? (
+                <View style={[styles.completedDot, { backgroundColor: isSelected ? '#FFFFFF' : '#2D8B6F' }]} />
+              ) : (
+                <Text style={[styles.percentageText, { color: isSelected ? 'rgba(255,255,255,0.7)' : '#8A9B91' }]}>
+                  {progressPercentage}%
+                </Text>
+              )}
             </View>
-          )}
-        </View>
-      </LinearGradient>
-    </Pressable>
+
+            {isSelected && (
+              <View style={styles.progressContainer}>
+                <View style={[styles.progressBar, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${Math.min(progress * 100, 100)}%`,
+                        backgroundColor: '#FFFFFF'
+                      }
+                    ]}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {!isDeleted && (
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDelete}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          testID={`delete-button-${item.id}`}
+        >
+          <View style={styles.deleteButtonInner}>
+            <Trash2 size={12} color="#E05252" />
+          </View>
+        </TouchableOpacity>
+      )}
+
+      {isDeleted && (
+        <TouchableOpacity
+          style={styles.restoreButton}
+          onPress={handleRestore}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          testID={`restore-button-${item.id}`}
+        >
+          <View style={styles.restoreButtonInner}>
+            <RotateCcw size={12} color="#2D8B6F" />
+          </View>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 });
 
