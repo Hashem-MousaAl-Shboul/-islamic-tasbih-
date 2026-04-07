@@ -661,6 +661,36 @@ export default function AdhkarScreen() {
     await handleStopSpeak();
   }, [handleStopSpeak]);
 
+  const webCopyText = useCallback(async (text: string): Promise<boolean> => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (e) {
+      console.warn(ADHKAR_TAG, 'Modern Clipboard API blocked:', e);
+    }
+    try {
+      if (typeof document !== 'undefined') {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '-9999px';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (success) return true;
+      }
+    } catch (e) {
+      console.warn(ADHKAR_TAG, 'Legacy execCommand copy failed:', e);
+    }
+    return false;
+  }, []);
+
   const handleShareAdhkar = useCallback(async (item: AdhkarItem) => {
     try {
       const message = `${item.arabicText}\n\n${item.transliteration || ''}\n\n${item.translation || ''}\n\n— تطبيق الأذكار`;
@@ -673,11 +703,13 @@ export default function AdhkarScreen() {
           }
         } catch (webError: any) {
           if (webError?.name === 'AbortError') return;
-          console.warn(ADHKAR_TAG, 'Web Share API failed, falling back to clipboard:', webError);
+          console.warn(ADHKAR_TAG, 'Web Share API failed:', webError);
         }
-        if (typeof navigator !== 'undefined' && navigator.clipboard) {
-          await navigator.clipboard.writeText(message);
-          Alert.alert('', 'تم النسخ');
+        const copied = await webCopyText(message);
+        if (copied) {
+          Alert.alert('', 'تم النسخ إلى الحافظة');
+        } else {
+          Alert.alert('مشاركة', message);
         }
       } else {
         await Share.share({ message });
@@ -686,7 +718,7 @@ export default function AdhkarScreen() {
     } catch (error) {
       console.error(ADHKAR_TAG, 'Share error:', error);
     }
-  }, []);
+  }, [webCopyText]);
 
   const renderAdhkarItem = useCallback(({ item, index }: { item: AdhkarItem; index: number }) => {
     return (

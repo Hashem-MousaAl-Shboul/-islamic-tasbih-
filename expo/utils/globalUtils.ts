@@ -20,18 +20,60 @@ const CONTACT_INFO = {
   instagram: 'https://instagram.com/sabbahapp',
 };
 
-// Share app functionality
-const copyToClipboardFallback = async (text: string) => {
+// Web clipboard copy with multiple fallbacks
+const webCopyToClipboard = async (text: string): Promise<boolean> => {
+  if (Platform.OS !== 'web') return false;
+
   try {
-    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
       await navigator.clipboard.writeText(text);
-      Alert.alert('', i18n.t('copiedToClipboard') || 'Copied to clipboard');
       return true;
     }
-    return false;
   } catch (e) {
-    console.error('Clipboard fallback failed:', e);
-    return false;
+    console.warn('Modern Clipboard API blocked:', e);
+  }
+
+  try {
+    if (typeof document !== 'undefined') {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      textarea.style.top = '-9999px';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const success = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      if (success) return true;
+    }
+  } catch (e) {
+    console.warn('Legacy execCommand copy failed:', e);
+  }
+
+  return false;
+};
+
+const webShareOrCopy = async (title: string, text: string): Promise<void> => {
+  if (Platform.OS !== 'web') return;
+
+  try {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      await navigator.share({ title, text });
+      console.log('Shared via Web Share API');
+      return;
+    }
+  } catch (webError: any) {
+    if (webError?.name === 'AbortError') return;
+    console.warn('Web Share API failed:', webError);
+  }
+
+  const copied = await webCopyToClipboard(text);
+  if (copied) {
+    Alert.alert('', i18n.t('copiedToClipboard') || 'تم النسخ إلى الحافظة');
+  } else {
+    Alert.alert(i18n.t('shareApp') || 'مشاركة', text);
   }
 };
 
@@ -46,17 +88,7 @@ export const shareApp = async () => {
     const fullMessage = `${shareMessage}\n\n${appUrl}`;
 
     if (Platform.OS === 'web') {
-      try {
-        if (typeof navigator !== 'undefined' && navigator.share) {
-          await navigator.share({ title: i18n.t('appName'), text: fullMessage });
-          console.log('App shared successfully via Web Share API');
-          return;
-        }
-      } catch (webError: any) {
-        if (webError?.name === 'AbortError') return;
-        console.warn('Web Share API failed, falling back to clipboard:', webError);
-      }
-      await copyToClipboardFallback(fullMessage);
+      await webShareOrCopy(i18n.t('appName'), fullMessage);
       return;
     }
 

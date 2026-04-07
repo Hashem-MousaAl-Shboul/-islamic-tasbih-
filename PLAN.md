@@ -1,9 +1,11 @@
-# Fix Web Share Permission Error
+# Fix clipboard fallback for web sharing
 
-**Problem**: The web share dialog fails with "Permission denied" because the browser requires a direct user tap to trigger sharing. The current code sometimes loses this direct connection.
+**Problem**: Both the Web Share API and the modern Clipboard API are blocked by browser permissions policy in the web preview, so sharing and copying text fails completely on web.
 
 **Fix**:
-- [x] Update the share function in the app so that on web, if `navigator.share` fails (permission denied), it gracefully falls back to copying the text to the clipboard instead
-- [x] Apply this fix to both the "Share App" button (settings screen) and the "Share Adhkar" button (adhkar screen)
-- [x] Show a brief notification/alert when text is copied to clipboard as a fallback, so the user knows it worked
-- [x] On native (iOS/Android), sharing will continue to work as before with no changes
+- [x] Add a legacy clipboard fallback that creates a temporary text area and uses the older copy command — this works even when the modern Clipboard API is blocked
+- [x] Update the **Share App** function (settings screen) to use this new fallback
+- [x] Update the **Share Adhkar** function (adhkar screen) to use this new fallback
+- [x] Show a "Copied to clipboard" confirmation message when the fallback succeeds
+- [x] If all methods fail, show the text in a popup so the user can manually copy it
+- [x] No changes to native iOS/Android sharing — it continues working as before
