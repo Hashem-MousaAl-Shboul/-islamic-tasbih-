@@ -53,55 +53,34 @@ export default function PrivacyPolicyScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          <Text style={styles.lastUpdated}>Last Updated: April 7, 2026</Text>
+          <Text style={styles.lastUpdated}>{t('lastUpdated')}</Text>
 
-          <Text style={styles.sectionHeading}>1. Introduction</Text>
+          <Text style={styles.sectionHeading}>{t('privacyIntroTitle')}</Text>
+          <Text style={styles.bodyText}>{t('privacyIntroText')}</Text>
+
+          <Text style={styles.sectionHeading}>{t('privacyInfoTitle')}</Text>
           <Text style={styles.bodyText}>
-            Welcome to Subbah (سبّح). Your privacy is important to us. This Privacy Policy explains how we collect, use, and protect your information when you use our Islamic Dhikr and Tasbih application.
+            {`\u2022 ${t('privacyInfoLocalData')}\n\n\u2022 ${t('privacyInfoNoPersonal')}\n\n\u2022 ${t('privacyInfoNoLocation')}\n\n\u2022 ${t('privacyInfoNoTracking')}`}
           </Text>
 
-          <Text style={styles.sectionHeading}>2. Information We Collect</Text>
-          <Text style={styles.bodyText}>
-            Subbah is designed with your privacy in mind. We collect minimal data:{'\n\n'}
-            • <Text style={styles.boldText}>Local Data:</Text> Your tasbih counts, dhikr preferences, app settings, and statistics are stored locally on your device.{'\n\n'}
-            • <Text style={styles.boldText}>No Personal Information:</Text> We do not collect your name, email address, phone number, or any personally identifiable information.{'\n\n'}
-            • <Text style={styles.boldText}>No Location Data:</Text> We do not access or store your location.{'\n\n'}
-            • <Text style={styles.boldText}>No Third-Party Tracking:</Text> We do not use third-party analytics or tracking services.
-          </Text>
+          <Text style={styles.sectionHeading}>{t('privacyUseTitle')}</Text>
+          <Text style={styles.bodyText}>{t('privacyUseText')}</Text>
 
-          <Text style={styles.sectionHeading}>3. How We Use Your Data</Text>
-          <Text style={styles.bodyText}>
-            All data stored by the app is used solely to provide you with the best dhikr experience:{'\n\n'}
-            • Saving your tasbih counter progress{'\n'}
-            • Remembering your preferred language and theme settings{'\n'}
-            • Displaying your daily and total statistics{'\n'}
-            • Maintaining your favorite dhikr selections
-          </Text>
+          <Text style={styles.sectionHeading}>{t('privacyStorageTitle')}</Text>
+          <Text style={styles.bodyText}>{t('privacyStorageText')}</Text>
 
-          <Text style={styles.sectionHeading}>4. Data Storage</Text>
-          <Text style={styles.bodyText}>
-            All your data is stored locally on your device using secure storage mechanisms. We do not transmit your personal data to any external servers. If you delete the app, all locally stored data will be permanently removed.
-          </Text>
+          <Text style={styles.sectionHeading}>{t('privacySharingTitle')}</Text>
+          <Text style={styles.bodyText}>{t('privacySharingText')}</Text>
 
-          <Text style={styles.sectionHeading}>5. Data Sharing</Text>
-          <Text style={styles.bodyText}>
-            We do not sell, trade, or share your data with any third parties. Your dhikr practice is personal and remains private to you.
-          </Text>
+          <Text style={styles.sectionHeading}>{t('privacyChildrenTitle')}</Text>
+          <Text style={styles.bodyText}>{t('privacyChildrenText')}</Text>
 
-          <Text style={styles.sectionHeading}>6. Children's Privacy</Text>
-          <Text style={styles.bodyText}>
-            Subbah is suitable for users of all ages. We do not knowingly collect any personal information from children or any other users.
-          </Text>
+          <Text style={styles.sectionHeading}>{t('privacyChangesTitle')}</Text>
+          <Text style={styles.bodyText}>{t('privacyChangesText')}</Text>
 
-          <Text style={styles.sectionHeading}>7. Changes to This Policy</Text>
+          <Text style={styles.sectionHeading}>{t('privacyContactTitle')}</Text>
           <Text style={styles.bodyText}>
-            We may update this Privacy Policy from time to time. Any changes will be reflected in the app with an updated date. We encourage you to review this policy periodically.
-          </Text>
-
-          <Text style={styles.sectionHeading}>8. Contact Us</Text>
-          <Text style={styles.bodyText}>
-            If you have any questions or concerns about this Privacy Policy, please contact us at:{'\n\n'}
-            support@subbah.app
+            {`${t('privacyContactText')}\n\nsupport@subbah.app`}
           </Text>
         </View>
       </ScrollView>
@@ -195,9 +174,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: TEXT_DARK,
-  },
-  boldText: {
-    fontWeight: '600' as const,
-    color: DEEP_GREEN,
   },
 });
