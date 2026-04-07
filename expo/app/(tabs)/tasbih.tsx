@@ -25,10 +25,8 @@ const DEEP_GREEN = '#1B4332';
 const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
+const TASBIH_TAG = '[TasbihScreen]';
 
-
-
-// ─── Animated Counter Number ──────────────────────────────────────────────────
 const AnimatedCounter = memo(({ count }: { count: number }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const prevCount = useRef(count);
@@ -48,7 +46,6 @@ const AnimatedCounter = memo(({ count }: { count: number }) => {
 });
 AnimatedCounter.displayName = 'AnimatedCounter';
 
-// ─── Circular Progress ────────────────────────────────────────────────────────
 const CircularProgress = memo(({ progress, color, size = 220 }: { progress: number; color: string; size?: number }) => {
   const animatedProgress = useRef(new Animated.Value(progress)).current;
 
@@ -90,15 +87,11 @@ const CircularProgress = memo(({ progress, color, size = 220 }: { progress: numb
 });
 CircularProgress.displayName = 'CircularProgress';
 
-// ─── Compact header ───────────────────────────────────────────────────────────
 const TasbihHeader = memo(() => {
   return null;
 });
 TasbihHeader.displayName = 'TasbihHeader';
 
-
-
-// ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
@@ -137,9 +130,12 @@ export default function TasbihScreen() {
   const selectedItem = useMemo(() => getSelectedItem(), [getSelectedItem]);
 
   useEffect(() => {
-    console.log('[TasbihScreen] mounted, initializing sound service', windowDimensions.width, 'x', windowDimensions.height);
+    console.log(TASBIH_TAG, 'Screen mounted, dimensions:', windowDimensions.width, 'x', windowDimensions.height);
     void soundService.initialize();
-    return () => { void soundService.unload(); };
+    return () => {
+      console.log(TASBIH_TAG, 'Screen unmounting, cleaning up sound service');
+      void soundService.unload();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -173,6 +169,7 @@ export default function TasbihScreen() {
 
     const willComplete = selectedItem.count + 1 >= selectedItem.targetCount;
     if (willComplete && !selectedItem.isCompleted) {
+      console.log(TASBIH_TAG, 'Tasbih completed for:', selectedItem.arabicText);
       if (settings.soundEnabled) soundService.playCompletionSync();
       if (settings.vibrationEnabled && Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -191,6 +188,7 @@ export default function TasbihScreen() {
 
   const handleReset = useCallback(() => {
     if (!selectedItem) return;
+    console.log(TASBIH_TAG, 'Reset requested for:', selectedItem.arabicText);
     if (Platform.OS === 'web') {
       if (confirm(t('resetCounterConfirm', { dhikr: selectedItem.arabicText }))) resetTasbih(selectedItem.id);
     } else {
@@ -202,6 +200,7 @@ export default function TasbihScreen() {
   }, [selectedItem, resetTasbih, t]);
 
   const handleSelectItem = useCallback(async (itemId: string) => {
+    console.log(TASBIH_TAG, 'Selecting tasbih item:', itemId);
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try { await Haptics.selectionAsync(); } catch {}
     }
@@ -209,6 +208,7 @@ export default function TasbihScreen() {
   }, [setSelectedItem, settings.hapticFeedback]);
 
   const handleDeleteTasbih = useCallback((itemId: string) => {
+    console.log(TASBIH_TAG, 'Deleting tasbih:', itemId);
     deleteTasbih(itemId);
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
@@ -216,6 +216,7 @@ export default function TasbihScreen() {
   }, [deleteTasbih, settings.hapticFeedback]);
 
   const handleRestoreTasbih = useCallback((itemId: string) => {
+    console.log(TASBIH_TAG, 'Restoring tasbih:', itemId);
     restoreTasbih(itemId);
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
@@ -223,6 +224,7 @@ export default function TasbihScreen() {
   }, [restoreTasbih, settings.hapticFeedback]);
 
   const handleAddTasbih = useCallback(() => {
+    console.log(TASBIH_TAG, 'Opening add tasbih modal');
     if (settings.hapticFeedback && Platform.OS !== 'web') {
       try { void Haptics.selectionAsync(); } catch {}
     }
@@ -234,6 +236,7 @@ export default function TasbihScreen() {
       Alert.alert(t('error'), t('pleaseEnterArabicText'));
       return;
     }
+    console.log(TASBIH_TAG, 'Saving new tasbih:', newTasbih.arabicText);
     addCustomTasbih({
       arabicText: newTasbih.arabicText.trim(),
       transliteration: newTasbih.transliteration.trim() || newTasbih.arabicText.trim(),
@@ -250,6 +253,7 @@ export default function TasbihScreen() {
   }, [newTasbih, addCustomTasbih, settings.hapticFeedback, t]);
 
   const handleCloseModal = useCallback(() => {
+    console.log(TASBIH_TAG, 'Closing add modal');
     setShowAddModal(false);
     setNewTasbih({ arabicText: '', transliteration: '', translation: '', targetCount: 33, color: '#2D8B6F', category: 'custom' });
   }, []);
@@ -263,17 +267,18 @@ export default function TasbihScreen() {
       try {
         if (Platform.OS !== 'web') { try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {} }
         setIsSpeaking(true);
+        console.log(TASBIH_TAG, 'Speaking dhikr:', selectedItem.arabicText);
         await ttsService.playDhikr(selectedItem.arabicText);
         setIsSpeaking(false);
       } catch { setIsSpeaking(false); }
     }
   }, [selectedItem, isSpeaking]);
 
-  const predefinedColors = ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'];
+  const predefinedColors = useMemo(() => ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'], []);
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
+      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]} testID="tasbih-loading">
         <ActivityIndicator size="large" color={GOLD} />
         <Text style={styles.loadingText}>{t('loading')}</Text>
       </View>
@@ -282,7 +287,7 @@ export default function TasbihScreen() {
 
   if (!selectedItem) {
     return (
-      <View style={[styles.container, styles.errorContainer, { paddingTop: insets.top }]}>
+      <View style={[styles.container, styles.errorContainer, { paddingTop: insets.top }]} testID="tasbih-no-item">
         <Text style={styles.errorText}>{t('noTasbihAvailable')}</Text>
       </View>
     );
@@ -293,9 +298,9 @@ export default function TasbihScreen() {
     : 0;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]} testID="tasbih-screen">
       <View style={styles.topBar}>
-        <Text style={styles.topBarTitle}>التسبيح</Text>
+        <Text style={styles.topBarTitle}>{t('tasbih') || '\u0627\u0644\u062a\u0633\u0628\u064a\u062d'}</Text>
         <View style={styles.topBarOrnament}>
           <View style={styles.topBarOrnamentLine} />
           <View style={styles.topBarOrnamentDiamond} />
@@ -303,174 +308,167 @@ export default function TasbihScreen() {
         </View>
       </View>
 
-      {/* Tasbih Cards */}
-          <View style={styles.cardsSection}>
-            <FlatList
-              horizontal
-              data={tasbihItems}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TasbihCard
-                  item={item}
-                  isSelected={item.id === selectedItemId}
-                  onSelect={handleSelectItem}
-                  showTransliteration={settings.showTransliteration}
-                  onDelete={handleDeleteTasbih}
-                  onRestore={handleRestoreTasbih}
-                  isDeleted={item.isDeleted}
-                />
-              )}
-              ListFooterComponent={
-                <TouchableOpacity style={styles.addCard} testID="add-tasbih-button" activeOpacity={0.7} onPress={handleAddTasbih}>
-                  <LinearGradient colors={['rgba(212,168,83,0.15)', 'rgba(212,168,83,0.05)']} style={styles.addCardGradient}>
-                    <Plus size={20} color={GOLD} />
-                    <Text style={styles.addCardText}>{t('add')}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              }
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.cardsContainer}
-              style={styles.cardsScrollView}
-              testID="tasbih-cards-scroll"
-              removeClippedSubviews
-              maxToRenderPerBatch={5}
-              windowSize={5}
-              initialNumToRender={5}
-              getItemLayout={(_, index) => ({ length: 96, offset: 96 * index, index })}
+      <View style={styles.cardsSection}>
+        <FlatList
+          horizontal
+          data={tasbihItems}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TasbihCard
+              item={item}
+              isSelected={item.id === selectedItemId}
+              onSelect={handleSelectItem}
+              showTransliteration={settings.showTransliteration}
+              onDelete={handleDeleteTasbih}
+              onRestore={handleRestoreTasbih}
+              isDeleted={item.isDeleted}
             />
-          </View>
-
-          {/* Counter Content */}
-          <View style={styles.mainContent}>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-              {/* Dhikr Card */}
-              <LinearGradient colors={[CARD_WHITE, IVORY]} style={styles.dhikrDisplay}>
-                <View style={styles.dhikrIconContainer}>
-                  <View style={styles.dhikrIcon}><Moon size={20} color={DEEP_GREEN} /></View>
-                </View>
-                <Text style={styles.mainArabicText}>{selectedItem.arabicText}</Text>
-                {settings.showTransliteration && (
-                  <Text style={styles.transliterationText}>{selectedItem.transliteration}</Text>
-                )}
-                {settings.showTranslation && (
-                  <Text style={styles.translationText}>{selectedItem.translation}</Text>
-                )}
-                <TouchableOpacity
-                  style={[styles.speakDhikrButton, isSpeaking && styles.speakDhikrButtonActive]}
-                  onPress={handleSpeak}
-                  activeOpacity={0.7}
-                  testID="tasbih-speak-button"
-                >
-                  {isSpeaking ? <VolumeX size={16} color="#FFFFFF" /> : <Volume2 size={16} color={DEEP_GREEN} />}
-                  <Text style={[styles.speakDhikrText, isSpeaking && styles.speakDhikrTextActive]}>
-                    {isSpeaking ? t('stopListening') : t('listenToDhikr')}
-                  </Text>
-                </TouchableOpacity>
+          )}
+          ListFooterComponent={
+            <TouchableOpacity style={styles.addCard} testID="add-tasbih-button" activeOpacity={0.7} onPress={handleAddTasbih}>
+              <LinearGradient colors={['rgba(212,168,83,0.15)', 'rgba(212,168,83,0.05)']} style={styles.addCardGradient}>
+                <Plus size={20} color={GOLD} />
+                <Text style={styles.addCardText}>{t('add')}</Text>
               </LinearGradient>
+            </TouchableOpacity>
+          }
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.cardsContainer}
+          style={styles.cardsScrollView}
+          testID="tasbih-cards-scroll"
+          removeClippedSubviews
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          initialNumToRender={5}
+          getItemLayout={(_, index) => ({ length: 96, offset: 96 * index, index })}
+        />
+      </View>
 
-              {/* Counter */}
-              <View style={styles.counterSection}>
-                <View style={styles.progressRingContainer}>
-                  <CircularProgress progress={progressPercent / 100} color={selectedItem.color} />
-                  <Animated.View style={[styles.counterButtonContainer, { transform: [{ scale: pulseAnim }] }]}>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.mainCounterButton,
-                        { backgroundColor: selectedItem.color },
-                        pressed && styles.counterButtonPressed,
-                      ]}
-                      onPress={handleIncrement}
-                      android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true, radius: 90 }}
-                      testID="increment-button"
-                      accessibilityRole="button"
-                      accessibilityLabel="Increment counter"
-                    >
-                      <AnimatedCounter count={selectedItem.count} />
-                      <View style={styles.counterDivider} />
-                      <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
-                    </Pressable>
-                  </Animated.View>
-                  {selectedItem.isCompleted && (
-                    <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
-                      <Check size={14} color="#FFFFFF" />
-                      <Text style={styles.completedText}>{t('completed')}</Text>
-                    </View>
-                  )}
+      <View style={styles.mainContent}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <LinearGradient colors={[CARD_WHITE, IVORY]} style={styles.dhikrDisplay}>
+            <View style={styles.dhikrIconContainer}>
+              <View style={styles.dhikrIcon}><Moon size={20} color={DEEP_GREEN} /></View>
+            </View>
+            <Text style={styles.mainArabicText}>{selectedItem.arabicText}</Text>
+            {settings.showTransliteration && (
+              <Text style={styles.transliterationText}>{selectedItem.transliteration}</Text>
+            )}
+            {settings.showTranslation && (
+              <Text style={styles.translationText}>{selectedItem.translation}</Text>
+            )}
+            <TouchableOpacity
+              style={[styles.speakDhikrButton, isSpeaking && styles.speakDhikrButtonActive]}
+              onPress={handleSpeak}
+              activeOpacity={0.7}
+              testID="tasbih-speak-button"
+            >
+              {isSpeaking ? <VolumeX size={16} color="#FFFFFF" /> : <Volume2 size={16} color={DEEP_GREEN} />}
+              <Text style={[styles.speakDhikrText, isSpeaking && styles.speakDhikrTextActive]}>
+                {isSpeaking ? t('stopListening') : t('listenToDhikr')}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
+
+          <View style={styles.counterSection}>
+            <View style={styles.progressRingContainer}>
+              <CircularProgress progress={progressPercent / 100} color={selectedItem.color} />
+              <Animated.View style={[styles.counterButtonContainer, { transform: [{ scale: pulseAnim }] }]}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.mainCounterButton,
+                    { backgroundColor: selectedItem.color },
+                    pressed && styles.counterButtonPressed,
+                  ]}
+                  onPress={handleIncrement}
+                  android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true, radius: 90 }}
+                  testID="increment-button"
+                  accessibilityRole="button"
+                  accessibilityLabel="Increment counter"
+                >
+                  <AnimatedCounter count={selectedItem.count} />
+                  <View style={styles.counterDivider} />
+                  <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
+                </Pressable>
+              </Animated.View>
+              {selectedItem.isCompleted && (
+                <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
+                  <Check size={14} color="#FFFFFF" />
+                  <Text style={styles.completedText}>{t('completed')}</Text>
                 </View>
+              )}
+            </View>
 
-                <Text style={styles.tapHint}>{t('tapToCount')}</Text>
+            <Text style={styles.tapHint}>{t('tapToCount')}</Text>
 
-                <View style={styles.progressBarContainer}>
-                  <View style={styles.progressBarTrack}>
-                    <Animated.View
-                      style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: selectedItem.color }]}
-                    />
-                  </View>
-                  <Text style={styles.progressText}>{selectedItem.count} / {selectedItem.targetCount}</Text>
-                </View>
+            <View style={styles.progressBarContainer}>
+              <View style={styles.progressBarTrack}>
+                <Animated.View
+                  style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: selectedItem.color }]}
+                />
               </View>
-
-              {/* Controls */}
-              <View style={styles.controlButtonsRow}>
-                <TouchableOpacity style={styles.controlButton} onPress={handleDecrement} activeOpacity={0.7} testID="decrement-button">
-                  <LinearGradient colors={['#FFE4E4', '#FFF0F0']} style={styles.controlButtonGradient}>
-                    <Minus size={22} color="#E05252" />
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                <View style={styles.statsDisplay}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>{t('today')}</Text>
-                    <Text style={styles.statValue}>{stats.todayCount}</Text>
-                  </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>{t('total')}</Text>
-                    <Text style={styles.statValue}>{stats.totalCount}</Text>
-                  </View>
-                </View>
-
-                <TouchableOpacity style={styles.controlButton} onPress={handleReset} activeOpacity={0.7} testID="reset-button">
-                  <LinearGradient colors={['#FFF8E7', '#FFF4DB']} style={styles.controlButtonGradient}>
-                    <RotateCcw size={22} color={GOLD} />
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-
-              {/* Live Stats Summary → Statistics */}
-              <TouchableOpacity
-                style={styles.liveStatsSummary}
-                onPress={() => router.push('/statistics')}
-                activeOpacity={0.7}
-                testID="stats-link-button"
-              >
-                <View style={styles.liveStatsLeft}>
-                  <View style={styles.liveStatsIconCircle}>
-                    <TrendingUp size={16} color={GOLD} />
-                  </View>
-                  <View>
-                    <Text style={styles.liveStatsTitle}>{t('statistics') || 'الإحصائيات'}</Text>
-                    <Text style={styles.liveStatsSubtitle}>
-                      {stats.completedSessions} {t('sessions') || 'جلسات'} · {stats.todayCount} {t('today') || 'اليوم'}
-                    </Text>
-                  </View>
-                </View>
-                <ChevronRight size={18} color={TEXT_MUTED} />
-              </TouchableOpacity>
-            </ScrollView>
+              <Text style={styles.progressText}>{selectedItem.count} / {selectedItem.targetCount}</Text>
+            </View>
           </View>
+
+          <View style={styles.controlButtonsRow}>
+            <TouchableOpacity style={styles.controlButton} onPress={handleDecrement} activeOpacity={0.7} testID="decrement-button">
+              <LinearGradient colors={['#FFE4E4', '#FFF0F0']} style={styles.controlButtonGradient}>
+                <Minus size={22} color="#E05252" />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <View style={styles.statsDisplay}>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>{t('today')}</Text>
+                <Text style={styles.statValue}>{stats.todayCount}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>{t('total')}</Text>
+                <Text style={styles.statValue}>{stats.totalCount}</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.controlButton} onPress={handleReset} activeOpacity={0.7} testID="reset-button">
+              <LinearGradient colors={['#FFF8E7', '#FFF4DB']} style={styles.controlButtonGradient}>
+                <RotateCcw size={22} color={GOLD} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.liveStatsSummary}
+            onPress={() => router.push('/statistics')}
+            activeOpacity={0.7}
+            testID="stats-link-button"
+          >
+            <View style={styles.liveStatsLeft}>
+              <View style={styles.liveStatsIconCircle}>
+                <TrendingUp size={16} color={GOLD} />
+              </View>
+              <View>
+                <Text style={styles.liveStatsTitle}>{t('statistics') || '\u0627\u0644\u0625\u062d\u0635\u0627\u0626\u064a\u0627\u062a'}</Text>
+                <Text style={styles.liveStatsSubtitle}>
+                  {stats.completedSessions} {t('sessions') || '\u062c\u0644\u0633\u0627\u062a'} · {stats.todayCount} {t('today') || '\u0627\u0644\u064a\u0648\u0645'}
+                </Text>
+              </View>
+            </View>
+            <ChevronRight size={18} color={TEXT_MUTED} />
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
       <AdBanner />
-      {/* Add Modal */}
       <Modal visible={showAddModal} animationType="slide" transparent onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHandle} />
             <View style={styles.modalHeader}>
-              <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton}>
+              <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton} testID="modal-close-btn">
                 <X size={22} color={TEXT_MUTED} />
               </TouchableOpacity>
               <Text style={styles.modalTitle}>{t('addNewTasbih')}</Text>
-              <TouchableOpacity onPress={handleSaveNewTasbih} style={styles.modalSaveButton}>
+              <TouchableOpacity onPress={handleSaveNewTasbih} style={styles.modalSaveButton} testID="modal-save-btn">
                 <Check size={22} color={CARD_WHITE} />
               </TouchableOpacity>
             </View>
@@ -485,6 +483,7 @@ export default function TasbihScreen() {
                   placeholderTextColor={TEXT_MUTED}
                   multiline
                   textAlign="right"
+                  testID="input-arabic-text"
                 />
               </View>
               <View style={styles.inputGroup}>
@@ -495,6 +494,7 @@ export default function TasbihScreen() {
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, transliteration: text }))}
                   placeholder={t('transliterationPlaceholder')}
                   placeholderTextColor={TEXT_MUTED}
+                  testID="input-transliteration"
                 />
               </View>
               <View style={styles.inputGroup}>
@@ -506,6 +506,7 @@ export default function TasbihScreen() {
                   placeholder={t('translationPlaceholder')}
                   placeholderTextColor={TEXT_MUTED}
                   multiline
+                  testID="input-translation"
                 />
               </View>
               <View style={styles.inputGroup}>
@@ -520,6 +521,7 @@ export default function TasbihScreen() {
                   placeholder="33"
                   placeholderTextColor={TEXT_MUTED}
                   keyboardType="numeric"
+                  testID="input-target-count"
                 />
               </View>
               <View style={styles.inputGroup}>
@@ -530,6 +532,7 @@ export default function TasbihScreen() {
                       key={color}
                       style={[styles.colorOption, { backgroundColor: color }, newTasbih.color === color && styles.selectedColor]}
                       onPress={() => setNewTasbih(prev => ({ ...prev, color }))}
+                      testID={`color-option-${color}`}
                     />
                   ))}
                 </View>
@@ -543,8 +546,6 @@ export default function TasbihScreen() {
   );
 }
 
-
-// ─── Counter Styles ───────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: IVORY },
   loadingContainer: { justifyContent: 'center', alignItems: 'center' },

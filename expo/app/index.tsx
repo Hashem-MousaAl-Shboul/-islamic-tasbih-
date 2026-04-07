@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
 const GOLD = '#D4A853';
 const BG_COLOR = '#0A1A14';
+const INDEX_TAG = '[Index]';
 
 export default function Index() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function Index() {
 
   const navigateToApp = useCallback(async () => {
     try {
-      console.log('[Index] Checking welcome screen status...');
+      console.log(INDEX_TAG, 'Checking welcome screen status...');
       const val = await AsyncStorage.getItem(WELCOME_SEEN_KEY);
       const seen = val === 'true';
 
@@ -27,14 +28,14 @@ export default function Index() {
       });
 
       if (seen) {
-        console.log('[Index] Welcome seen, navigating to tabs');
+        console.log(INDEX_TAG, 'Welcome seen, navigating to tabs');
         router.replace('/(tabs)/tasbih');
       } else {
-        console.log('[Index] First launch, showing welcome');
+        console.log(INDEX_TAG, 'First launch, showing welcome');
         router.replace('/welcome');
       }
     } catch (e) {
-      console.log('[Index] Navigation error:', e);
+      console.log(INDEX_TAG, 'Navigation error:', e);
       if (!hasNavigated.current) {
         hasNavigated.current = true;
         setLoading(false);
@@ -44,6 +45,7 @@ export default function Index() {
   }, [router]);
 
   useEffect(() => {
+    console.log(INDEX_TAG, 'Index screen mounted');
     const startTimeout = setTimeout(() => {
       void navigateToApp();
     }, 100);

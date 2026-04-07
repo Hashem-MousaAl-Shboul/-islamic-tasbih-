@@ -19,12 +19,14 @@ const TEXT_DARK = '#2C3E2D';
 const TEXT_MUTED = '#8A9B91';
 
 export default function TermsOfUseScreen() {
+  console.log('[TermsOfUse] Screen rendered');
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useLanguageStore();
 
   return (
-    <View style={styles.container} testID="terms-of-use-screen" accessibilityLabel="Terms of Use Screen">
+    <View style={styles.container} testID="terms-of-use-screen" accessibilityLabel="Terms of Use Screen"
+      accessibilityHint="Read our terms of use">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
           <TouchableOpacity

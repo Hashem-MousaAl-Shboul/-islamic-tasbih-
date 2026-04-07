@@ -47,6 +47,7 @@ const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = "#8A9B91";
 const SETTINGS_TAG = "[SettingsScreen]";
+console.log(SETTINGS_TAG, "Settings module loaded");
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -226,7 +227,8 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container} testID="settings-screen"
-      accessibilityLabel="Settings Screen">
+      accessibilityLabel="Settings Screen"
+      accessibilityHint="Manage app preferences and data">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Text style={styles.headerTitle}>{t('settings')}</Text>
         <View style={styles.headerOrnament}>
@@ -238,7 +240,7 @@ export default function SettingsScreen() {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 60 }]}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
       >
@@ -374,7 +376,7 @@ export default function SettingsScreen() {
           <Text style={styles.footerVersion}>v{appVersion}</Text>
         </View>
 
-        <View style={{ height: 100 }} />
+
       </ScrollView>
 
       <LanguagePicker
@@ -401,7 +403,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: DEEP_GREEN,
-    paddingBottom: 20,
+    paddingBottom: 14,
     alignItems: 'center',
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
@@ -437,14 +439,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 14,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600' as const,
     color: TEXT_MUTED,
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 14,
+    marginBottom: 8,
     marginLeft: 4,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.8,
@@ -527,8 +529,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: 'center',
-    paddingVertical: 32,
-    gap: 6,
+    paddingVertical: 20,
+    gap: 4,
   },
   footerOrnament: {
     flexDirection: 'row',

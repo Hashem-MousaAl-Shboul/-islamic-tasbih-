@@ -4,19 +4,22 @@ import { StyleSheet, Text, View } from "react-native";
 const DEEP_GREEN = '#1B4332';
 const GOLD = '#D4A853';
 const IVORY = '#F7F4EE';
+const TEXT_MUTED = '#8A9B91';
 
 export default function NotFoundScreen() {
+  console.log('[NotFound] Rendering 404 screen');
+
   return (
     <>
-      <Stack.Screen options={{ title: "غير موجود" }} />
+      <Stack.Screen options={{ title: "\u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f" }} />
       <View style={styles.container} testID="not-found-screen">
         <View style={styles.iconCircle}>
-          <Text style={styles.icon}>٤٠٤</Text>
+          <Text style={styles.icon}>\u0664\u0660\u0664</Text>
         </View>
-        <Text style={styles.title}>هذه الصفحة غير موجودة</Text>
-        <Text style={styles.subtitle}>الصفحة التي تبحث عنها غير متوفرة</Text>
+        <Text style={styles.title}>\u0647\u0630\u0647 \u0627\u0644\u0635\u0641\u062d\u0629 \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f\u0629</Text>
+        <Text style={styles.subtitle}>\u0627\u0644\u0635\u0641\u062d\u0629 \u0627\u0644\u062a\u064a \u062a\u0628\u062d\u062b \u0639\u0646\u0647\u0627 \u063a\u064a\u0631 \u0645\u062a\u0648\u0641\u0631\u0629</Text>
         <Link href="/" style={styles.link} testID="not-found-home-link">
-          <Text style={styles.linkText}>العودة للرئيسية</Text>
+          <Text style={styles.linkText}>\u0627\u0644\u0639\u0648\u062f\u0629 \u0644\u0644\u0631\u0626\u064a\u0633\u064a\u0629</Text>
         </Link>
       </View>
     </>
@@ -54,7 +57,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#8A9B91',
+    color: TEXT_MUTED,
     textAlign: 'center',
     marginBottom: 24,
   },

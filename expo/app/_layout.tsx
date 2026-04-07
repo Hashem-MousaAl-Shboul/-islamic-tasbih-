@@ -19,6 +19,8 @@ function RootLayoutNav() {
   const headerBg = tokens.background;
   const headerTint = tokens.mode === 'dark' ? '#FFFFFF' : '#1B4332';
 
+  console.log('[RootLayoutNav] Rendering with mode:', tokens.mode);
+
   return (
     <>
       <StatusBar style={statusStyle} />
@@ -47,13 +49,14 @@ export default function RootLayout() {
   const hideSplash = useCallback(async () => {
     try {
       await SplashScreen.hideAsync();
-      console.log('[RootLayout] Splash screen hidden successfully');
+      console.log('[RootLayout] Splash screen hidden');
     } catch (e) {
       console.log('[RootLayout] hide splash error:', e);
     }
   }, []);
 
   useEffect(() => {
+    console.log('[RootLayout] Mounting root layout');
     void hideSplash();
 
     const timer = setTimeout(() => {

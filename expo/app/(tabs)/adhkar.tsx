@@ -17,7 +17,7 @@ const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
 
 const ADHKAR_TAG = '[AdhkarScreen]';
-console.log(ADHKAR_TAG, 'module loaded, initializing adhkar screen');
+console.log(ADHKAR_TAG, 'module loaded, initializing adhkar screen with filters and TTS support');
 
 interface AdhkarItem {
   id: string;
@@ -576,7 +576,7 @@ export default function AdhkarScreen() {
     } else if (deferredFilter !== 'all') {
       filtered = ADHKAR_LIST.filter(item => item.category === deferredFilter);
     }
-    console.log(`${ADHKAR_TAG} Found ${filtered.length} adhkar items`);
+    console.log(`${ADHKAR_TAG} Found ${filtered.length} adhkar items for filter: ${deferredFilter}`);
     return filtered;
   }, [deferredFilter, isFavorite]);
 
@@ -733,7 +733,8 @@ export default function AdhkarScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]} testID="adhkar-screen"
-      accessibilityLabel="Adhkar Screen">
+      accessibilityLabel="Adhkar Screen"
+      accessibilityHint="Browse and listen to adhkar collections">
       <ErrorBoundary t={t}>
         <View style={styles.topBar}>
           <Text style={styles.topBarTitle}>{t('adhkar')}</Text>

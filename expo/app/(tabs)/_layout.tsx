@@ -8,6 +8,8 @@ import { AudioProgressBar } from "@/components/AudioProgressBar";
 import { yasAI } from "@/utils/yasAI";
 import OptimizedTabBar from "@/components/OptimizedTabBar";
 
+const TAB_TAG = '[TabLayout]';
+
 export default function TabLayout() {
   const { t } = useLanguageStore();
   const [isBarVisible, setIsBarVisible] = useState<boolean>(false);
@@ -26,7 +28,7 @@ export default function TabLayout() {
 
   useEffect(() => {
     let mounted = true;
-    console.log('[TabLayout] Mounting tab layout, initializing audio listener');
+    console.log(TAB_TAG, 'Mounting tab layout, initializing audio listener');
 
     const handlePlaybackChange = (state: { isPlaying: boolean; currentId: string | null }) => {
       if (mounted) {
@@ -41,9 +43,10 @@ export default function TabLayout() {
         const initialState = yasAI.getPlaybackState();
         if (mounted) {
           setIsBarVisible(initialState.isPlaying);
+          console.log(TAB_TAG, 'Audio listener ready, playing:', initialState.isPlaying);
         }
       } catch (e) {
-        console.log('[TabLayout] Error setting up audio listener:', e);
+        console.log(TAB_TAG, 'Error setting up audio listener:', e);
       }
     }, 1000);
 
@@ -54,15 +57,16 @@ export default function TabLayout() {
         unsubscribeRef.current();
         unsubscribeRef.current = null;
       }
+      console.log(TAB_TAG, 'Tab layout unmounted, cleaned up listeners');
     };
   }, []);
 
   const handleCloseBar = useCallback(async () => {
     try {
       await yasAI.stop();
-      console.log('[TabLayout] Audio bar closed');
+      console.log(TAB_TAG, 'Audio bar closed');
     } catch (e) {
-      console.log('[TabLayout] stop error', e);
+      console.log(TAB_TAG, 'stop error', e);
     } finally {
       setIsBarVisible(false);
     }

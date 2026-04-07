@@ -23,6 +23,7 @@ const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = "#8A9B91";
 const STATS_TAG = "[StatisticsScreen]";
+console.log(STATS_TAG, "Statistics module loaded");
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -174,7 +175,8 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
   return (
     <View style={styles.container} testID="statistics-screen"
-      accessibilityLabel="Statistics Screen">
+      accessibilityLabel="Statistics Screen"
+      accessibilityHint="View your dhikr progress and stats">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
         <View style={styles.headerOrnament}>
@@ -186,7 +188,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
       <ScrollView
         style={styles.scrollContainer}
-        contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 100 }]}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 60 }]}
         showsVerticalScrollIndicator={false}
         testID="statistics-scroll"
         accessibilityLabel="Statistics scroll view"
@@ -312,7 +314,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
           <Text style={styles.resetButtonText}>{i18n.t('resetStats') || 'إعادة تعيين الإحصائيات'}</Text>
         </TouchableOpacity>
 
-        <View style={{ height: 100 }} />
+
       </ScrollView>
       <AdBanner />
     </View>
@@ -328,7 +330,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: DEEP_GREEN,
-    paddingBottom: 20,
+    paddingBottom: 14,
     alignItems: 'center',
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
@@ -363,14 +365,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingTop: 20,
+    paddingTop: 14,
     paddingHorizontal: 16,
   },
   heroCard: {
     backgroundColor: CARD_WHITE,
     borderRadius: 24,
     padding: 24,
-    marginBottom: 24,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.06,
@@ -436,7 +438,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600' as const,
     color: TEXT_MUTED,
-    marginBottom: 12,
+    marginBottom: 8,
     marginLeft: 4,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
@@ -450,7 +452,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_WHITE,
     borderRadius: 20,
     padding: 20,
-    marginBottom: 24,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -492,7 +494,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   statCard: {
     backgroundColor: CARD_WHITE,
@@ -534,7 +536,7 @@ const styles = StyleSheet.create({
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -571,7 +573,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_WHITE,
     borderRadius: 20,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,

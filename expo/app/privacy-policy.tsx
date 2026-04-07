@@ -19,12 +19,14 @@ const TEXT_DARK = '#2C3E2D';
 const TEXT_MUTED = '#8A9B91';
 
 export default function PrivacyPolicyScreen() {
+  console.log('[PrivacyPolicy] Screen rendered');
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useLanguageStore();
 
   return (
-    <View style={styles.container} testID="privacy-policy-screen" accessibilityLabel="Privacy Policy Screen">
+    <View style={styles.container} testID="privacy-policy-screen" accessibilityLabel="Privacy Policy Screen"
+      accessibilityHint="Read our privacy policy">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
           <TouchableOpacity

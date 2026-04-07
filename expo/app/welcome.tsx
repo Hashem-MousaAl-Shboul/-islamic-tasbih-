@@ -25,6 +25,7 @@ import {
 const { width } = Dimensions.get('window');
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
 const WELCOME_TAG = '[WelcomeScreen]';
+console.log(WELCOME_TAG, 'Welcome module loaded');
 
 const FEATURES = [
   {
@@ -177,6 +178,7 @@ export default function WelcomeScreen() {
       locations={[0, 0.3, 0.65, 1]}
       style={styles.background}
       testID="welcome-background"
+      accessibilityLabel="Welcome Screen"
     >
       <ScrollView
         style={styles.scrollView}
