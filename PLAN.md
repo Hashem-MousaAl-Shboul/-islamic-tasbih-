@@ -1,8 +1,13 @@
-# Move Tasbih tab to the center of the bottom bar
+# Rearrange bottom bar: Settings to the left, Tasbih to the right
 
-**Change**
+**What changes**
 
-- Reorder the bottom bar tabs so that **Tasbih** is in the center
-- New order: **Adhkar → Tasbih → Statistics → Settings**
-- Tasbih moves from the 1st position to the 2nd position (center-left)
-- Everything else stays the same — icons, labels, and screen content are unchanged
+- Move the **Settings** tab to the far left (first position)
+- Move the **Tasbih** tab to the far right (last position)
+- Keep **Adhkar** and **Statistics** in between
+
+**New tab order (left to right):**
+1. Settings
+2. Adhkar
+3. Statistics
+4. Tasbih
