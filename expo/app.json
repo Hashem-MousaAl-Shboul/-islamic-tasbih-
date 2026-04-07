@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "Islamic Dhikr",
+    "name": "سبّح - Sabbah",
     "slug": "islamic-dhikr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "sabbah",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1B4332"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,8 +19,7 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
-        ],
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
+        ]
       }
     },
     "android": {
@@ -31,9 +30,6 @@
       "package": "app.islamic-dhikr.sabbah-tasbeh",
       "permissions": [
         "android.permission.VIBRATE",
-        "RECORD_AUDIO",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
         "INTERNET"
       ]
     },
@@ -48,12 +44,7 @@
         }
       ],
       "expo-localization",
-      [
-        "expo-av",
-        {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
-        }
-      ],
+      "expo-av",
       "expo-web-browser",
       "expo-mail-composer"
     ],

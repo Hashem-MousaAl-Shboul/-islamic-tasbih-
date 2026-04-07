@@ -5,16 +5,16 @@ import i18n from '@/constants/translations';
 
 // App Store URLs for different platforms
 const APP_STORE_URLS = {
-  ios: 'https://apps.apple.com/app/sabbah-tasbih/id123456789', // Replace with actual App Store ID
-  android: 'https://play.google.com/store/apps/details?id=app.rork.sabbah-tasbeh-application',
-  web: 'https://sabbah-app.com', // Replace with actual website
+  ios: 'https://apps.apple.com/app/sabbah-tasbih/id6670000000',
+  android: 'https://play.google.com/store/apps/details?id=app.islamic-dhikr.sabbah-tasbeh',
+  web: 'https://subbah.app',
 };
 
 // Social media and contact information
 const CONTACT_INFO = {
   whatsapp: '+962788625580',
   email: 'support@sabbah-app.com',
-  website: 'https://sabbah-app.com',
+  website: 'https://subbah.app',
   facebook: 'https://facebook.com/sabbahapp',
   twitter: 'https://twitter.com/sabbahapp',
   instagram: 'https://instagram.com/sabbahapp',
