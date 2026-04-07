@@ -1,34 +1,32 @@
-# Fix all publishing blockers and make the app store-ready
+# Fix Tasbih Counter Speed & Statistics Accuracy
 
-Based on the full project review, here's everything that needs to be fixed before the app can be submitted to the App Store:
+## What will change
 
----
+### **Faster Tasbih Counter (especially on Android)**
 
-**1. Generate App Icon & Splash Screen**
-- Create a beautiful app icon with an Islamic/Tasbih theme using deep green and gold colors
-- Generate matching splash screen image
-- These are currently missing — the app references them but no image files exist
+- Remove heavy logging from every single tap — this slows down Android significantly
+- Optimize the counter animation to be lighter and snappier (shorter durations)
+- Make haptic feedback and sound non-blocking so they don't delay the count
+- Reduce unnecessary re-renders when tapping the counter button
+- Save data less aggressively — batch saves instead of triggering on every tap
 
-**2. Shorten App Name**
-- Current name is too long for the App Store (Apple limits to 30 characters)
-- Change to a shorter name like **"سبّح - Sabbah"** which fits within limits
+### **Accurate Statistics**
 
-**3. Fix URL Scheme**
-- Change from the generic `"myapp"` to a unique scheme like `"sabbah"` to avoid conflicts with other apps
+- Fix the nested state update pattern where stats are updated inside the items update — this can cause missed or stale stats on fast tapping
+- Move stats updates to run independently alongside item updates so both are always accurate
+- Ensure the statistics screen always shows the latest real-time data from the store
+- Fix the "today count" tracking to properly reflect actual taps made
 
-**4. Remove Unnecessary Permissions**
-- Remove `RECORD_AUDIO`, `READ_EXTERNAL_STORAGE`, and `WRITE_EXTERNAL_STORAGE` from Android permissions (not used by the app)
-- Remove the microphone usage description from iOS settings (not needed)
-- Remove the microphone permission from the audio plugin config
-- Keeping unused permissions can cause App Store rejection
+### **Better Tasbih → Statistics Link**
 
-**5. Update App Store URLs**
-- The rating and sharing features currently have placeholder URLs (`id123456789`)
-- Update them so the "Rate App" and "Share App" features work correctly after launch
+- The existing link button at the bottom of the tasbih screen will remain
+- Add a small live stats summary (today's count, sessions) that updates instantly as you tap
+- Tapping the stats summary will also navigate to the full statistics screen
 
-**6. Set Splash Screen Background Color**
-- Change the splash screen background from white (`#ffffff`) to deep green (`#1B4332`) to match the app's theme and provide a smooth loading experience
+### **What stays the same**
 
----
+- All existing design and visual style
+- The add/delete/restore tasbih functionality
+- Settings and preferences
+- Sound and haptic feedback options (just made faster)
 
-These changes will resolve all the identified deployment blockers and make the app ready for App Store submission.

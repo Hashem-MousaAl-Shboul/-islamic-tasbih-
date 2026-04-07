@@ -29,17 +29,15 @@ const TEXT_MUTED = '#8A9B91';
 
 
 // ─── Animated Counter Number ──────────────────────────────────────────────────
-const AnimatedCounter = memo(({ count, _targetCount }: { count: number; _targetCount?: number }) => {
+const AnimatedCounter = memo(({ count }: { count: number }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const prevCount = useRef(count);
 
   useEffect(() => {
     if (prevCount.current === count) return;
     prevCount.current = count;
-    Animated.sequence([
-      Animated.timing(scaleAnim, { toValue: 1.18, duration: 70, useNativeDriver: true }),
-      Animated.spring(scaleAnim, { toValue: 1, tension: 280, friction: 8, useNativeDriver: true }),
-    ]).start();
+    scaleAnim.setValue(1.15);
+    Animated.spring(scaleAnim, { toValue: 1, tension: 400, friction: 10, useNativeDriver: true }).start();
   }, [count, scaleAnim]);
 
   return (
@@ -171,24 +169,19 @@ export default function TasbihScreen() {
     Animated.timing(progressAnim, { toValue: p, duration: 300, useNativeDriver: false }).start();
   }, [selectedItem?.count, selectedItem?.targetCount, progressAnim, selectedItem]);
 
-  // Fast pulse - triggered imperatively, no state needed
   const triggerPulse = useCallback(() => {
-    pulseAnim.stopAnimation();
-    Animated.sequence([
-      Animated.timing(pulseAnim, { toValue: 0.93, duration: 65, useNativeDriver: true }),
-      Animated.spring(pulseAnim, { toValue: 1, tension: 350, friction: 9, useNativeDriver: true }),
-    ]).start();
+    pulseAnim.setValue(0.94);
+    Animated.spring(pulseAnim, { toValue: 1, tension: 400, friction: 10, useNativeDriver: true }).start();
   }, [pulseAnim]);
 
   const handleIncrement = useCallback(() => {
     if (!selectedItem) return;
 
     updateTasbihCount(selectedItem.id, true);
-
     triggerPulse();
 
     if (settings.vibrationEnabled && Platform.OS !== 'web') {
-      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); } catch {}
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
     if (settings.soundEnabled) {
       soundService.playClickSync();
@@ -198,7 +191,7 @@ export default function TasbihScreen() {
     if (willComplete && !selectedItem.isCompleted) {
       if (settings.soundEnabled) soundService.playCompletionSync();
       if (settings.vibrationEnabled && Platform.OS !== 'web') {
-        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {}); } catch {}
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       }
     }
   }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled, triggerPulse]);
@@ -207,7 +200,7 @@ export default function TasbihScreen() {
     if (!selectedItem || selectedItem.count <= 0) return;
     updateTasbihCount(selectedItem.id, false);
     if (settings.vibrationEnabled && Platform.OS !== 'web') {
-      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {}); } catch {}
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
     if (settings.soundEnabled) soundService.playClickSync();
   }, [selectedItem, updateTasbihCount, settings.vibrationEnabled, settings.soundEnabled]);
@@ -453,16 +446,23 @@ export default function TasbihScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Link to Statistics */}
+              {/* Live Stats Summary → Statistics */}
               <TouchableOpacity
-                style={styles.statsLinkButton}
+                style={styles.liveStatsSummary}
                 onPress={() => router.push('/statistics')}
                 activeOpacity={0.7}
                 testID="stats-link-button"
               >
-                <View style={styles.statsLinkContent}>
-                  <TrendingUp size={18} color={DEEP_GREEN} />
-                  <Text style={styles.statsLinkText}>{t('statistics') || 'الإحصائيات'}</Text>
+                <View style={styles.liveStatsLeft}>
+                  <View style={styles.liveStatsIconCircle}>
+                    <TrendingUp size={16} color={GOLD} />
+                  </View>
+                  <View>
+                    <Text style={styles.liveStatsTitle}>{t('statistics') || 'الإحصائيات'}</Text>
+                    <Text style={styles.liveStatsSubtitle}>
+                      {stats.completedSessions} {t('sessions') || 'جلسات'} · {stats.todayCount} {t('today') || 'اليوم'}
+                    </Text>
+                  </View>
                 </View>
                 <ChevronRight size={18} color={TEXT_MUTED} />
               </TouchableOpacity>
@@ -639,13 +639,18 @@ const styles = StyleSheet.create({
   speakDhikrButtonActive: { backgroundColor: DEEP_GREEN },
   speakDhikrText: { fontSize: 13, fontWeight: '600' as const, color: DEEP_GREEN },
   speakDhikrTextActive: { color: '#FFFFFF' },
-  statsLinkButton: {
+  liveStatsSummary: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: CARD_WHITE, borderRadius: 16, paddingHorizontal: 18, paddingVertical: 14,
+    backgroundColor: CARD_WHITE, borderRadius: 18, paddingHorizontal: 16, paddingVertical: 14,
     marginTop: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     borderWidth: 1, borderColor: GOLD + '18',
   },
-  statsLinkContent: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  statsLinkText: { fontSize: 15, fontWeight: '600' as const, color: DEEP_GREEN },
+  liveStatsLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  liveStatsIconCircle: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: GOLD + '14', alignItems: 'center', justifyContent: 'center',
+  },
+  liveStatsTitle: { fontSize: 14, fontWeight: '700' as const, color: DEEP_GREEN },
+  liveStatsSubtitle: { fontSize: 12, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 2 },
 });
