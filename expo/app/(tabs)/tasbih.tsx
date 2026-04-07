@@ -7,7 +7,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Plus, X, Check, Minus, RotateCcw, Volume2, VolumeX,
-  Sparkles, Moon, TrendingUp, ChevronRight
+  Moon, TrendingUp, ChevronRight
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,7 +21,6 @@ import { ttsService } from '@/utils/ttsService';
 const { width: _SCREEN_WIDTH } = Dimensions.get('window');
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
-const DEEP_GREEN_LIGHT = '#2D5A45';
 const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
@@ -92,23 +91,7 @@ CircularProgress.displayName = 'CircularProgress';
 
 // ─── Compact header ───────────────────────────────────────────────────────────
 const TasbihHeader = memo(() => {
-  return (
-    <LinearGradient colors={[DEEP_GREEN, DEEP_GREEN_LIGHT]} style={styles.headerGradient}>
-      <View style={styles.headerContent}>
-        <View style={styles.headerRow}>
-          <View style={styles.headerIconContainer}>
-            <Sparkles size={16} color={GOLD} />
-          </View>
-          <Text style={styles.headerTitle}>التسبيح</Text>
-          <View style={styles.headerOrnament}>
-            <View style={styles.ornamentLine} />
-            <View style={styles.ornamentDiamond} />
-            <View style={styles.ornamentLine} />
-          </View>
-        </View>
-      </View>
-    </LinearGradient>
-  );
+  return null;
 });
 TasbihHeader.displayName = 'TasbihHeader';
 
@@ -310,7 +293,14 @@ export default function TasbihScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <TasbihHeader />
+      <View style={styles.topBar}>
+        <Text style={styles.topBarTitle}>التسبيح</Text>
+        <View style={styles.topBarOrnament}>
+          <View style={styles.topBarOrnamentLine} />
+          <View style={styles.topBarOrnamentDiamond} />
+          <View style={styles.topBarOrnamentLine} />
+        </View>
+      </View>
 
       {/* Tasbih Cards */}
           <View style={styles.cardsSection}>
@@ -559,18 +549,38 @@ const styles = StyleSheet.create({
   loadingText: { fontSize: 15, color: TEXT_MUTED, marginTop: 12, fontWeight: '500' as const },
   errorContainer: { justifyContent: 'center', alignItems: 'center' },
   errorText: { fontSize: 18, color: DEEP_GREEN, textAlign: 'center', fontWeight: '600' as const },
-  headerGradient: { borderBottomLeftRadius: 0, borderBottomRightRadius: 0 },
-  headerContent: { alignItems: 'center', paddingHorizontal: 12, paddingTop: 8 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  headerIconContainer: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: 'rgba(212,168,83,0.15)',
-    alignItems: 'center', justifyContent: 'center',
+  topBar: {
+    backgroundColor: DEEP_GREEN,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
-  headerTitle: { fontSize: 18, fontWeight: '700' as const, color: CARD_WHITE, textAlign: 'center', letterSpacing: 0.5 },
-  headerOrnament: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  ornamentLine: { width: 22, height: 1, backgroundColor: GOLD, opacity: 0.5 },
-  ornamentDiamond: { width: 5, height: 5, backgroundColor: GOLD, transform: [{ rotate: '45deg' }] },
+  topBarTitle: {
+    fontSize: 26,
+    fontWeight: '700' as const,
+    color: '#fff',
+    writingDirection: 'rtl',
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  topBarOrnament: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  topBarOrnamentLine: {
+    width: 32,
+    height: 1,
+    backgroundColor: GOLD,
+    opacity: 0.6,
+  },
+  topBarOrnamentDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: GOLD,
+    transform: [{ rotate: '45deg' }],
+  },
   cardsSection: { backgroundColor: DEEP_GREEN, paddingBottom: 14, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   cardsScrollView: { maxHeight: 90 },
   cardsContainer: { paddingHorizontal: 12, paddingVertical: 6 },

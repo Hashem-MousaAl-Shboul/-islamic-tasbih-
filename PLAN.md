@@ -1,32 +1,15 @@
-# Fix Tasbih Counter Speed & Statistics Accuracy
+# Match the Tasbih top bar to the other screens
 
-## What will change
+**What will change:**
 
-### **Faster Tasbih Counter (especially on Android)**
+- The top bar on the Tasbih screen will be updated to match the consistent style used on the Statistics, Adhkar, and Settings screens
+- It will have the same deep green solid background with rounded bottom corners
+- The title "التسبيح" will be larger and centered, matching the other screens' title size
+- The gold ornament decoration (line–diamond–line) will appear below the title, same as the other screens
+- The small sparkle icon next to the title will be removed to keep things consistent
 
-- Remove heavy logging from every single tap — this slows down Android significantly
-- Optimize the counter animation to be lighter and snappier (shorter durations)
-- Make haptic feedback and sound non-blocking so they don't delay the count
-- Reduce unnecessary re-renders when tapping the counter button
-- Save data less aggressively — batch saves instead of triggering on every tap
+**What stays the same:**
 
-### **Accurate Statistics**
-
-- Fix the nested state update pattern where stats are updated inside the items update — this can cause missed or stale stats on fast tapping
-- Move stats updates to run independently alongside item updates so both are always accurate
-- Ensure the statistics screen always shows the latest real-time data from the store
-- Fix the "today count" tracking to properly reflect actual taps made
-
-### **Better Tasbih → Statistics Link**
-
-- The existing link button at the bottom of the tasbih screen will remain
-- Add a small live stats summary (today's count, sessions) that updates instantly as you tap
-- Tapping the stats summary will also navigate to the full statistics screen
-
-### **What stays the same**
-
-- All existing design and visual style
-- The add/delete/restore tasbih functionality
-- Settings and preferences
-- Sound and haptic feedback options (just made faster)
+- All other content on the Tasbih screen (cards, counter, controls) remains unchanged
+- The green section that wraps around the tasbih cards at the top will still be present below the header
 
