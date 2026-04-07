@@ -1,17 +1,21 @@
-# Fix Banner Ads — Install & Configure Google Mobile Ads
+# Verify & Fix Banner Ads Setup for Production Builds
 
-**Problem**
-The ad library is missing from the project. The ad component exists on all 4 screens but silently does nothing because the library isn't installed.
 
-**What will be done**
+## Current Status
 
-1. **Install the Google Mobile Ads library** into the project
-2. **Add the ad configuration** back to the app settings file with your App ID (`ca-app-pub-4282819777610118~7403522538`)
-3. **Verify the AdBanner component** is correctly placed on all 4 screens (Tasbih, Adhkar, Statistics, Settings)
+The banner ads library (`react-native-google-mobile-ads`) is already installed and configured in your project. The AdBanner component is placed on all 4 screens: **Tasbih, Adhkar, Statistics, and Settings**.
 
-**Important Note**
+**Why ads don't appear in the preview:** This ads library is a *native* library — it can only display ads in a real production build (App Store / Google Play), not in the web preview or Expo Go test app. This is a limitation of the ads library itself, not a bug.
 
-- After this change, you will need to **create a new app build** (development or production build) for ads to appear on your Android and iOS devices
-- Ads will **not** appear in the web preview — they only work on real devices with a native build
-- Ads will **not** appear in Expo Go — a custom build is required
+## What This Plan Will Do
 
+- **Double-check** all configuration is correct (App ID, Ad Unit ID, plugin settings)
+- **Ensure the ad component** is robust — gracefully handles loading, errors, and platforms
+- **Verify placement** on all 4 screens (Tasbih, Adhkar, Statistics, Settings) with the banner at the bottom
+- **Confirm web compatibility** — the app won't crash on web (ads simply won't show)
+- **Verify app.json** has the correct Google Mobile Ads plugin with your App ID: `ca-app-pub-4282819777610118~7403522538`
+- **Verify Ad Unit ID** is set to: `ca-app-pub-4282819777610118/7510239834`
+
+## Important Note
+
+Once you create a **production build** and publish to the App Store / Google Play, the banner ads will appear at the bottom of all 4 screens on real devices. They will **never** appear in the web preview — this is expected and normal.
