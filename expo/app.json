@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.islamic-dhikr.sabbah-tasbeh",
+      "bundleIdentifier": "app.islamicdhikr.sabbah",
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.islamic-dhikr.sabbah-tasbeh",
+      "package": "app.islamicdhikr.sabbah",
       "permissions": [
         "android.permission.VIBRATE",
         "INTERNET"
