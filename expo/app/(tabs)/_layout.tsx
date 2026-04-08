@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { BookOpen, Fingerprint, TrendingUp, SlidersHorizontal } from "lucide-react-native";
+import { BookOpen, CircleDot, TrendingUp, SlidersHorizontal } from "lucide-react-native";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
 import { StyleSheet, Platform, View } from "react-native";
 import { Colors } from "@/constants/colors";
@@ -107,7 +107,7 @@ export default function TabLayout() {
           options={{
             title: t("tasbih") || "التسبيح",
             tabBarIcon: ({ color, size }) => (
-              <Fingerprint size={size} color={color} strokeWidth={1.8} />
+              <CircleDot size={size} color={color} strokeWidth={2.2} fill={color} />
             ),
           }}
         />

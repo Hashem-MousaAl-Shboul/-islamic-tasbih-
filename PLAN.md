@@ -1,7 +1,7 @@
-# Fix "Cannot find single active touch" error
+# تغيير أيقونة التسبيح في الشريط السفلي
 
-The error happens because the Adhkar screen uses low-level touch responder methods (`onStartShouldSetResponder` / `onResponderRelease`) on plain `View` elements for the web platform. This pattern causes the "Cannot find single active touch" crash.
+**التغيير:**
 
-**Fix:**
-- Replace all `View` + `onStartShouldSetResponder` + `onResponderRelease` patterns with `Pressable` + `onPress` on the web branch too (favorite button, share button, and speak button)
-- This makes the web and native code paths consistent and eliminates the touch error
+- استبدال أيقونة التسبيح الحالية (بصمة الإصبع) بأيقونة دائرة ممتلئة تمثل حبة السبحة بأسلوب Filled/Solid
+- سيتم استخدام أيقونة `CircleDot` بأسلوب ممتلئ لتمثيل السبحة بشكل أفضل وأكثر ملاءمة
+
