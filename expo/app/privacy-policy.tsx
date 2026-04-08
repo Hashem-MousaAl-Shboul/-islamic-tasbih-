@@ -5,11 +5,14 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Linking,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, MessageCircle } from 'lucide-react-native';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
+import { contactViaWhatsApp } from '@/utils/globalUtils';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -79,9 +82,17 @@ export default function PrivacyPolicyScreen() {
           <Text style={styles.bodyText}>{t('privacyChangesText')}</Text>
 
           <Text style={styles.sectionHeading}>{t('privacyContactTitle')}</Text>
-          <Text style={styles.bodyText}>
-            {`${t('privacyContactText')}\n\nsupport@subbah.app`}
-          </Text>
+          <Text style={styles.bodyText}>{t('privacyContactText')}</Text>
+
+          <TouchableOpacity
+            style={styles.whatsappButton}
+            onPress={contactViaWhatsApp}
+            activeOpacity={0.7}
+            testID="privacy-whatsapp-button"
+          >
+            <MessageCircle size={20} color="#fff" />
+            <Text style={styles.whatsappButtonText}>WhatsApp</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -174,5 +185,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: TEXT_DARK,
+  },
+  whatsappButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#25D366',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    marginTop: 18,
+    gap: 10,
+    shadowColor: '#25D366',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  whatsappButtonText: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#fff',
+    letterSpacing: 0.3,
   },
 });

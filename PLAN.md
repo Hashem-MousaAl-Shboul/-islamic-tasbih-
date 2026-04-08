@@ -1,6 +1,8 @@
-# تحديث معرف إعلان AdMob
+# Update Privacy Policy & Terms of Use — Replace Email with WhatsApp Button
 
-**التغيير:**
+**Changes**
 
-- استبدال معرف الإعلان القديم `ca-app-pub-4282819777610118/7510239834` بالمعرف الجديد `ca-app-pub-4282819777610118/8296707892` في ملف مكون الإعلانات
+- **Privacy Policy page**: Remove the `support@subbah.app` email address from the contact section and replace it with a tappable WhatsApp button (green WhatsApp icon + text) that opens a direct WhatsApp chat using the same number already configured in the app.
+- **Terms of Use page**: Same change — remove the email address and add the WhatsApp contact button.
+- Both pages will have a clean, styled WhatsApp button that matches the existing app design (deep green / gold / ivory theme).
 
