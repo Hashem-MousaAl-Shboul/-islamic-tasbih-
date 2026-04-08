@@ -505,7 +505,7 @@ function useReducedMotion(): boolean {
 }
 
 export default function AdhkarScreen() {
-  const { isLoading } = useLanguageStore();
+  const { isLoading, t } = useLanguageStore();
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
@@ -613,8 +613,6 @@ export default function AdhkarScreen() {
     setSelectedFilter(filter);
     console.log(`${ADHKAR_TAG} Filter changed to: ${filter}`);
   }, []);
-
-  const { t } = useLanguageStore();
 
   const onScrollToIndexFailed = useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
     console.log(`${ADHKAR_TAG} scrollToIndex failed:`, info);
