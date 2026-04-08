@@ -6,6 +6,8 @@ import * as Haptics from 'expo-haptics';
 
 const DEEP_GREEN = '#1B4332';
 const GOLD = '#D4A853';
+const BAR_RADIUS = 28;
+const ICON_SIZE = 24;
 
 interface TabItemProps {
   route: any;
@@ -16,27 +18,25 @@ interface TabItemProps {
   totalTabs: number;
 }
 
-const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigation, isFocused, index, totalTabs }) {
+const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigation, isFocused }) {
   const theme = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const focusAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
-  const label = descriptor.options.tabBarLabel || descriptor.options.title || route.name;
-
   useEffect(() => {
     Animated.spring(focusAnim, {
       toValue: isFocused ? 1 : 0,
-      useNativeDriver: false,
-      tension: 65,
-      friction: 11,
+      useNativeDriver: true,
+      tension: 80,
+      friction: 10,
     }).start();
   }, [isFocused, focusAnim]);
 
   const onPressIn = useCallback(() => {
     Animated.spring(scaleAnim, {
-      toValue: 0.85,
+      toValue: 0.82,
       useNativeDriver: true,
-      tension: 250,
+      tension: 300,
       friction: 8,
     }).start();
   }, [scaleAnim]);
@@ -45,7 +45,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
     Animated.spring(scaleAnim, {
       toValue: 1,
       useNativeDriver: true,
-      tension: 180,
+      tension: 200,
       friction: 10,
     }).start();
   }, [scaleAnim]);
@@ -65,43 +65,30 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
   }, [isFocused, navigation, route.name, route.key]);
 
   const isDark = theme.mode === 'dark';
-  const activeColor = DEEP_GREEN;
-  const inactiveColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.28)';
-
-  const staticIconColor = isFocused ? activeColor : inactiveColor;
+  const activeColor = isFocused ? DEEP_GREEN : (isDark ? 'rgba(255,255,255,0.32)' : 'rgba(27,67,50,0.3)');
 
   const icon = descriptor.options.tabBarIcon
-    ? descriptor.options.tabBarIcon({ color: staticIconColor, size: 22 })
+    ? descriptor.options.tabBarIcon({ color: activeColor, size: ICON_SIZE })
     : null;
 
-  const pillBg = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['transparent', GOLD + '20'],
-  });
-
-  const pillWidth = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [44, 64],
-  });
-
-  const pillHeight = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [44, 34],
-  });
-
-  const labelOpacity = focusAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0.5, 0.75, 1],
-  });
-
-  const labelTranslateY = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -1],
-  });
-
   const iconScale = focusAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [1, 1.12, 1.08],
+    inputRange: [0, 1],
+    outputRange: [1, 1.15],
+  });
+
+  const iconTranslateY = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -2],
+  });
+
+  const dotScale = focusAnim.interpolate({
+    inputRange: [0, 0.6, 1],
+    outputRange: [0, 0.5, 1],
+  });
+
+  const dotOpacity = focusAnim.interpolate({
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, 0, 1],
   });
 
   return (
@@ -119,35 +106,26 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
         ]}
       >
         <Animated.View
-          style={[
-            styles.iconPill,
-            {
-              backgroundColor: pillBg,
-              width: pillWidth,
-              height: pillHeight,
-            },
-          ]}
+          style={{
+            transform: [
+              { scale: iconScale },
+              { translateY: iconTranslateY },
+            ],
+          }}
         >
-          <Animated.View style={{ transform: [{ scale: iconScale }] }}>
-            {icon}
-          </Animated.View>
+          {icon}
         </Animated.View>
 
-        <Animated.Text
+        <Animated.View
           style={[
-            styles.tabLabel,
+            styles.activeDot,
             {
-              color: isFocused ? activeColor : inactiveColor,
-              opacity: labelOpacity,
-              fontWeight: isFocused ? '600' as const : '400' as const,
-              transform: [{ translateY: labelTranslateY }],
+              backgroundColor: GOLD,
+              transform: [{ scale: dotScale }],
+              opacity: dotOpacity,
             },
           ]}
-          numberOfLines={1}
-          allowFontScaling={false}
-        >
-          {label}
-        </Animated.Text>
+        />
       </Animated.View>
     </Pressable>
   );
@@ -164,16 +142,14 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
   const theme = useTheme();
   const isDark = theme.mode === 'dark';
 
-  const bottomPad = Math.max(insets.bottom, 8);
+  const bottomPad = Math.max(insets.bottom, 12);
 
   const barStyle = useMemo(() => {
-    const bgColor = isDark ? 'rgba(15,20,30,0.97)' : 'rgba(255,255,255,0.98)';
-    const borderColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+    const bgColor = isDark ? 'rgba(20,25,35,0.96)' : 'rgba(253,251,247,0.97)';
 
     return {
       backgroundColor: bgColor,
-      paddingBottom: bottomPad,
-      borderTopColor: borderColor,
+      marginBottom: bottomPad,
     };
   }, [isDark, bottomPad]);
 
@@ -187,7 +163,7 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
   }, [state.routes, state.index]);
 
   return (
-    <View style={styles.wrapper} testID="optimized-tab-bar">
+    <View style={[styles.wrapper, { paddingBottom: 0 }]} testID="optimized-tab-bar">
       <View style={[styles.tabBar, barStyle]} testID="tab-bar-shell">
         <View style={styles.tabContainer}>
           {tabs.map(({ route, isFocused, key, index: idx }: any) => (
@@ -211,23 +187,27 @@ export default OptimizedTabBar;
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: 'transparent',
+    alignItems: 'center' as const,
+    paddingTop: 6,
+    paddingBottom: 2,
   },
   tabBar: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 8,
+    borderRadius: BAR_RADIUS,
+    paddingVertical: 14,
+    width: '86%' as any,
+    maxWidth: 360,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.06,
-        shadowRadius: 10,
+        shadowColor: '#1B4332',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.12,
+        shadowRadius: 24,
       },
       android: {
-        elevation: 12,
+        elevation: 16,
       },
       web: {
-        boxShadow: '0 -3px 12px rgba(0,0,0,0.06)',
+        boxShadow: '0 8px 32px rgba(27,67,50,0.10), 0 2px 8px rgba(0,0,0,0.06)',
       } as any,
     }),
   },
@@ -240,27 +220,16 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    paddingVertical: 2,
+    paddingVertical: 4,
   },
   tabContent: {
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    gap: 3,
+    gap: 6,
   },
-  iconPill: {
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    borderRadius: 16,
-  },
-  tabLabel: {
-    fontSize: 11,
-    textAlign: 'center' as const,
-    letterSpacing: 0.1,
-    ...Platform.select({
-      android: {
-        includeFontPadding: false,
-        textAlignVertical: 'center' as const,
-      },
-    }),
+  activeDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
 });
