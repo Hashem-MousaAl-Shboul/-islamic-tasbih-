@@ -284,4 +284,5 @@ export const tr: TranslationKeys = {
   termsContactTitle: '10. Bize Ulaşın',
   termsContactText: 'Bu Kullanım Şartları hakkında herhangi bir sorunuz varsa, lütfen bize şu adresten ulaşın:',
   comingSoon: 'Yakında',
+  featureComingSoon: 'Bu özellik yakında kullanılabilir olacak',
 };

@@ -284,4 +284,5 @@ export const id: TranslationKeys = {
   termsContactTitle: '10. Hubungi Kami',
   termsContactText: 'Jika Anda memiliki pertanyaan tentang Syarat Penggunaan ini, silakan hubungi kami di:',
   comingSoon: 'Segera hadir',
+  featureComingSoon: 'Fitur ini akan segera tersedia',
 };

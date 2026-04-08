@@ -284,4 +284,5 @@ export const bn: TranslationKeys = {
   termsContactTitle: '১০. যোগাযোগ করুন',
   termsContactText: 'এই ব্যবহারের শর্তাবলী সম্পর্কে আপনার কোন প্রশ্ন থাকলে, অনুগ্রহ করে আমাদের সাথে যোগাযোগ করুন:',
   comingSoon: 'শীঘ্রই আসছে',
+  featureComingSoon: 'এই বৈশিষ্ট্যটি শীঘ্রই উপলব্ধ হবে',
 };

@@ -284,4 +284,5 @@ export const es: TranslationKeys = {
   termsContactTitle: '10. Contáctanos',
   termsContactText: 'Si tienes alguna pregunta sobre estos Términos de Uso, contáctanos en:',
   comingSoon: 'Próximamente',
+  featureComingSoon: 'Esta función estará disponible pronto',
 };

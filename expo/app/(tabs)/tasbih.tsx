@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  Plus, X, Check, Minus, RotateCcw, Volume2, VolumeX,
+  Plus, X, Check, Minus, RotateCcw, Lock,
   Moon, TrendingUp, ChevronRight
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -98,7 +98,7 @@ export default function TasbihScreen() {
   const windowDimensions = useWindowDimensions();
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -258,21 +258,9 @@ export default function TasbihScreen() {
     setNewTasbih({ arabicText: '', transliteration: '', translation: '', targetCount: 33, color: '#2D8B6F', category: 'custom' });
   }, []);
 
-  const handleSpeak = useCallback(async () => {
-    if (!selectedItem) return;
-    if (isSpeaking) {
-      try { await ttsService.stop(); } catch {}
-      setIsSpeaking(false);
-    } else {
-      try {
-        if (Platform.OS !== 'web') { try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {} }
-        setIsSpeaking(true);
-        console.log(TASBIH_TAG, 'Speaking dhikr:', selectedItem.arabicText);
-        await ttsService.playDhikr(selectedItem.arabicText);
-        setIsSpeaking(false);
-      } catch { setIsSpeaking(false); }
-    }
-  }, [selectedItem, isSpeaking]);
+  const handleLockedSpeak = useCallback(() => {
+    Alert.alert(t('comingSoon'), t('featureComingSoon'));
+  }, [t]);
 
   const predefinedColors = useMemo(() => ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'], []);
 
@@ -358,15 +346,18 @@ export default function TasbihScreen() {
               <Text style={styles.translationText}>{selectedItem.translation}</Text>
             )}
             <TouchableOpacity
-              style={[styles.speakDhikrButton, isSpeaking && styles.speakDhikrButtonActive]}
-              onPress={handleSpeak}
+              style={[styles.speakDhikrButton, styles.speakDhikrButtonLocked]}
+              onPress={handleLockedSpeak}
               activeOpacity={0.7}
               testID="tasbih-speak-button"
             >
-              {isSpeaking ? <VolumeX size={16} color="#FFFFFF" /> : <Volume2 size={16} color={DEEP_GREEN} />}
-              <Text style={[styles.speakDhikrText, isSpeaking && styles.speakDhikrTextActive]}>
-                {isSpeaking ? t('stopListening') : t('listenToDhikr')}
+              <Lock size={14} color={TEXT_MUTED} />
+              <Text style={[styles.speakDhikrText, styles.speakDhikrTextLocked]}>
+                {t('listenToDhikr')}
               </Text>
+              <View style={styles.comingSoonBadgeMini}>
+                <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
+              </View>
             </TouchableOpacity>
           </LinearGradient>
 
@@ -650,8 +641,12 @@ const styles = StyleSheet.create({
   selectedColor: { borderColor: DEEP_GREEN, borderWidth: 3 },
   speakDhikrButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(27,67,50,0.08)', marginTop: 10 },
   speakDhikrButtonActive: { backgroundColor: DEEP_GREEN },
+  speakDhikrButtonLocked: { backgroundColor: 'rgba(0,0,0,0.04)', borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)' },
   speakDhikrText: { fontSize: 13, fontWeight: '600' as const, color: DEEP_GREEN },
   speakDhikrTextActive: { color: '#FFFFFF' },
+  speakDhikrTextLocked: { color: TEXT_MUTED },
+  comingSoonBadgeMini: { backgroundColor: GOLD + '20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, marginLeft: 4 },
+  comingSoonBadgeMiniText: { fontSize: 9, fontWeight: '700' as const, color: GOLD },
   liveStatsSummary: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: CARD_WHITE, borderRadius: 18, paddingHorizontal: 16, paddingVertical: 14,

@@ -284,4 +284,5 @@ export const ar: TranslationKeys = {
   termsContactTitle: '١٠. تواصل معنا',
   termsContactText: 'إذا كانت لديك أي أسئلة حول شروط الاستخدام هذه، يرجى التواصل معنا على:',
   comingSoon: 'قريباً',
+  featureComingSoon: 'هذه الميزة ستكون متاحة قريباً',
 };

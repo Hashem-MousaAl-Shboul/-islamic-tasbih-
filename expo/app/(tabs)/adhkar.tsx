@@ -5,7 +5,7 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
-import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Volume2, VolumeX, Square, Headphones } from 'lucide-react-native';
+import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Volume2, VolumeX, Square, Headphones, Lock } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { ttsService } from '@/utils/ttsService';
 import AdBanner from '@/components/AdBanner';
@@ -109,12 +109,10 @@ interface AdhkarCardProps {
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   onShare: (item: AdhkarItem) => void;
-  speakingId: string | null;
-  onSpeak: (item: AdhkarItem) => void;
-  onStopSpeak: () => void;
+  onLockedPress: () => void;
 }
 
-const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, reducedMotion: _reducedMotion, isFavorite, onToggleFavorite, onShare, speakingId, onSpeak, onStopSpeak }) => {
+const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, reducedMotion: _reducedMotion, isFavorite, onToggleFavorite, onShare, onLockedPress }) => {
   const { t } = useLanguageStore();
   const [expanded, setExpanded] = useState<boolean>(false);
 
@@ -141,19 +139,10 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
     onShare(item);
   }, [item, onShare]);
 
-  const isSpeaking = speakingId === item.id;
-
-  const handleSpeak = useCallback((e?: any) => {
+  const handleLockedSpeak = useCallback((e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
-    if (Platform.OS !== 'web') {
-      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
-    }
-    if (isSpeaking) {
-      onStopSpeak();
-    } else {
-      onSpeak(item);
-    }
-  }, [item, isSpeaking, onSpeak, onStopSpeak]);
+    onLockedPress();
+  }, [onLockedPress]);
 
   const getCategoryIcon = (category: string) => {
     const size = 14;
@@ -256,35 +245,33 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
         <View style={styles.speakRow}>
           {Platform.OS === 'web' ? (
             <View
-              style={[styles.speakButton, isSpeaking && styles.speakButtonActive]}
+              style={[styles.speakButton, styles.speakButtonLocked]}
               onStartShouldSetResponder={() => true}
-              onResponderRelease={handleSpeak}
+              onResponderRelease={handleLockedSpeak}
               testID="adhkar-speak-button"
             >
-              {isSpeaking ? (
-                <VolumeX size={16} color="#FFFFFF" />
-              ) : (
-                <Volume2 size={16} color={accent} />
-              )}
-              <Text style={[styles.speakButtonText, isSpeaking && styles.speakButtonTextActive]}>
-                {isSpeaking ? t('stopListening') : t('listenToAdhkar')}
+              <Lock size={14} color={TEXT_MUTED} />
+              <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
+                {t('listenToAdhkar')}
               </Text>
+              <View style={styles.comingSoonBadgeMini}>
+                <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
+              </View>
             </View>
           ) : (
             <Pressable
-              style={[styles.speakButton, isSpeaking && { backgroundColor: accent }]}
-              onPress={handleSpeak}
+              style={[styles.speakButton, styles.speakButtonLocked]}
+              onPress={handleLockedSpeak}
               testID="adhkar-speak-button"
               accessibilityRole="button"
             >
-              {isSpeaking ? (
-                <VolumeX size={16} color="#FFFFFF" />
-              ) : (
-                <Volume2 size={16} color={accent} />
-              )}
-              <Text style={[styles.speakButtonText, isSpeaking && styles.speakButtonTextActive]}>
-                {isSpeaking ? t('stopListening') : t('listenToAdhkar')}
+              <Lock size={14} color={TEXT_MUTED} />
+              <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
+                {t('listenToAdhkar')}
               </Text>
+              <View style={styles.comingSoonBadgeMini}>
+                <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
+              </View>
             </Pressable>
           )}
         </View>
@@ -334,7 +321,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
 
 const AdhkarCard = memo(
   AdhkarCardComponent,
-  (prev, next) => prev.item.id === next.item.id && prev.item.arabicText === next.item.arabicText && prev.item.transliteration === next.item.transliteration && prev.item.translation === next.item.translation && prev.index === next.index && prev.reducedMotion === next.reducedMotion && prev.isFavorite === next.isFavorite && prev.speakingId === next.speakingId
+  (prev, next) => prev.item.id === next.item.id && prev.item.arabicText === next.item.arabicText && prev.item.transliteration === next.item.transliteration && prev.item.translation === next.item.translation && prev.index === next.index && prev.reducedMotion === next.reducedMotion && prev.isFavorite === next.isFavorite
 );
 
 AdhkarCard.displayName = 'AdhkarCard';
@@ -400,72 +387,41 @@ interface PlayAllButtonProps {
   currentIndex: number;
 }
 
-const PlayAllButtonComponent: React.FC<PlayAllButtonProps> = ({ isPlayingAll, onPlayAll, onStopAll, itemCount, currentIndex }) => {
+const PlayAllButtonComponent: React.FC<PlayAllButtonProps> = ({ isPlayingAll: _isPlayingAll, onPlayAll, onStopAll: _onStopAll, itemCount, currentIndex: _currentIndex }) => {
   const { t } = useLanguageStore();
-  const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  useEffect(() => {
-    if (isPlayingAll) {
-      const pulse = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.03, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        ])
-      );
-      pulse.start();
-      return () => pulse.stop();
-    } else {
-      pulseAnim.setValue(1);
-    }
-  }, [isPlayingAll, pulseAnim]);
-
-  const handlePress = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (e) { console.log('Haptic error:', e); }
-    }
-    if (isPlayingAll) {
-      onStopAll();
-    } else {
-      onPlayAll();
-    }
-  }, [isPlayingAll, onPlayAll, onStopAll]);
+  const handleLockedPress = useCallback(() => {
+    Alert.alert(t('comingSoon'), t('featureComingSoon'));
+  }, [t]);
 
   if (itemCount === 0) return null;
 
   return (
-    <Animated.View style={[styles.playAllContainer, { transform: [{ scale: pulseAnim }] }]}>
+    <View style={styles.playAllContainer}>
       <Pressable
-        style={[styles.playAllButton, isPlayingAll && styles.playAllButtonActive]}
-        onPress={handlePress}
+        style={[styles.playAllButton, styles.playAllButtonLocked]}
+        onPress={handleLockedPress}
         testID="play-all-button"
         accessibilityRole="button"
       >
         <View style={styles.playAllLeft}>
-          <View style={[styles.playAllIconCircle, isPlayingAll && styles.playAllIconCircleActive]}>
-            {isPlayingAll ? (
-              <Square size={16} color="#FFFFFF" fill="#FFFFFF" />
-            ) : (
-              <Headphones size={18} color={DEEP_GREEN} />
-            )}
+          <View style={[styles.playAllIconCircle, styles.playAllIconCircleLocked]}>
+            <Lock size={18} color={TEXT_MUTED} />
           </View>
           <View style={styles.playAllTextContainer}>
-            <Text style={[styles.playAllTitle, isPlayingAll && styles.playAllTitleActive]}>
-              {isPlayingAll ? t('stopListening') : t('listenToAdhkar')}
+            <Text style={[styles.playAllTitle, styles.playAllTitleLocked]}>
+              {t('listenToAdhkar')}
             </Text>
-            {isPlayingAll ? (
-              <Text style={styles.playAllProgress}>
-                {currentIndex + 1} / {itemCount}
-              </Text>
-            ) : (
-              <Text style={styles.playAllSubtitle}>
-                {itemCount} {t('adhkar')}
-              </Text>
-            )}
+            <Text style={styles.playAllSubtitle}>
+              {itemCount} {t('adhkar')}
+            </Text>
           </View>
         </View>
-        {isPlayingAll && <AudioWaveAnimation color="#FFFFFF" isPlaying={true} />}
+        <View style={styles.comingSoonBadge}>
+          <Text style={styles.comingSoonBadgeText}>{t('comingSoon')}</Text>
+        </View>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -554,18 +510,10 @@ export default function AdhkarScreen() {
   const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const deferredFilter = useDeferredValue<FilterType>(selectedFilter);
-  const [speakingId, setSpeakingId] = useState<string | null>(null);
-  const [isPlayingAll, setIsPlayingAll] = useState<boolean>(false);
-  const [playAllIndex, setPlayAllIndex] = useState<number>(0);
-  const playAllCancelledRef = useRef<boolean>(false);
   const flatListRef = useRef<FlatList<AdhkarItem>>(null);
 
   useEffect(() => {
     console.log(ADHKAR_TAG, 'Screen mounted');
-    return () => {
-      playAllCancelledRef.current = true;
-      ttsService.stop().catch(() => {});
-    };
   }, []);
 
   const filteredAdhkar = useMemo(() => {
@@ -582,84 +530,9 @@ export default function AdhkarScreen() {
 
   const reducedMotion = useReducedMotion();
 
-  const handleSpeakAdhkar = useCallback(async (item: AdhkarItem) => {
-    try {
-      if (isPlayingAll) {
-        playAllCancelledRef.current = true;
-        await ttsService.stop();
-        setIsPlayingAll(false);
-      }
-      console.log(`${ADHKAR_TAG} Speaking adhkar: ${item.id}`);
-      setSpeakingId(item.id);
-      await ttsService.playDhikr(item.arabicText);
-      setSpeakingId(null);
-    } catch (error) {
-      console.error(ADHKAR_TAG, 'Speech error:', error);
-      setSpeakingId(null);
-    }
-  }, [isPlayingAll]);
-
-  const handleStopSpeak = useCallback(async () => {
-    try {
-      console.log(ADHKAR_TAG, 'Stopping speech');
-      playAllCancelledRef.current = true;
-      await ttsService.stop();
-      setSpeakingId(null);
-      setIsPlayingAll(false);
-      setPlayAllIndex(0);
-    } catch (error) {
-      console.error(ADHKAR_TAG, 'Stop speech error:', error);
-      setSpeakingId(null);
-      setIsPlayingAll(false);
-    }
-  }, []);
-
-  const handlePlayAll = useCallback(async () => {
-    if (filteredAdhkar.length === 0) return;
-    try {
-      console.log(`${ADHKAR_TAG} Playing all ${filteredAdhkar.length} adhkar`);
-      playAllCancelledRef.current = false;
-      setIsPlayingAll(true);
-      setPlayAllIndex(0);
-
-      for (let i = 0; i < filteredAdhkar.length; i++) {
-        if (playAllCancelledRef.current) {
-          console.log(`${ADHKAR_TAG} Play all cancelled at index ${i}`);
-          break;
-        }
-        const item = filteredAdhkar[i];
-        setPlayAllIndex(i);
-        setSpeakingId(item.id);
-
-        try {
-          flatListRef.current?.scrollToIndex({ index: i, animated: true, viewPosition: 0.3 });
-        } catch (scrollErr) {
-          console.log(`${ADHKAR_TAG} Scroll error:`, scrollErr);
-        }
-
-        await ttsService.playDhikr(item.arabicText);
-
-        if (i < filteredAdhkar.length - 1 && !playAllCancelledRef.current) {
-          await new Promise(resolve => setTimeout(resolve, 1200));
-        }
-      }
-
-      setSpeakingId(null);
-      setIsPlayingAll(false);
-      setPlayAllIndex(0);
-      console.log(`${ADHKAR_TAG} Play all completed`);
-    } catch (error) {
-      console.error(ADHKAR_TAG, 'Play all error:', error);
-      setSpeakingId(null);
-      setIsPlayingAll(false);
-      setPlayAllIndex(0);
-    }
-  }, [filteredAdhkar]);
-
-  const handleStopAll = useCallback(async () => {
-    playAllCancelledRef.current = true;
-    await handleStopSpeak();
-  }, [handleStopSpeak]);
+  const handleLockedPress = useCallback(() => {
+    Alert.alert(t('comingSoon'), t('featureComingSoon'));
+  }, [t]);
 
   const webCopyText = useCallback(async (text: string): Promise<boolean> => {
     try {
@@ -729,26 +602,17 @@ export default function AdhkarScreen() {
         isFavorite={isFavorite(item.id)}
         onToggleFavorite={toggleFavorite}
         onShare={handleShareAdhkar}
-        speakingId={speakingId}
-        onSpeak={handleSpeakAdhkar}
-        onStopSpeak={handleStopSpeak}
+        onLockedPress={handleLockedPress}
       />
     );
-  }, [reducedMotion, isFavorite, toggleFavorite, handleShareAdhkar, speakingId, handleSpeakAdhkar, handleStopSpeak]);
+  }, [reducedMotion, isFavorite, toggleFavorite, handleShareAdhkar, handleLockedPress]);
 
   const keyExtractor = useCallback((item: AdhkarItem) => item.id, []);
 
   const handleFilterChange = useCallback((filter: FilterType) => {
-    if (isPlayingAll) {
-      playAllCancelledRef.current = true;
-      ttsService.stop().catch(() => {});
-      setIsPlayingAll(false);
-      setSpeakingId(null);
-      setPlayAllIndex(0);
-    }
     setSelectedFilter(filter);
     console.log(`${ADHKAR_TAG} Filter changed to: ${filter}`);
-  }, [isPlayingAll]);
+  }, []);
 
   const { t } = useLanguageStore();
 
@@ -788,11 +652,11 @@ export default function AdhkarScreen() {
         <AdhkarHeader selectedFilter={selectedFilter} onFilterChange={handleFilterChange} />
 
         <PlayAllButton
-          isPlayingAll={isPlayingAll}
-          onPlayAll={handlePlayAll}
-          onStopAll={handleStopAll}
+          isPlayingAll={false}
+          onPlayAll={handleLockedPress}
+          onStopAll={handleLockedPress}
           itemCount={filteredAdhkar.length}
-          currentIndex={playAllIndex}
+          currentIndex={0}
         />
 
         <View style={styles.contentContainer}>
@@ -1096,6 +960,11 @@ const styles = StyleSheet.create({
   speakButtonActive: {
     backgroundColor: DEEP_GREEN,
   },
+  speakButtonLocked: {
+    backgroundColor: 'rgba(0,0,0,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+  },
   speakButtonText: {
     fontSize: 12,
     fontWeight: '600' as const,
@@ -1103,6 +972,21 @@ const styles = StyleSheet.create({
   },
   speakButtonTextActive: {
     color: '#FFFFFF',
+  },
+  speakButtonTextLocked: {
+    color: TEXT_MUTED,
+  },
+  comingSoonBadgeMini: {
+    backgroundColor: GOLD + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 4,
+  },
+  comingSoonBadgeMiniText: {
+    fontSize: 9,
+    fontWeight: '700' as const,
+    color: GOLD,
   },
   audioWaveContainer: {
     flexDirection: 'row',
@@ -1141,6 +1025,10 @@ const styles = StyleSheet.create({
     borderColor: DEEP_GREEN,
     shadowOpacity: 0.15,
   },
+  playAllButtonLocked: {
+    opacity: 0.75,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
   playAllLeft: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1157,6 +1045,9 @@ const styles = StyleSheet.create({
   playAllIconCircleActive: {
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
+  playAllIconCircleLocked: {
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
   playAllTextContainer: {
     gap: 2,
   },
@@ -1167,6 +1058,20 @@ const styles = StyleSheet.create({
   },
   playAllTitleActive: {
     color: '#FFFFFF',
+  },
+  playAllTitleLocked: {
+    color: TEXT_MUTED,
+  },
+  comingSoonBadge: {
+    backgroundColor: GOLD + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  comingSoonBadgeText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: GOLD,
   },
   playAllSubtitle: {
     fontSize: 12,

@@ -1,15 +1,20 @@
-# Lock Color Theme Picker with "Coming Soon" Label
+# قفل ميزة "استماع الأذكار" في شاشة الأذكار
 
-**Changes**
+## الميزة
 
-- **Color Theme row** in the Appearance section of Settings will remain visible but become non-interactive (tapping it does nothing).
-- A small "Coming Soon" badge will appear next to the current theme value, styled in a soft muted color to indicate it's not yet available.
-- The Color Theme picker modal will no longer open when tapping the row.
-- The row will appear slightly faded/dimmed compared to other active rows, giving a clear visual hint that it's locked.
+- قفل جميع أزرار الاستماع للأذكار (زر الاستماع في كل بطاقة ذكر + زر "استمع للكل")
+- عند الضغط على أي زر استماع، يظهر تنبيه يخبر المستخدم أن هذه الميزة ستكون متاحة قريباً
+- نفس أسلوب القفل المستخدم في ميزة سمات الألوان في الإعدادات (شارة "قريباً")
 
-**Design**
+## التصميم
 
-- A rounded "Coming Soon" pill badge in a light gold/amber tone with small text, sitting next to the theme name.
-- The row text and icon will have reduced opacity (~0.5) to signal it's disabled.
-- Everything else in the Appearance section (Dark Mode toggle, Language selector) stays fully functional.
+- أزرار الاستماع ستبدو باهتة/معطلة بصرياً مع شارة "قريباً" صغيرة
+- زر "استمع للكل" سيظهر بشكل معطل مع شارة قفل
+- عند الضغط يظهر تنبيه بسيط: "هذه الميزة ستكون متاحة قريباً"
+- نفس التصميم في شاشة التسبيح (زر الاستماع للذكر)
+
+## الشاشات المتأثرة
+
+- **شاشة الأذكار**: قفل زر الاستماع في كل بطاقة + قفل زر "استمع للكل"
+- **شاشة التسبيح**: قفل زر الاستماع للذكر
 
