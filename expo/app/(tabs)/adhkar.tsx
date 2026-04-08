@@ -200,28 +200,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
             <Text style={[styles.categoryText, { color: accent }]}>{getCategoryLabel(item.category)}</Text>
           </View>
           <View style={styles.headerActions}>
-            {Platform.OS === 'web' ? (
-              <>
-                <View
-                  style={[styles.actionIcon, isFavorite && { backgroundColor: GOLD + '20' }]}
-                  onStartShouldSetResponder={() => true}
-                  onResponderRelease={handleToggleFavorite}
-                  testID="adhkar-favorite-button"
-                >
-                  <Star size={16} color={isFavorite ? GOLD : TEXT_MUTED} fill={isFavorite ? GOLD : 'transparent'} strokeWidth={1.5} />
-                </View>
-                <View
-                  style={styles.actionIcon}
-                  onStartShouldSetResponder={() => true}
-                  onResponderRelease={handleShare}
-                  testID="adhkar-share-button"
-                >
-                  <Share2 size={15} color={TEXT_MUTED} strokeWidth={1.5} />
-                </View>
-              </>
-            ) : (
-              <>
-                <Pressable
+            <Pressable
                   style={[styles.actionIcon, isFavorite && { backgroundColor: GOLD + '20' }]}
                   onPress={handleToggleFavorite}
                   testID="adhkar-favorite-button"
@@ -237,43 +216,24 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
                 >
                   <Share2 size={15} color={TEXT_MUTED} strokeWidth={1.5} />
                 </Pressable>
-              </>
-            )}
           </View>
         </View>
 
         <View style={styles.speakRow}>
-          {Platform.OS === 'web' ? (
-            <View
-              style={[styles.speakButton, styles.speakButtonLocked]}
-              onStartShouldSetResponder={() => true}
-              onResponderRelease={handleLockedSpeak}
-              testID="adhkar-speak-button"
-            >
-              <Lock size={14} color={TEXT_MUTED} />
-              <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
-                {t('listenToAdhkar')}
-              </Text>
-              <View style={styles.comingSoonBadgeMini}>
-                <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
-              </View>
+          <Pressable
+            style={[styles.speakButton, styles.speakButtonLocked]}
+            onPress={handleLockedSpeak}
+            testID="adhkar-speak-button"
+            accessibilityRole="button"
+          >
+            <Lock size={14} color={TEXT_MUTED} />
+            <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
+              {t('listenToAdhkar')}
+            </Text>
+            <View style={styles.comingSoonBadgeMini}>
+              <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
             </View>
-          ) : (
-            <Pressable
-              style={[styles.speakButton, styles.speakButtonLocked]}
-              onPress={handleLockedSpeak}
-              testID="adhkar-speak-button"
-              accessibilityRole="button"
-            >
-              <Lock size={14} color={TEXT_MUTED} />
-              <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
-                {t('listenToAdhkar')}
-              </Text>
-              <View style={styles.comingSoonBadgeMini}>
-                <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
-              </View>
-            </Pressable>
-          )}
+          </Pressable>
         </View>
 
         <View style={styles.adhkarMainContent}>
