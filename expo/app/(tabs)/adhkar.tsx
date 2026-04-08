@@ -25,7 +25,13 @@ interface AdhkarItem {
   transliteration?: string;
   translation?: string;
   category: string;
+  repeatCount?: number;
 }
+
+const getRepeatLabel = (count: number, t: (key: string) => string): string => {
+  if (count <= 1) return '';
+  return `${count} ${t('times')}`;
+};
 
 type FilterType = 'all' | 'morning' | 'evening' | 'after-prayer' | 'duas' | 'sleep' | 'wakeup' | 'favorites';
 
@@ -273,6 +279,13 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
                 {expanded ? t('readingModeActive') : t('tapToRead')}
               </Text>
             </View>
+            {item.repeatCount && item.repeatCount > 1 && (
+              <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
+                <Text style={[styles.repeatBadgeText, { color: accent }]}>
+                  {getRepeatLabel(item.repeatCount, t)}
+                </Text>
+              </View>
+            )}
           </View>
         </Pressable>
       </View>
@@ -838,12 +851,21 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
   adhkarFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.04)',
+  },
+  repeatBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  repeatBadgeText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
   },
   readingIndicator: {
     flexDirection: 'row-reverse',

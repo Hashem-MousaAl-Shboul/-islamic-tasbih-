@@ -1,25 +1,45 @@
-# تطبيق اتجاه RTL على شاشات التسبيح والإحصائيات والأذكار
+# إصلاح شامل لنصوص بطاقات الأذكار
 
-## What will change
+## ما سيتم إصلاحه
 
-Apply the same right-to-left (RTL) layout adjustments already done on the Settings screen to the remaining three screens:
+سيتم مراجعة وتصحيح **جميع** نصوص بطاقات الأذكار في التطبيق عبر جميع الأقسام:
 
-### Tasbih Screen
-- **Stats summary row**: Flip the statistics link — icon and text move to the right, chevron arrow points left
-- **Live stats section**: Reorder so text is on the right and the icon circle is beside it on the right
-- **Stat labels**: Align "Today" and "Total" labels to the right
-- **Modal form**: Input labels already align right — no changes needed there
+### **أذكار الصباح (15 ذكر)**
 
-### Statistics Screen
-- **Hero card**: Move the icon circle and label to the right side of the row
-- **Section titles**: Align all section titles to the right (remove left margin, add right margin)
-- **Favorite dhikr card**: Move the star icon to the right side, content to the left
-- **Progress bar labels**: Flip the label/value row so label is on the right
-- **Reset button**: Keep centered (already looks fine)
+- تصحيح التشكيل والإملاء في النصوص العربية
+- إضافة عدد مرات التكرار لكل ذكر (مثل: مرة واحدة، 3 مرات، 7 مرات، 100 مرة)
+- تصحيح وإكمال الترجمة الإنجليزية لتشمل المعنى الكامل
+- تصحيح النطق بالحروف اللاتينية (Transliteration)
 
-### Adhkar Screen
-- **Card header**: Flip category badge to the right, action buttons (favorite, share) to the left
-- **Speak row / Listen button**: Move to the right side
-- **Play All button**: Flip icon and text to the right, badge to the left
-- **Card footer (reading indicator)**: Align to the right instead of the left
-- **Card accent bar**: Move from left edge to right edge
+### **أذكار المساء (15 ذكر)**
+
+- نفس التصحيحات: تشكيل، ترجمة كاملة، نطق صحيح، وعدد التكرار
+
+### **أذكار بعد الصلاة (3 أذكار)**
+
+- إكمال النصوص وإضافة أذكار مهمة ناقصة (مثل: آية الكرسي، التسبيح 33-33-34)
+- تصحيح الترجمة والنطق وإضافة عدد التكرار
+
+### **الأدعية العامة (4 أدعية)**
+
+- تصحيح التشكيل والترجمة
+- إضافة أدعية مهمة إضافية
+
+### **أذكار النوم (10 أذكار)**
+
+- مراجعة وتصحيح النصوص العربية والتشكيل
+- إكمال الترجمات الناقصة
+- تصحيح النطق اللاتيني
+
+### **أذكار الاستيقاظ (6 أذكار)**
+
+- مراجعة وتصحيح جميع النصوص
+- إكمال الترجمات والنطق
+
+### **تحسينات عامة**
+
+- إضافة حقل `repeatCount` لعدد مرات التكرار لكل ذكر وعرضه في البطاقة
+- التأكد من دقة جميع النصوص العربية بمراجعتها من المصادر الموثوقة
+- تحسين الترجمات الإنجليزية لتكون أكثر دقة واكتمالاً
+- إزالة عدد التكرار من داخل نص الـ transliteration ووضعه في حقل منفصل
+
