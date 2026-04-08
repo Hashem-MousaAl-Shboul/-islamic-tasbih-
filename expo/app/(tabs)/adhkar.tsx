@@ -9,6 +9,7 @@ import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Vol
 import * as Haptics from 'expo-haptics';
 import { ttsService } from '@/utils/ttsService';
 import AdBanner from '@/components/AdBanner';
+import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -87,12 +88,13 @@ const FilterButtonComponent: React.FC<FilterButtonProps> = ({ filter, selectedFi
           isSelected && { backgroundColor: colors.activeBg, borderColor: colors.activeBg },
         ]}
         onPress={handlePress}
+        android_ripple={androidRipple(isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(27,67,50,0.12)')}
         accessibilityRole="button"
         accessibilityLabel={`تصفية ${label}`}
       >
         <View style={styles.filterButtonContent}>
           {renderIcon()}
-          <Text style={[styles.filterButtonText, isSelected && styles.filterButtonTextActive]}>
+          <Text style={[styles.filterButtonText, isSelected && styles.filterButtonTextActive, androidTextFix]}>
             {label}
           </Text>
         </View>
@@ -199,6 +201,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
             <Pressable
               style={styles.actionIcon}
               onPress={handleShare}
+              android_ripple={androidRipple('rgba(138,155,145,0.25)', true, 20)}
               testID="adhkar-share-button"
               accessibilityRole="button"
             >
@@ -207,6 +210,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
             <Pressable
               style={[styles.actionIcon, isFavorite && { backgroundColor: GOLD + '20' }]}
               onPress={handleToggleFavorite}
+              android_ripple={androidRipple('rgba(212,168,83,0.3)', true, 20)}
               testID="adhkar-favorite-button"
               accessibilityRole="button"
             >
@@ -214,7 +218,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
             </Pressable>
           </View>
           <View style={[styles.categoryBadge, { backgroundColor: accent + '14' }]}>
-            <Text style={[styles.categoryText, { color: accent }]}>{getCategoryLabel(item.category)}</Text>
+            <Text style={[styles.categoryText, { color: accent }, androidTextFix]}>{getCategoryLabel(item.category)}</Text>
             {getCategoryIcon(item.category)}
           </View>
         </View>
@@ -223,13 +227,14 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
           <Pressable
             style={[styles.speakButton, styles.speakButtonLocked]}
             onPress={handleLockedSpeak}
+            android_ripple={androidRipple('rgba(0,0,0,0.08)')}
             testID="adhkar-speak-button"
             accessibilityRole="button"
           >
             <View style={styles.comingSoonBadgeMini}>
-              <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
+              <Text style={[styles.comingSoonBadgeMiniText, androidTextFix]}>{t('comingSoon')}</Text>
             </View>
-            <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
+            <Text style={[styles.speakButtonText, styles.speakButtonTextLocked, androidTextFix]}>
               {t('listenToAdhkar')}
             </Text>
             <Lock size={14} color={TEXT_MUTED} />
@@ -238,13 +243,14 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
 
         <Pressable
           onPress={handleCardPress}
+          android_ripple={androidRipple('rgba(27,67,50,0.06)')}
           testID={`adhkar-item-${item.id}`}
           accessibilityRole="button"
           accessibilityState={{ expanded }}
         >
           <View style={styles.adhkarMainContent}>
             <Text
-              style={[styles.adhkarArabicText, expanded && styles.adhkarArabicTextExpanded]}
+              style={[styles.adhkarArabicText, expanded && styles.adhkarArabicTextExpanded, androidTextFix]}
               testID="adhkar-arabic-text"
               selectable
             >
@@ -253,7 +259,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
 
             {item.transliteration && (
               <Text
-                style={[styles.adhkarTransliteration, expanded && styles.adhkarTransliterationExpanded]}
+                style={[styles.adhkarTransliteration, expanded && styles.adhkarTransliterationExpanded, androidTextFix]}
                 numberOfLines={expanded ? undefined : 3}
                 selectable
               >
@@ -263,7 +269,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
 
             {item.translation && (
               <Text
-                style={[styles.adhkarTranslation, expanded && styles.adhkarTranslationExpanded]}
+                style={[styles.adhkarTranslation, expanded && styles.adhkarTranslationExpanded, androidTextFix]}
                 numberOfLines={expanded ? undefined : 3}
                 selectable
               >
@@ -275,13 +281,13 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
           <View style={styles.adhkarFooter}>
             <View style={styles.readingIndicator}>
               <View style={[styles.readingDot, { backgroundColor: expanded ? accent : TEXT_MUTED }]} />
-              <Text style={[styles.readingText, expanded && { color: accent }]}>
+              <Text style={[styles.readingText, expanded && { color: accent }, androidTextFix]}>
                 {expanded ? t('readingModeActive') : t('tapToRead')}
               </Text>
             </View>
             {item.repeatCount && item.repeatCount > 1 && (
               <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
-                <Text style={[styles.repeatBadgeText, { color: accent }]}>
+                <Text style={[styles.repeatBadgeText, { color: accent }, androidTextFix]}>
                   {getRepeatLabel(item.repeatCount, t)}
                 </Text>
               </View>
@@ -375,6 +381,7 @@ const PlayAllButtonComponent: React.FC<PlayAllButtonProps> = ({ isPlayingAll: _i
       <Pressable
         style={[styles.playAllButton, styles.playAllButtonLocked]}
         onPress={handleLockedPress}
+        android_ripple={androidRipple('rgba(0,0,0,0.06)')}
         testID="play-all-button"
         accessibilityRole="button"
       >
@@ -383,16 +390,16 @@ const PlayAllButtonComponent: React.FC<PlayAllButtonProps> = ({ isPlayingAll: _i
             <Lock size={18} color={TEXT_MUTED} />
           </View>
           <View style={styles.playAllTextContainer}>
-            <Text style={[styles.playAllTitle, styles.playAllTitleLocked]}>
+            <Text style={[styles.playAllTitle, styles.playAllTitleLocked, androidTextFix]}>
               {t('listenToAdhkar')}
             </Text>
-            <Text style={styles.playAllSubtitle}>
+            <Text style={[styles.playAllSubtitle, androidTextFix]}>
               {itemCount} {t('adhkar')}
             </Text>
           </View>
         </View>
         <View style={styles.comingSoonBadge}>
-          <Text style={styles.comingSoonBadgeText}>{t('comingSoon')}</Text>
+          <Text style={[styles.comingSoonBadgeText, androidTextFix]}>{t('comingSoon')}</Text>
         </View>
       </Pressable>
     </View>
@@ -435,8 +442,8 @@ const EmptyStateComponent = memo(function EmptyStateComponent() {
         <View style={styles.emptyIconCircle}>
           <Sparkles size={32} color={GOLD} />
         </View>
-        <Text style={styles.emptyTitle}>{t('noAdhkarInCategory')}</Text>
-        <Text style={styles.emptySubtitle}>{t('tryAnotherCategory')}</Text>
+        <Text style={[styles.emptyTitle, androidTextFix]}>{t('noAdhkarInCategory')}</Text>
+        <Text style={[styles.emptySubtitle, androidTextFix]}>{t('tryAnotherCategory')}</Text>
       </View>
     </View>
   );
@@ -459,10 +466,10 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, { hasError: bool
     if (this.state.hasError) {
       return (
         <View style={[styles.center, styles.errorContainer]} testID="adhkar-error">
-          <Text style={styles.emptyTitle}>{this.props.t('error')}</Text>
-          <Text style={styles.emptySubtitle}>{this.props.t('pleaseTryAgain')}</Text>
-          <Pressable onPress={this.handleRetry} style={styles.retryButton} accessibilityRole="button">
-            <Text style={styles.retryText}>{this.props.t('retry')}</Text>
+          <Text style={[styles.emptyTitle, androidTextFix]}>{this.props.t('error')}</Text>
+          <Text style={[styles.emptySubtitle, androidTextFix]}>{this.props.t('pleaseTryAgain')}</Text>
+          <Pressable onPress={this.handleRetry} style={styles.retryButton} android_ripple={androidRipple('rgba(255,255,255,0.2)')} accessibilityRole="button">
+            <Text style={[styles.retryText, androidTextFix]}>{this.props.t('retry')}</Text>
           </Pressable>
         </View>
       );
@@ -603,7 +610,7 @@ export default function AdhkarScreen() {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]} testID="adhkar-loading">
         <ActivityIndicator size="large" color={GOLD} />
-        <Text style={styles.loadingText}>{t('loadingAdhkar')}</Text>
+        <Text style={[styles.loadingText, androidTextFix]}>{t('loadingAdhkar')}</Text>
       </View>
     );
   }
@@ -614,7 +621,7 @@ export default function AdhkarScreen() {
       accessibilityHint="Browse and listen to adhkar collections">
       <ErrorBoundary t={t}>
         <View style={styles.topBar}>
-          <Text style={styles.topBarTitle}>{t('adhkar')}</Text>
+          <Text style={[styles.topBarTitle, androidTextFix]}>{t('adhkar')}</Text>
           <View style={styles.topBarOrnament}>
             <View style={styles.ornamentLine} />
             <View style={styles.ornamentDiamond} />
@@ -641,11 +648,11 @@ export default function AdhkarScreen() {
             ListEmptyComponent={EmptyStateComponent}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.flatListContent}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={5}
-            windowSize={7}
-            initialNumToRender={5}
-            updateCellsBatchingPeriod={100}
+            removeClippedSubviews={Platform.OS === 'android'}
+            maxToRenderPerBatch={Platform.OS === 'android' ? 4 : 5}
+            windowSize={Platform.OS === 'android' ? 5 : 7}
+            initialNumToRender={Platform.OS === 'android' ? 4 : 5}
+            updateCellsBatchingPeriod={Platform.OS === 'android' ? 50 : 100}
             onEndReachedThreshold={0.3}
             onScrollToIndexFailed={onScrollToIndexFailed}
           />
@@ -675,6 +682,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: DEEP_GREEN,
     borderRadius: 12,
+    overflow: 'hidden' as const,
   },
   retryText: {
     color: '#FFFFFF',
@@ -734,12 +742,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.08)',
     backgroundColor: CARD_WHITE,
+    overflow: 'hidden' as const,
   },
   filterButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingVertical: 10,
+    minHeight: 40,
     gap: 6,
   },
   filterButtonTextActive: {
@@ -757,22 +767,26 @@ const styles = StyleSheet.create({
   adhkarCard: {
     borderRadius: 18,
     marginBottom: 14,
-    overflow: 'hidden',
     backgroundColor: CARD_WHITE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 4,
+    ...Platform.select({
+      android: { borderWidth: 0.5, borderColor: 'rgba(0,0,0,0.06)' },
+    }),
   },
   adhkarCardTouchable: {
     padding: 18,
+    overflow: 'hidden' as const,
+    borderRadius: 18,
   },
   cardAccentBar: {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 3,
+    width: 4,
     height: '100%',
     borderTopRightRadius: 18,
     borderBottomRightRadius: 18,
@@ -796,9 +810,10 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
   },
   actionIcon: {
-    padding: 8,
-    borderRadius: 10,
+    padding: 10,
+    borderRadius: 12,
     backgroundColor: 'rgba(0,0,0,0.03)',
+    overflow: 'hidden' as const,
   },
   headerActions: {
     flexDirection: 'row',
@@ -895,7 +910,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 4,
   },
   emptyIconCircle: {
     width: 72,
@@ -938,6 +953,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: 'rgba(27,67,50,0.06)',
+    overflow: 'hidden' as const,
   },
   speakButtonActive: {
     backgroundColor: DEEP_GREEN,
@@ -1000,7 +1016,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
+    overflow: 'hidden' as const,
   },
   playAllButtonActive: {
     backgroundColor: DEEP_GREEN,

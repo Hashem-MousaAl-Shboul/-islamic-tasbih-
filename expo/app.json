@@ -33,7 +33,9 @@
       "permissions": [
         "android.permission.VIBRATE",
         "INTERNET"
-      ]
+      ],
+      "navigationBarColor": "#F7F4EE",
+      "navigationBarStyle": "dark"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

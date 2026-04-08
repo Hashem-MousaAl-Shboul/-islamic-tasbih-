@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Trash2, RotateCcw } from 'lucide-react-native';
 import { TasbihItem } from '@/hooks/useTasbihStore';
+import { androidTextFix } from '@/utils/androidOptimizations';
 
 const DEEP_GREEN = '#1B4332';
 const CARD_WHITE = '#FFFFFF';
@@ -80,24 +81,24 @@ const TasbihCard = memo<TasbihCardProps>(({
           end={{ x: 1, y: 1 }}
         >
           <View style={[styles.content, isDeleted && styles.deletedContent]}>
-            <Text style={[styles.arabicText, { color: textColor }]} numberOfLines={2}>
+            <Text style={[styles.arabicText, { color: textColor }, androidTextFix]} numberOfLines={2}>
               {item.arabicText}
             </Text>
 
             {showTransliteration && (
-              <Text style={[styles.transliterationText, { color: textColor }]} numberOfLines={1}>
+              <Text style={[styles.transliterationText, { color: textColor }, androidTextFix]} numberOfLines={1}>
                 {item.transliteration}
               </Text>
             )}
 
             <View style={styles.countContainer}>
-              <Text style={[styles.countText, { color: isSelected ? 'rgba(255,255,255,0.9)' : DEEP_GREEN }]}>
+              <Text style={[styles.countText, { color: isSelected ? 'rgba(255,255,255,0.9)' : DEEP_GREEN }, androidTextFix]}>
                 {item.count}/{item.targetCount}
               </Text>
               {item.isCompleted ? (
                 <View style={[styles.completedDot, { backgroundColor: isSelected ? '#FFFFFF' : '#2D8B6F' }]} />
               ) : (
-                <Text style={[styles.percentageText, { color: isSelected ? 'rgba(255,255,255,0.7)' : '#8A9B91' }]}>
+                <Text style={[styles.percentageText, { color: isSelected ? 'rgba(255,255,255,0.7)' : '#8A9B91' }, androidTextFix]}>
                   {progressPercentage}%
                 </Text>
               )}
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
-    elevation: 2,
+    elevation: 4,
   },
   deletedCard: {
     opacity: 0.5,

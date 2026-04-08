@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useCallback, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions, Platform, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Pressable, Dimensions, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   TrendingUp,
@@ -14,6 +14,7 @@ import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import i18n from '@/constants/translations';
 import AdBanner from '@/components/AdBanner';
+import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -39,9 +40,9 @@ const StatCard = memo(function StatCard({ icon, title, value, subtitle, color }:
       <View style={[styles.statIconContainer, { backgroundColor: color + '14' }]}>
         {icon}
       </View>
-      <Text style={styles.statTitle}>{title}</Text>
-      <Text style={[styles.statValue, { color }]}>{value}</Text>
-      {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
+      <Text style={[styles.statTitle, androidTextFix]}>{title}</Text>
+      <Text style={[styles.statValue, { color }, androidTextFix]}>{value}</Text>
+      {subtitle && <Text style={[styles.statSubtitle, androidTextFix]}>{subtitle}</Text>}
     </View>
   );
 });
@@ -59,8 +60,8 @@ const ProgressBar = memo(function ProgressBar({ progress, color, label, value }:
   return (
     <View style={styles.progressContainer}>
       <View style={styles.progressHeader}>
-        <Text style={styles.progressLabel}>{label}</Text>
-        <Text style={[styles.progressValue, { color }]}>{value}</Text>
+        <Text style={[styles.progressLabel, androidTextFix]}>{label}</Text>
+        <Text style={[styles.progressValue, { color }, androidTextFix]}>{value}</Text>
       </View>
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: `${clampedProgress}%`, backgroundColor: color }]} />
@@ -83,16 +84,16 @@ const DhikrStatItem = memo(function DhikrStatItem({ arabicText, count, targetCou
   return (
     <View style={styles.dhikrStatItem}>
       <View style={styles.dhikrStatHeader}>
-        <Text style={styles.dhikrArabicText}>{arabicText}</Text>
+        <Text style={[styles.dhikrArabicText, androidTextFix]}>{arabicText}</Text>
         <View style={[styles.completionBadge, { backgroundColor: color + '14' }]}>
-          <Text style={[styles.completionText, { color }]}>{totalCompletions}x</Text>
+          <Text style={[styles.completionText, { color }, androidTextFix]}>{totalCompletions}x</Text>
         </View>
       </View>
       <View style={styles.dhikrProgressContainer}>
         <View style={styles.dhikrProgressTrack}>
           <View style={[styles.dhikrProgressFill, { width: `${Math.min(progress, 100)}%`, backgroundColor: color }]} />
         </View>
-        <Text style={styles.dhikrCountText}>{count}/{targetCount}</Text>
+        <Text style={[styles.dhikrCountText, androidTextFix]}>{count}/{targetCount}</Text>
       </View>
     </View>
   );
@@ -178,7 +179,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
       accessibilityLabel="Statistics Screen"
       accessibilityHint="View your dhikr progress and stats">
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
+        <Text style={[styles.headerTitle, androidTextFix]}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
         <View style={styles.headerOrnament}>
           <View style={styles.ornamentLine} />
           <View style={styles.ornamentDiamond} />
@@ -198,29 +199,29 @@ const StatisticsScreen = memo(function StatisticsScreen() {
             <View style={styles.heroIconCircle}>
               <TrendingUp size={24} color={GOLD} />
             </View>
-            <Text style={styles.heroLabel}>{i18n.t('totalDhikr') || 'إجمالي الذكر'}</Text>
+            <Text style={[styles.heroLabel, androidTextFix]}>{i18n.t('totalDhikr') || 'إجمالي الذكر'}</Text>
           </View>
-          <Text style={styles.heroValue}>{stats.totalCount.toLocaleString()}</Text>
+          <Text style={[styles.heroValue, androidTextFix]}>{stats.totalCount.toLocaleString()}</Text>
           <View style={styles.heroDivider} />
           <View style={styles.heroStats}>
             <View style={styles.heroStatItem}>
-              <Text style={styles.heroStatValue}>{stats.todayCount}</Text>
-              <Text style={styles.heroStatLabel}>{i18n.t('today') || 'اليوم'}</Text>
+              <Text style={[styles.heroStatValue, androidTextFix]}>{stats.todayCount}</Text>
+              <Text style={[styles.heroStatLabel, androidTextFix]}>{i18n.t('today') || 'اليوم'}</Text>
             </View>
             <View style={styles.heroStatSep} />
             <View style={styles.heroStatItem}>
-              <Text style={styles.heroStatValue}>{stats.streakDays}</Text>
-              <Text style={styles.heroStatLabel}>{i18n.t('streakDays') || 'أيام متتالية'}</Text>
+              <Text style={[styles.heroStatValue, androidTextFix]}>{stats.streakDays}</Text>
+              <Text style={[styles.heroStatLabel, androidTextFix]}>{i18n.t('streakDays') || 'أيام متتالية'}</Text>
             </View>
             <View style={styles.heroStatSep} />
             <View style={styles.heroStatItem}>
-              <Text style={styles.heroStatValue}>{stats.completedSessions}</Text>
-              <Text style={styles.heroStatLabel}>{i18n.t('sessions') || 'جلسات'}</Text>
+              <Text style={[styles.heroStatValue, androidTextFix]}>{stats.completedSessions}</Text>
+              <Text style={[styles.heroStatLabel, androidTextFix]}>{i18n.t('sessions') || 'جلسات'}</Text>
             </View>
           </View>
         </View>
 
-        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
+        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL, androidTextFix]}>
           {i18n.t('dailyProgress') || 'التقدم اليومي'}
         </Text>
         <View style={styles.progressCard}>
@@ -239,7 +240,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
+        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL, androidTextFix]}>
           {i18n.t('quickStats') || 'إحصائيات سريعة'}
         </Text>
         <View style={styles.statsGrid}>
@@ -272,7 +273,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
         {mostUsedDhikr && (
           <>
-            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
+            <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL, androidTextFix]}>
               {i18n.t('favoritedhikr') || 'الذكر المفضل'}
             </Text>
             <View style={styles.favoriteCard}>
@@ -280,8 +281,8 @@ const StatisticsScreen = memo(function StatisticsScreen() {
                 <Star size={22} color={GOLD} fill={GOLD} />
               </View>
               <View style={styles.favoriteContent}>
-                <Text style={styles.favoriteArabic}>{mostUsedDhikr.arabicText}</Text>
-                <Text style={styles.favoriteStats}>
+                <Text style={[styles.favoriteArabic, androidTextFix]}>{mostUsedDhikr.arabicText}</Text>
+                <Text style={[styles.favoriteStats, androidTextFix]}>
                   {i18n.t('completedTimes') || 'مكتمل'} {mostUsedDhikr.totalCompletions} {i18n.t('times') || 'مرات'}
                 </Text>
               </View>
@@ -289,7 +290,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
           </>
         )}
 
-        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL]}>
+        <Text style={[styles.sectionTitle, isRTL && styles.sectionTitleRTL, androidTextFix]}>
           {i18n.t('dhikrDetails') || 'تفاصيل الأذكار'}
         </Text>
         <View style={styles.dhikrListCard}>
@@ -307,12 +308,13 @@ const StatisticsScreen = memo(function StatisticsScreen() {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.resetButton} onPress={handleResetStats} activeOpacity={0.8}
+        <Pressable style={styles.resetButton} onPress={handleResetStats}
+          android_ripple={androidRipple('rgba(212,80,80,0.15)')}
           testID="reset-stats-button"
           accessibilityRole="button">
           <RefreshCw size={18} color="#D45050" />
-          <Text style={styles.resetButtonText}>{i18n.t('resetStats') || 'إعادة تعيين الإحصائيات'}</Text>
-        </TouchableOpacity>
+          <Text style={[styles.resetButtonText, androidTextFix]}>{i18n.t('resetStats') || 'إعادة تعيين الإحصائيات'}</Text>
+        </Pressable>
 
 
       </ScrollView>
@@ -377,7 +379,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.06,
     shadowRadius: 14,
-    elevation: 3,
+    elevation: 6,
     borderWidth: 1,
     borderColor: GOLD + '18',
   },
@@ -459,7 +461,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 4,
   },
   progressContainer: {
     marginBottom: 8,
@@ -509,7 +511,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
+    ...Platform.select({ android: { borderWidth: 0.5, borderColor: 'rgba(0,0,0,0.04)' } }),
   },
   statIconContainer: {
     width: 44,
@@ -544,7 +547,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 4,
     borderWidth: 1,
     borderColor: GOLD + '18',
   },
@@ -582,7 +585,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 10,
-    elevation: 2,
+    elevation: 4,
   },
   dhikrStatItem: {
     paddingVertical: 14,
@@ -647,6 +650,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: '#FECACA',
+    overflow: 'hidden' as const,
   },
   resetButtonText: {
     fontSize: 15,

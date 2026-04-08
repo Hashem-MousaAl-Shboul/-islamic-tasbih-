@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
   Animated,
   Dimensions,
   Platform,
@@ -21,6 +22,7 @@ import {
   TrendingUp,
   SlidersHorizontal,
 } from 'lucide-react-native';
+import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 const { width } = Dimensions.get('window');
 const WELCOME_SEEN_KEY = 'welcome_screen_seen';
@@ -211,8 +213,8 @@ export default function WelcomeScreen() {
               },
             ]}
           >
-            <Text style={styles.title} testID="welcome-title">تسبيح</Text>
-            <Text style={styles.subtitle} testID="welcome-subtitle">
+            <Text style={[styles.title, androidTextFix]} testID="welcome-title">تسبيح</Text>
+            <Text style={[styles.subtitle, androidTextFix]} testID="welcome-subtitle">
               عداد إلكتروني للأذكار والتسبيح
             </Text>
           </Animated.View>
@@ -221,7 +223,7 @@ export default function WelcomeScreen() {
         <View style={styles.divider} />
 
         <View style={styles.cardsSection}>
-          <Text style={styles.sectionLabel}>مميزات التطبيق</Text>
+          <Text style={[styles.sectionLabel, androidTextFix]}>مميزات التطبيق</Text>
           {FEATURES.map((feature, index) => {
             const Icon = feature.icon;
             const anim = cardAnims[index];
@@ -240,8 +242,8 @@ export default function WelcomeScreen() {
                   <Icon size={22} color={feature.accent} strokeWidth={1.8} />
                 </View>
                 <View style={styles.cardTextContainer}>
-                  <Text style={styles.cardTitle}>{feature.title}</Text>
-                  <Text style={styles.cardDescription}>{feature.description}</Text>
+                  <Text style={[styles.cardTitle, androidTextFix]}>{feature.title}</Text>
+                  <Text style={[styles.cardDescription, androidTextFix]}>{feature.description}</Text>
                 </View>
               </Animated.View>
             );
@@ -258,18 +260,18 @@ export default function WelcomeScreen() {
           ]}
         >
           <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-            <TouchableOpacity
+            <Pressable
               style={styles.button}
               onPress={handleContinue}
-              activeOpacity={0.8}
+              android_ripple={androidRipple('rgba(212,168,83,0.25)')}
               testID="welcome-continue-btn"
               accessibilityRole="button"
               accessibilityLabel="ابدأ التسبيح"
             >
-              <Text style={styles.buttonText}>ابدأ التسبيح</Text>
-            </TouchableOpacity>
+              <Text style={[styles.buttonText, androidTextFix]}>ابدأ التسبيح</Text>
+            </Pressable>
           </Animated.View>
-          <Text style={styles.hintText}>اضغط للبدء</Text>
+          <Text style={[styles.hintText, androidTextFix]}>اضغط للبدء</Text>
         </Animated.View>
       </ScrollView>
     </LinearGradient>
@@ -390,6 +392,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(212, 168, 83, 0.2)',
+    overflow: 'hidden' as const,
+    elevation: 6,
   },
   buttonText: {
     color: '#FFFFFF',

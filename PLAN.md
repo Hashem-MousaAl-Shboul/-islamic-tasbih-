@@ -1,45 +1,78 @@
-# إصلاح شامل لنصوص بطاقات الأذكار
+# Comprehensive Android Screen Quality Optimization
 
-## ما سيتم إصلاحه
+## Overview
 
-سيتم مراجعة وتصحيح **جميع** نصوص بطاقات الأذكار في التطبيق عبر جميع الأقسام:
+Fully optimize all screens for Android — fixing text rendering, shadows, touch feedback, performance, and visual polish to make the app feel native and premium on Android devices.
 
-### **أذكار الصباح (15 ذكر)**
+---
 
-- تصحيح التشكيل والإملاء في النصوص العربية
-- إضافة عدد مرات التكرار لكل ذكر (مثل: مرة واحدة، 3 مرات، 7 مرات، 100 مرة)
-- تصحيح وإكمال الترجمة الإنجليزية لتشمل المعنى الكامل
-- تصحيح النطق بالحروف اللاتينية (Transliteration)
+### **Features & Improvements**
 
-### **أذكار المساء (15 ذكر)**
+**1. Text Rendering Fix (All Screens)**
 
-- نفس التصحيحات: تشكيل، ترجمة كاملة، نطق صحيح، وعدد التكرار
+- Remove extra padding Android adds above/below text by default
+- Fix Arabic text vertical alignment issues on Android
+- Ensure consistent line heights across all Arabic and Latin text
 
-### **أذكار بعد الصلاة (3 أذكار)**
+**2. Touch Feedback (All Screens)**
 
-- إكمال النصوص وإضافة أذكار مهمة ناقصة (مثل: آية الكرسي، التسبيح 33-33-34)
-- تصحيح الترجمة والنطق وإضافة عدد التكرار
+- Add native Android ripple effects to all tappable buttons and cards
+- Add ripple to filter buttons, adhkar cards, settings rows, stat cards, tasbih cards, and tab bar items
+- Consistent ripple color matching each element's accent color
 
-### **الأدعية العامة (4 أدعية)**
+**3. Shadow & Elevation Polish (All Screens)**
 
-- تصحيح التشكيل والترجمة
-- إضافة أدعية مهمة إضافية
+- Increase elevation values for better depth on Android (cards, tab bar, modals)
+- Fix shadow clipping issues where Android cuts off shadows at card edges
+- Add proper `overflow: 'visible'` where needed for shadows to render correctly
 
-### **أذكار النوم (10 أذكار)**
+**4. Status Bar & Navigation Bar**
 
-- مراجعة وتصحيح النصوص العربية والتشكيل
-- إكمال الترجمات الناقصة
-- تصحيح النطق اللاتيني
+- Set Android navigation bar color to match the screen background
+- Ensure translucent status bar with proper content underneath the deep green headers
 
-### **أذكار الاستيقاظ (6 أذكار)**
+**5. Adhkar Screen**
 
-- مراجعة وتصحيح جميع النصوص
-- إكمال الترجمات والنطق
+- Improve filter pill button touch targets (minimum 48dp)
+- Fix card accent bar rendering on Android
+- Better card separator spacing
+- Optimize FlatList with Android-specific batch rendering settings
 
-### **تحسينات عامة**
+**6. Tasbih Screen**
 
-- إضافة حقل `repeatCount` لعدد مرات التكرار لكل ذكر وعرضه في البطاقة
-- التأكد من دقة جميع النصوص العربية بمراجعتها من المصادر الموثوقة
-- تحسين الترجمات الإنجليزية لتكون أكثر دقة واكتمالاً
-- إزالة عدد التكرار من داخل نص الـ transliteration ووضعه في حقل منفصل
+- Improve the main counter button press animation feel on Android
+- Fix circular progress ring rendering for smoother edges
+- Better modal bottom sheet appearance with proper Android elevation
+- Improve horizontal tasbih cards scroll performance
+
+**7. Statistics Screen**
+
+- Fix stat card grid alignment on various Android screen sizes
+- Improve progress bar rendering smoothness
+- Better hero card visual depth
+
+**8. Settings Screen**
+
+- Improve Switch component styling for Android (larger thumb, better colors)
+- Fix settings row touch area and feedback
+- Better card border rendering
+
+**9. Welcome Screen**
+
+- Smoother gradient rendering on Android
+- Better button press feedback
+
+**10. Tab Bar**
+
+- Higher elevation for the floating tab bar on Android
+- Smoother active state transitions
+- Better shadow rendering
+
+---
+
+### **Design**
+
+- No visual design changes — all improvements are Android rendering quality and feel
+- Same colors, layout, and structure — just optimized for how Android renders them
+- Native-feeling interactions with proper ripple effects everywhere
 

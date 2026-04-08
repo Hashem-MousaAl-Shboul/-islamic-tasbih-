@@ -3,6 +3,7 @@ import { View, StyleSheet, Platform, Pressable, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import * as Haptics from 'expo-haptics';
+import { androidRipple } from '@/utils/androidOptimizations';
 
 const DEEP_GREEN = '#1B4332';
 const GOLD = '#D4A853';
@@ -96,6 +97,7 @@ const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigat
       onPress={onPress}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
+      android_ripple={androidRipple('rgba(27,67,50,0.1)', true, 28)}
       style={styles.tabItem}
       testID={`tab-${route.name}`}
     >
@@ -204,7 +206,9 @@ const styles = StyleSheet.create({
         shadowRadius: 24,
       },
       android: {
-        elevation: 16,
+        elevation: 20,
+        borderWidth: 0.5,
+        borderColor: 'rgba(0,0,0,0.04)',
       },
       web: {
         boxShadow: '0 8px 32px rgba(27,67,50,0.10), 0 2px 8px rgba(0,0,0,0.06)',

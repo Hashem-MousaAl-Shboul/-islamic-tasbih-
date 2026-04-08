@@ -8,6 +8,7 @@ import {
   Alert,
   Linking,
   TouchableOpacity,
+  Pressable,
   Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,6 +40,7 @@ import { rateApp, shareApp, contactViaWhatsApp } from '@/utils/globalUtils';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 import AdBanner from '@/components/AdBanner';
+import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
@@ -75,16 +77,16 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
   }, [type, onToggle, onPress, disabled]);
 
   return (
-    <TouchableOpacity
+    <Pressable
       style={[styles.row, !isLast && styles.rowBorder, disabled && styles.rowDisabled]}
       onPress={handlePress}
-      activeOpacity={disabled ? 1 : 0.6}
+      android_ripple={disabled ? undefined : androidRipple('rgba(27,67,50,0.06)')}
       testID={`settings-row-${title}`}
     >
       <View style={styles.rowLeft}>
         {badge ? (
           <View style={styles.comingSoonBadge}>
-            <Text style={styles.comingSoonText}>{badge}</Text>
+            <Text style={[styles.comingSoonText, androidTextFix]}>{badge}</Text>
           </View>
         ) : null}
         {type === 'toggle' ? (
@@ -104,7 +106,7 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
         {type === 'select' && !badge ? (
           <View style={styles.selectContainer}>
             <ChevronLeft size={16} color={disabled ? '#ccc' : TEXT_MUTED} />
-            <Text style={[styles.selectValue, disabled && styles.selectValueDisabled]}>{String(value ?? '')}</Text>
+            <Text style={[styles.selectValue, disabled && styles.selectValueDisabled, androidTextFix]}>{String(value ?? '')}</Text>
           </View>
         ) : null}
         {type === 'action' ? (
@@ -113,14 +115,14 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
       </View>
       <View style={styles.rowRight}>
         <View style={styles.rowTextContainer}>
-          <Text style={[styles.rowTitle, danger && styles.dangerText, disabled && styles.rowTitleDisabled]}>{title}</Text>
-          {subtitle ? <Text style={[styles.rowSubtitle, disabled && styles.rowSubtitleDisabled]}>{subtitle}</Text> : null}
+          <Text style={[styles.rowTitle, danger && styles.dangerText, disabled && styles.rowTitleDisabled, androidTextFix]}>{title}</Text>
+          {subtitle ? <Text style={[styles.rowSubtitle, disabled && styles.rowSubtitleDisabled, androidTextFix]}>{subtitle}</Text> : null}
         </View>
         <View style={[styles.rowIcon, danger && styles.rowIconDanger, disabled && styles.rowIconDisabled]}>
           {icon}
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -242,7 +244,7 @@ export default function SettingsScreen() {
       accessibilityLabel="Settings Screen"
       accessibilityHint="Manage app preferences and data">
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>{t('settings')}</Text>
+        <Text style={[styles.headerTitle, androidTextFix]}>{t('settings')}</Text>
         <View style={styles.headerOrnament}>
           <View style={styles.ornamentLine} />
           <View style={styles.ornamentDiamond} />
@@ -256,7 +258,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
       >
-        <Text style={styles.sectionTitle}>{t('appearance')}</Text>
+        <Text style={[styles.sectionTitle, androidTextFix]}>{t('appearance')}</Text>
         <View style={styles.card}>
           <SettingsRow
             icon={settings.theme === 'dark'
@@ -287,7 +289,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>{t('interaction')}</Text>
+        <Text style={[styles.sectionTitle, androidTextFix]}>{t('interaction')}</Text>
         <View style={styles.card}>
           <SettingsRow
             icon={<Vibrate size={20} color="#E07A3A" />}
@@ -308,7 +310,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>{t('contactSupport')}</Text>
+        <Text style={[styles.sectionTitle, androidTextFix]}>{t('contactSupport')}</Text>
         <View style={styles.card}>
           <SettingsRow
             icon={<Star size={20} color={GOLD} />}
@@ -334,7 +336,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>{t('about')}</Text>
+        <Text style={[styles.sectionTitle, androidTextFix]}>{t('about')}</Text>
         <View style={styles.card}>
           <SettingsRow
             icon={<Shield size={20} color={DEEP_GREEN} />}
@@ -360,7 +362,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={styles.sectionTitle}>{t('dataManagement')}</Text>
+        <Text style={[styles.sectionTitle, androidTextFix]}>{t('dataManagement')}</Text>
         <View style={styles.card}>
           <SettingsRow
             icon={<RotateCcw size={20} color={GOLD} />}
@@ -386,8 +388,8 @@ export default function SettingsScreen() {
             <View style={styles.footerDiamond} />
             <View style={styles.footerLine} />
           </View>
-          <Text style={styles.footerText}>{t('appName')}</Text>
-          <Text style={styles.footerVersion}>v{appVersion} ({buildNumber})</Text>
+          <Text style={[styles.footerText, androidTextFix]}>{t('appName')}</Text>
+          <Text style={[styles.footerVersion, androidTextFix]}>v{appVersion} ({buildNumber})</Text>
         </View>
 
 
@@ -468,12 +470,13 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: CARD_WHITE,
     borderRadius: 18,
-    overflow: 'hidden',
+    overflow: 'hidden' as const,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
+    ...Platform.select({ android: { borderWidth: 0.5, borderColor: 'rgba(0,0,0,0.04)' } }),
   },
   row: {
     flexDirection: 'row',
@@ -568,7 +571,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.9 }],
   },
   switchAndroid: {
-    transform: [{ scale: 1.0 }],
+    transform: [{ scale: 1.05 }],
   },
   footer: {
     alignItems: 'center',

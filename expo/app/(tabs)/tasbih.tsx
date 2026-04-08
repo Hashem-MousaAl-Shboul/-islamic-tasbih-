@@ -18,6 +18,7 @@ import AdBanner from '@/components/AdBanner';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
+import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 const { width: _SCREEN_WIDTH } = Dimensions.get('window');
 const GOLD = '#D4A853';
@@ -39,7 +40,7 @@ const AnimatedCounter = memo(({ count }: { count: number }) => {
   }, [count, scaleAnim]);
 
   return (
-    <Animated.Text style={[styles.counterNumber, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.Text style={[styles.counterNumber, androidTextFix, { transform: [{ scale: scaleAnim }] }]}>
       {count}
     </Animated.Text>
   );
@@ -268,7 +269,7 @@ export default function TasbihScreen() {
     return (
       <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]} testID="tasbih-loading">
         <ActivityIndicator size="large" color={GOLD} />
-        <Text style={styles.loadingText}>{t('loading')}</Text>
+        <Text style={[styles.loadingText, androidTextFix]}>{t('loading')}</Text>
       </View>
     );
   }
@@ -276,7 +277,7 @@ export default function TasbihScreen() {
   if (!selectedItem) {
     return (
       <View style={[styles.container, styles.errorContainer, { paddingTop: insets.top }]} testID="tasbih-no-item">
-        <Text style={styles.errorText}>{t('noTasbihAvailable')}</Text>
+        <Text style={[styles.errorText, androidTextFix]}>{t('noTasbihAvailable')}</Text>
       </View>
     );
   }
@@ -288,7 +289,7 @@ export default function TasbihScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]} testID="tasbih-screen">
       <View style={styles.topBar}>
-        <Text style={styles.topBarTitle}>{t('tasbih') || '\u0627\u0644\u062a\u0633\u0628\u064a\u062d'}</Text>
+        <Text style={[styles.topBarTitle, androidTextFix]}>{t('tasbih') || '\u0627\u0644\u062a\u0633\u0628\u064a\u062d'}</Text>
         <View style={styles.topBarOrnament}>
           <View style={styles.topBarOrnamentLine} />
           <View style={styles.topBarOrnamentDiamond} />
@@ -316,7 +317,7 @@ export default function TasbihScreen() {
             <TouchableOpacity style={styles.addCard} testID="add-tasbih-button" activeOpacity={0.7} onPress={handleAddTasbih}>
               <LinearGradient colors={['rgba(212,168,83,0.15)', 'rgba(212,168,83,0.05)']} style={styles.addCardGradient}>
                 <Plus size={20} color={GOLD} />
-                <Text style={styles.addCardText}>{t('add')}</Text>
+                <Text style={[styles.addCardText, androidTextFix]}>{t('add')}</Text>
               </LinearGradient>
             </TouchableOpacity>
           }
@@ -338,12 +339,12 @@ export default function TasbihScreen() {
             <View style={styles.dhikrIconContainer}>
               <View style={styles.dhikrIcon}><Moon size={20} color={DEEP_GREEN} /></View>
             </View>
-            <Text style={styles.mainArabicText}>{selectedItem.arabicText}</Text>
+            <Text style={[styles.mainArabicText, androidTextFix]}>{selectedItem.arabicText}</Text>
             {settings.showTransliteration && (
-              <Text style={styles.transliterationText}>{selectedItem.transliteration}</Text>
+              <Text style={[styles.transliterationText, androidTextFix]}>{selectedItem.transliteration}</Text>
             )}
             {settings.showTranslation && (
-              <Text style={styles.translationText}>{selectedItem.translation}</Text>
+              <Text style={[styles.translationText, androidTextFix]}>{selectedItem.translation}</Text>
             )}
             <TouchableOpacity
               style={[styles.speakDhikrButton, styles.speakDhikrButtonLocked]}
@@ -352,11 +353,11 @@ export default function TasbihScreen() {
               testID="tasbih-speak-button"
             >
               <Lock size={14} color={TEXT_MUTED} />
-              <Text style={[styles.speakDhikrText, styles.speakDhikrTextLocked]}>
+              <Text style={[styles.speakDhikrText, styles.speakDhikrTextLocked, androidTextFix]}>
                 {t('listenToDhikr')}
               </Text>
               <View style={styles.comingSoonBadgeMini}>
-                <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
+                <Text style={[styles.comingSoonBadgeMiniText, androidTextFix]}>{t('comingSoon')}</Text>
               </View>
             </TouchableOpacity>
           </LinearGradient>
@@ -379,18 +380,18 @@ export default function TasbihScreen() {
                 >
                   <AnimatedCounter count={selectedItem.count} />
                   <View style={styles.counterDivider} />
-                  <Text style={styles.counterTarget}>{selectedItem.targetCount}</Text>
+                  <Text style={[styles.counterTarget, androidTextFix]}>{selectedItem.targetCount}</Text>
                 </Pressable>
               </Animated.View>
               {selectedItem.isCompleted && (
                 <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
                   <Check size={14} color="#FFFFFF" />
-                  <Text style={styles.completedText}>{t('completed')}</Text>
+                  <Text style={[styles.completedText, androidTextFix]}>{t('completed')}</Text>
                 </View>
               )}
             </View>
 
-            <Text style={styles.tapHint}>{t('tapToCount')}</Text>
+            <Text style={[styles.tapHint, androidTextFix]}>{t('tapToCount')}</Text>
 
             <View style={styles.progressBarContainer}>
               <View style={styles.progressBarTrack}>
@@ -398,7 +399,7 @@ export default function TasbihScreen() {
                   style={[styles.progressBarFill, { width: `${progressPercent}%`, backgroundColor: selectedItem.color }]}
                 />
               </View>
-              <Text style={styles.progressText}>{selectedItem.count} / {selectedItem.targetCount}</Text>
+              <Text style={[styles.progressText, androidTextFix]}>{selectedItem.count} / {selectedItem.targetCount}</Text>
             </View>
           </View>
 
@@ -411,13 +412,13 @@ export default function TasbihScreen() {
 
             <View style={styles.statsDisplay}>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>{t('today')}</Text>
-                <Text style={styles.statValue}>{stats.todayCount}</Text>
+                <Text style={[styles.statLabel, androidTextFix]}>{t('today')}</Text>
+                <Text style={[styles.statValue, androidTextFix]}>{stats.todayCount}</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>{t('total')}</Text>
-                <Text style={styles.statValue}>{stats.totalCount}</Text>
+                <Text style={[styles.statLabel, androidTextFix]}>{t('total')}</Text>
+                <Text style={[styles.statValue, androidTextFix]}>{stats.totalCount}</Text>
               </View>
             </View>
 
@@ -437,8 +438,8 @@ export default function TasbihScreen() {
             <ChevronLeft size={18} color={TEXT_MUTED} />
             <View style={styles.liveStatsRight}>
               <View>
-                <Text style={styles.liveStatsTitle}>{t('statistics') || '\u0627\u0644\u0625\u062d\u0635\u0627\u0626\u064a\u0627\u062a'}</Text>
-                <Text style={styles.liveStatsSubtitle}>
+                <Text style={[styles.liveStatsTitle, androidTextFix]}>{t('statistics') || '\u0627\u0644\u0625\u062d\u0635\u0627\u0626\u064a\u0627\u062a'}</Text>
+                <Text style={[styles.liveStatsSubtitle, androidTextFix]}>
                   {stats.completedSessions} {t('sessions') || '\u062c\u0644\u0633\u0627\u062a'} · {stats.todayCount} {t('today') || '\u0627\u0644\u064a\u0648\u0645'}
                 </Text>
               </View>
@@ -458,14 +459,14 @@ export default function TasbihScreen() {
               <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton} testID="modal-close-btn">
                 <X size={22} color={TEXT_MUTED} />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>{t('addNewTasbih')}</Text>
+              <Text style={[styles.modalTitle, androidTextFix]}>{t('addNewTasbih')}</Text>
               <TouchableOpacity onPress={handleSaveNewTasbih} style={styles.modalSaveButton} testID="modal-save-btn">
                 <Check size={22} color={CARD_WHITE} />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalForm} showsVerticalScrollIndicator={false}>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('arabicText')} *</Text>
+                <Text style={[styles.inputLabel, androidTextFix]}>{t('arabicText')} *</Text>
                 <TextInput
                   style={styles.textInput}
                   value={newTasbih.arabicText}
@@ -478,7 +479,7 @@ export default function TasbihScreen() {
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('transliteration')}</Text>
+                <Text style={[styles.inputLabel, androidTextFix]}>{t('transliteration')}</Text>
                 <TextInput
                   style={styles.textInput}
                   value={newTasbih.transliteration}
@@ -489,7 +490,7 @@ export default function TasbihScreen() {
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('translation')}</Text>
+                <Text style={[styles.inputLabel, androidTextFix]}>{t('translation')}</Text>
                 <TextInput
                   style={styles.textInput}
                   value={newTasbih.translation}
@@ -501,7 +502,7 @@ export default function TasbihScreen() {
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('targetCount')}</Text>
+                <Text style={[styles.inputLabel, androidTextFix]}>{t('targetCount')}</Text>
                 <TextInput
                   style={styles.numberInput}
                   value={newTasbih.targetCount.toString()}
@@ -516,7 +517,7 @@ export default function TasbihScreen() {
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{t('color')}</Text>
+                <Text style={[styles.inputLabel, androidTextFix]}>{t('color')}</Text>
                 <View style={styles.colorPicker}>
                   {predefinedColors.map((color) => (
                     <TouchableOpacity
@@ -590,7 +591,7 @@ const styles = StyleSheet.create({
   dhikrDisplay: {
     alignItems: 'center', paddingHorizontal: 18, paddingVertical: 14,
     borderRadius: 20, marginBottom: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 5,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 6,
     borderWidth: 1, borderColor: 'rgba(212,168,83,0.1)',
   },
   dhikrIconContainer: { marginBottom: 8 },
@@ -604,7 +605,7 @@ const styles = StyleSheet.create({
   progressArc: { position: 'absolute' },
   progressArcFill: { position: 'absolute', borderLeftColor: 'transparent', borderBottomColor: 'transparent' },
   counterButtonContainer: { position: 'absolute', zIndex: 10 },
-  mainCounterButton: { width: 180, height: 180, borderRadius: 90, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 12, overflow: 'hidden' as const },
+  mainCounterButton: { width: 180, height: 180, borderRadius: 90, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 16, overflow: 'hidden' as const },
   counterButtonPressed: { opacity: 0.92 },
   counterNumber: { fontSize: 56, fontWeight: '800' as const, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
   counterDivider: { width: 40, height: 2, backgroundColor: 'rgba(255,255,255,0.5)', marginVertical: 6 },
@@ -619,13 +620,13 @@ const styles = StyleSheet.create({
   controlButtonsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 4 },
   controlButton: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 4 },
   controlButtonGradient: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,0,0,0.04)' },
-  statsDisplay: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, gap: 20, backgroundColor: CARD_WHITE, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 4, borderWidth: 1, borderColor: 'rgba(212,168,83,0.1)' },
+  statsDisplay: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, gap: 20, backgroundColor: CARD_WHITE, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 5, borderWidth: 1, borderColor: 'rgba(212,168,83,0.1)' },
   statItem: { alignItems: 'center' },
   statLabel: { fontSize: 11, fontWeight: '500' as const, marginBottom: 2, color: TEXT_MUTED, textAlign: 'center' as const },
   statValue: { fontSize: 20, fontWeight: '800' as const, color: DEEP_GREEN },
   statDivider: { width: 1, height: 36, backgroundColor: 'rgba(0,0,0,0.06)' },
   modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { maxHeight: '90%', borderTopLeftRadius: 28, borderTopRightRadius: 28, backgroundColor: IVORY },
+  modalContent: { maxHeight: '90%', borderTopLeftRadius: 28, borderTopRightRadius: 28, backgroundColor: IVORY, elevation: 24 },
   modalHandle: { width: 40, height: 4, backgroundColor: 'rgba(0,0,0,0.12)', borderRadius: 2, alignSelf: 'center', marginTop: 10, marginBottom: 4 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)' },
   modalCloseButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: CARD_WHITE, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
@@ -639,7 +640,7 @@ const styles = StyleSheet.create({
   colorPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   colorOption: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: 'transparent' },
   selectedColor: { borderColor: DEEP_GREEN, borderWidth: 3 },
-  speakDhikrButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(27,67,50,0.08)', marginTop: 10 },
+  speakDhikrButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(27,67,50,0.08)', marginTop: 10, overflow: 'hidden' as const },
   speakDhikrButtonActive: { backgroundColor: DEEP_GREEN },
   speakDhikrButtonLocked: { backgroundColor: 'rgba(0,0,0,0.04)', borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)' },
   speakDhikrText: { fontSize: 13, fontWeight: '600' as const, color: DEEP_GREEN },
@@ -651,8 +652,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: CARD_WHITE, borderRadius: 18, paddingHorizontal: 16, paddingVertical: 14,
     marginTop: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
+    shadowOpacity: 0.06, shadowRadius: 10, elevation: 4,
     borderWidth: 1, borderColor: GOLD + '18',
+    overflow: 'hidden' as const,
   },
   liveStatsRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   liveStatsIconCircle: {
