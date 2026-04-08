@@ -185,13 +185,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
 
   return (
     <View style={styles.adhkarCard} testID={`adhkar-card-${item.id}`}>
-      <Pressable
-        style={styles.adhkarCardTouchable}
-        testID={`adhkar-item-${item.id}`}
-        onPress={handleCardPress}
-        accessibilityRole="button"
-        accessibilityState={{ expanded }}
-      >
+      <View style={styles.adhkarCardTouchable}>
         <View style={[styles.cardAccentBar, { backgroundColor: accent }]} />
 
         <View style={styles.adhkarCardHeader}>
@@ -201,21 +195,21 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
           </View>
           <View style={styles.headerActions}>
             <Pressable
-                  style={[styles.actionIcon, isFavorite && { backgroundColor: GOLD + '20' }]}
-                  onPress={handleToggleFavorite}
-                  testID="adhkar-favorite-button"
-                  accessibilityRole="button"
-                >
-                  <Star size={16} color={isFavorite ? GOLD : TEXT_MUTED} fill={isFavorite ? GOLD : 'transparent'} strokeWidth={1.5} />
-                </Pressable>
-                <Pressable
-                  style={styles.actionIcon}
-                  onPress={handleShare}
-                  testID="adhkar-share-button"
-                  accessibilityRole="button"
-                >
-                  <Share2 size={15} color={TEXT_MUTED} strokeWidth={1.5} />
-                </Pressable>
+              style={[styles.actionIcon, isFavorite && { backgroundColor: GOLD + '20' }]}
+              onPress={handleToggleFavorite}
+              testID="adhkar-favorite-button"
+              accessibilityRole="button"
+            >
+              <Star size={16} color={isFavorite ? GOLD : TEXT_MUTED} fill={isFavorite ? GOLD : 'transparent'} strokeWidth={1.5} />
+            </Pressable>
+            <Pressable
+              style={styles.actionIcon}
+              onPress={handleShare}
+              testID="adhkar-share-button"
+              accessibilityRole="button"
+            >
+              <Share2 size={15} color={TEXT_MUTED} strokeWidth={1.5} />
+            </Pressable>
           </View>
         </View>
 
@@ -236,45 +230,52 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
           </Pressable>
         </View>
 
-        <View style={styles.adhkarMainContent}>
-          <Text
-            style={[styles.adhkarArabicText, expanded && styles.adhkarArabicTextExpanded]}
-            testID="adhkar-arabic-text"
-            selectable
-          >
-            {item.arabicText}
-          </Text>
-
-          {item.transliteration && (
+        <Pressable
+          onPress={handleCardPress}
+          testID={`adhkar-item-${item.id}`}
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+        >
+          <View style={styles.adhkarMainContent}>
             <Text
-              style={[styles.adhkarTransliteration, expanded && styles.adhkarTransliterationExpanded]}
-              numberOfLines={expanded ? undefined : 3}
+              style={[styles.adhkarArabicText, expanded && styles.adhkarArabicTextExpanded]}
+              testID="adhkar-arabic-text"
               selectable
             >
-              {item.transliteration}
+              {item.arabicText}
             </Text>
-          )}
 
-          {item.translation && (
-            <Text
-              style={[styles.adhkarTranslation, expanded && styles.adhkarTranslationExpanded]}
-              numberOfLines={expanded ? undefined : 3}
-              selectable
-            >
-              {item.translation}
-            </Text>
-          )}
-        </View>
+            {item.transliteration && (
+              <Text
+                style={[styles.adhkarTransliteration, expanded && styles.adhkarTransliterationExpanded]}
+                numberOfLines={expanded ? undefined : 3}
+                selectable
+              >
+                {item.transliteration}
+              </Text>
+            )}
 
-        <View style={styles.adhkarFooter}>
-          <View style={styles.readingIndicator}>
-            <View style={[styles.readingDot, { backgroundColor: expanded ? accent : TEXT_MUTED }]} />
-            <Text style={[styles.readingText, expanded && { color: accent }]}>
-              {expanded ? t('readingModeActive') : t('tapToRead')}
-            </Text>
+            {item.translation && (
+              <Text
+                style={[styles.adhkarTranslation, expanded && styles.adhkarTranslationExpanded]}
+                numberOfLines={expanded ? undefined : 3}
+                selectable
+              >
+                {item.translation}
+              </Text>
+            )}
           </View>
-        </View>
-      </Pressable>
+
+          <View style={styles.adhkarFooter}>
+            <View style={styles.readingIndicator}>
+              <View style={[styles.readingDot, { backgroundColor: expanded ? accent : TEXT_MUTED }]} />
+              <Text style={[styles.readingText, expanded && { color: accent }]}>
+                {expanded ? t('readingModeActive') : t('tapToRead')}
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+      </View>
     </View>
   );
 };
