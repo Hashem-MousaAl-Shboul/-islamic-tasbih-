@@ -124,6 +124,9 @@ export default function SettingsScreen() {
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+  const buildNumber = Platform.OS === 'ios'
+    ? (Constants.expoConfig?.ios?.buildNumber ?? '1')
+    : String(Constants.expoConfig?.android?.versionCode ?? 1);
 
   const languageInfo = useMemo(() => getCurrentLanguageInfo(), [getCurrentLanguageInfo]);
 
@@ -339,9 +342,9 @@ export default function SettingsScreen() {
           <SettingsRow
             icon={<Info size={20} color={TEXT_MUTED} />}
             title={t('version')}
-            subtitle={`v${appVersion}`}
+            subtitle={`v${appVersion} (${buildNumber})`}
             type="action"
-            onPress={() => { console.log(SETTINGS_TAG, "Version:", appVersion); }}
+            onPress={() => { console.log(SETTINGS_TAG, "Version:", appVersion, "Build:", buildNumber); }}
             isLast
           />
         </View>
@@ -373,7 +376,7 @@ export default function SettingsScreen() {
             <View style={styles.footerLine} />
           </View>
           <Text style={styles.footerText}>{t('appName')}</Text>
-          <Text style={styles.footerVersion}>v{appVersion}</Text>
+          <Text style={styles.footerVersion}>v{appVersion} ({buildNumber})</Text>
         </View>
 
 
