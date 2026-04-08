@@ -27,6 +27,7 @@ import {
   Sun,
   Info,
   ChevronRight,
+  ChevronLeft,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -81,15 +82,6 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
       testID={`settings-row-${title}`}
     >
       <View style={styles.rowLeft}>
-        <View style={[styles.rowIcon, danger && styles.rowIconDanger, disabled && styles.rowIconDisabled]}>
-          {icon}
-        </View>
-        <View style={styles.rowTextContainer}>
-          <Text style={[styles.rowTitle, danger && styles.dangerText, disabled && styles.rowTitleDisabled]}>{title}</Text>
-          {subtitle ? <Text style={[styles.rowSubtitle, disabled && styles.rowSubtitleDisabled]}>{subtitle}</Text> : null}
-        </View>
-      </View>
-      <View style={styles.rowRight}>
         {badge ? (
           <View style={styles.comingSoonBadge}>
             <Text style={styles.comingSoonText}>{badge}</Text>
@@ -111,13 +103,22 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
         ) : null}
         {type === 'select' && !badge ? (
           <View style={styles.selectContainer}>
+            <ChevronLeft size={16} color={disabled ? '#ccc' : TEXT_MUTED} />
             <Text style={[styles.selectValue, disabled && styles.selectValueDisabled]}>{String(value ?? '')}</Text>
-            <ChevronRight size={16} color={disabled ? '#ccc' : TEXT_MUTED} />
           </View>
         ) : null}
         {type === 'action' ? (
-          <ChevronRight size={18} color={danger ? '#D45050' : TEXT_MUTED} />
+          <ChevronLeft size={18} color={danger ? '#D45050' : TEXT_MUTED} />
         ) : null}
+      </View>
+      <View style={styles.rowRight}>
+        <View style={styles.rowTextContainer}>
+          <Text style={[styles.rowTitle, danger && styles.dangerText, disabled && styles.rowTitleDisabled]}>{title}</Text>
+          {subtitle ? <Text style={[styles.rowSubtitle, disabled && styles.rowSubtitleDisabled]}>{subtitle}</Text> : null}
+        </View>
+        <View style={[styles.rowIcon, danger && styles.rowIconDanger, disabled && styles.rowIconDisabled]}>
+          {icon}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -460,8 +461,8 @@ const styles = StyleSheet.create({
     color: TEXT_MUTED,
     marginTop: 14,
     marginBottom: 8,
-    marginLeft: 4,
-    textTransform: 'uppercase' as const,
+    marginRight: 4,
+    textAlign: 'right' as const,
     letterSpacing: 0.8,
   },
   card: {
@@ -489,7 +490,6 @@ const styles = StyleSheet.create({
   rowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
   rowIcon: {
     width: 40,
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     backgroundColor: IVORY,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    marginLeft: 14,
   },
   rowIconDanger: {
     backgroundColor: '#FEF2F2',
@@ -510,6 +510,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500' as const,
     color: DEEP_GREEN,
+    textAlign: 'right' as const,
   },
   dangerText: {
     color: '#D45050',
@@ -518,11 +519,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: TEXT_MUTED,
     marginTop: 2,
+    textAlign: 'right' as const,
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   selectContainer: {
     flexDirection: 'row',

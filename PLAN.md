@@ -1,16 +1,10 @@
-# Redesign Bottom Tab Bar
+# عكس اتجاه عناصر شاشة الإعدادات إلى RTL
 
+## What will change
 
-**What changes**
+- **Row layout reversed**: Each settings row will be flipped — the icon moves to the right side, text aligns to the right next to it, and the toggle/chevron moves to the left side
+- **Section titles**: Will align to the right instead of the left
+- **Text alignment**: All titles and subtitles will be right-aligned (RTL direction)
+- **Select values and badges**: Will appear on the left side with the chevron pointing left
+- **Consistent RTL feel**: The entire settings screen will feel natural for Arabic reading direction (right to left)
 
-A refined, elegant bottom bar inspired by premium iOS apps — clean, minimal, with a warm Islamic-themed aesthetic.
-
-**Design details**
-
-- **Floating bar**: Slightly lifted from the bottom with rounded corners and a subtle warm shadow, giving a modern floating feel
-- **Active tab indicator**: A small glowing dot beneath the active icon (gold accent) instead of the current pill background — cleaner and more distinctive
-- **Icons**: Slightly larger, with a smooth scale-up animation on the active tab
-- **Labels**: Removed for a cleaner look — icons only, with the gold dot making the active tab obvious
-- **Background**: Soft frosted cream/white with a warm tint to match the app's earthy palette
-- **Smooth transitions**: Spring animations when switching tabs with gentle haptic feedback
-- **Dark mode**: Deep dark surface with the same gold dot indicator
