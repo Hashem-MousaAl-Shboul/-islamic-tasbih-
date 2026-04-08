@@ -7,7 +7,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Plus, X, Check, Minus, RotateCcw, Lock,
-  Moon, TrendingUp, ChevronRight
+  Moon, TrendingUp, ChevronLeft
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -434,18 +434,18 @@ export default function TasbihScreen() {
             activeOpacity={0.7}
             testID="stats-link-button"
           >
-            <View style={styles.liveStatsLeft}>
-              <View style={styles.liveStatsIconCircle}>
-                <TrendingUp size={16} color={GOLD} />
-              </View>
+            <ChevronLeft size={18} color={TEXT_MUTED} />
+            <View style={styles.liveStatsRight}>
               <View>
                 <Text style={styles.liveStatsTitle}>{t('statistics') || '\u0627\u0644\u0625\u062d\u0635\u0627\u0626\u064a\u0627\u062a'}</Text>
                 <Text style={styles.liveStatsSubtitle}>
                   {stats.completedSessions} {t('sessions') || '\u062c\u0644\u0633\u0627\u062a'} · {stats.todayCount} {t('today') || '\u0627\u0644\u064a\u0648\u0645'}
                 </Text>
               </View>
+              <View style={styles.liveStatsIconCircle}>
+                <TrendingUp size={16} color={GOLD} />
+              </View>
             </View>
-            <ChevronRight size={18} color={TEXT_MUTED} />
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   controlButtonGradient: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,0,0,0.04)' },
   statsDisplay: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, gap: 20, backgroundColor: CARD_WHITE, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 4, borderWidth: 1, borderColor: 'rgba(212,168,83,0.1)' },
   statItem: { alignItems: 'center' },
-  statLabel: { fontSize: 11, fontWeight: '500' as const, marginBottom: 2, color: TEXT_MUTED },
+  statLabel: { fontSize: 11, fontWeight: '500' as const, marginBottom: 2, color: TEXT_MUTED, textAlign: 'center' as const },
   statValue: { fontSize: 20, fontWeight: '800' as const, color: DEEP_GREEN },
   statDivider: { width: 1, height: 36, backgroundColor: 'rgba(0,0,0,0.06)' },
   modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
@@ -630,10 +630,10 @@ const styles = StyleSheet.create({
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)' },
   modalCloseButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: CARD_WHITE, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
   modalSaveButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: DEEP_GREEN, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  modalTitle: { fontSize: 18, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'center' },
+  modalTitle: { fontSize: 18, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'center', writingDirection: 'rtl' as const },
   modalForm: { paddingHorizontal: 20, paddingTop: 20 },
   inputGroup: { marginBottom: 20 },
-  inputLabel: { fontSize: 14, fontWeight: '600' as const, color: DEEP_GREEN, marginBottom: 8, textAlign: 'right' },
+  inputLabel: { fontSize: 14, fontWeight: '600' as const, color: DEEP_GREEN, marginBottom: 8, textAlign: 'right' as const, writingDirection: 'rtl' as const },
   textInput: { backgroundColor: CARD_WHITE, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: DEEP_GREEN, borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)', minHeight: 48, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.02, shadowRadius: 4, elevation: 1 },
   numberInput: { backgroundColor: CARD_WHITE, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: DEEP_GREEN, borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)', textAlign: 'center', width: 100, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.02, shadowRadius: 4, elevation: 1 },
   colorPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
@@ -654,11 +654,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     borderWidth: 1, borderColor: GOLD + '18',
   },
-  liveStatsLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  liveStatsRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   liveStatsIconCircle: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: GOLD + '14', alignItems: 'center', justifyContent: 'center',
   },
-  liveStatsTitle: { fontSize: 14, fontWeight: '700' as const, color: DEEP_GREEN },
-  liveStatsSubtitle: { fontSize: 12, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 2 },
+  liveStatsTitle: { fontSize: 14, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'right' as const },
+  liveStatsSubtitle: { fontSize: 12, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 2, textAlign: 'right' as const },
 });

@@ -189,19 +189,7 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
         <View style={[styles.cardAccentBar, { backgroundColor: accent }]} />
 
         <View style={styles.adhkarCardHeader}>
-          <View style={[styles.categoryBadge, { backgroundColor: accent + '14' }]}>
-            {getCategoryIcon(item.category)}
-            <Text style={[styles.categoryText, { color: accent }]}>{getCategoryLabel(item.category)}</Text>
-          </View>
           <View style={styles.headerActions}>
-            <Pressable
-              style={[styles.actionIcon, isFavorite && { backgroundColor: GOLD + '20' }]}
-              onPress={handleToggleFavorite}
-              testID="adhkar-favorite-button"
-              accessibilityRole="button"
-            >
-              <Star size={16} color={isFavorite ? GOLD : TEXT_MUTED} fill={isFavorite ? GOLD : 'transparent'} strokeWidth={1.5} />
-            </Pressable>
             <Pressable
               style={styles.actionIcon}
               onPress={handleShare}
@@ -210,6 +198,18 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
             >
               <Share2 size={15} color={TEXT_MUTED} strokeWidth={1.5} />
             </Pressable>
+            <Pressable
+              style={[styles.actionIcon, isFavorite && { backgroundColor: GOLD + '20' }]}
+              onPress={handleToggleFavorite}
+              testID="adhkar-favorite-button"
+              accessibilityRole="button"
+            >
+              <Star size={16} color={isFavorite ? GOLD : TEXT_MUTED} fill={isFavorite ? GOLD : 'transparent'} strokeWidth={1.5} />
+            </Pressable>
+          </View>
+          <View style={[styles.categoryBadge, { backgroundColor: accent + '14' }]}>
+            <Text style={[styles.categoryText, { color: accent }]}>{getCategoryLabel(item.category)}</Text>
+            {getCategoryIcon(item.category)}
           </View>
         </View>
 
@@ -220,13 +220,13 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
             testID="adhkar-speak-button"
             accessibilityRole="button"
           >
-            <Lock size={14} color={TEXT_MUTED} />
-            <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
-              {t('listenToAdhkar')}
-            </Text>
             <View style={styles.comingSoonBadgeMini}>
               <Text style={styles.comingSoonBadgeMiniText}>{t('comingSoon')}</Text>
             </View>
+            <Text style={[styles.speakButtonText, styles.speakButtonTextLocked]}>
+              {t('listenToAdhkar')}
+            </Text>
+            <Lock size={14} color={TEXT_MUTED} />
           </Pressable>
         </View>
 
@@ -758,11 +758,11 @@ const styles = StyleSheet.create({
   cardAccentBar: {
     position: 'absolute',
     top: 0,
-    left: 0,
+    right: 0,
     width: 3,
     height: '100%',
-    borderTopLeftRadius: 18,
-    borderBottomLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomRightRadius: 18,
   },
   adhkarCardHeader: {
     flexDirection: 'row',
@@ -839,14 +839,14 @@ const styles = StyleSheet.create({
   },
   adhkarFooter: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.04)',
   },
   readingIndicator: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 6,
   },
@@ -905,6 +905,7 @@ const styles = StyleSheet.create({
   speakRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end' as const,
     marginBottom: 10,
   },
   speakButton: {
@@ -940,7 +941,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
-    marginLeft: 4,
+    marginRight: 4,
   },
   comingSoonBadgeMiniText: {
     fontSize: 9,
@@ -964,7 +965,7 @@ const styles = StyleSheet.create({
     backgroundColor: IVORY,
   },
   playAllButton: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
@@ -989,7 +990,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.08)',
   },
   playAllLeft: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 14,
   },
@@ -1014,6 +1015,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700' as const,
     color: DEEP_GREEN,
+    textAlign: 'right' as const,
   },
   playAllTitleActive: {
     color: '#FFFFFF',
@@ -1036,6 +1038,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500' as const,
     color: TEXT_MUTED,
+    textAlign: 'right' as const,
   },
   playAllProgress: {
     fontSize: 12,

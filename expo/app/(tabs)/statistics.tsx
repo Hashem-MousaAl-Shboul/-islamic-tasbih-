@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     borderColor: GOLD + '18',
   },
   heroTop: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     marginBottom: 8,
     gap: 10,
@@ -400,6 +400,7 @@ const styles = StyleSheet.create({
     color: TEXT_MUTED,
     fontWeight: '500' as const,
     writingDirection: 'rtl',
+    textAlign: 'right' as const,
   },
   heroValue: {
     fontSize: 44,
@@ -429,6 +430,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: TEXT_MUTED,
     marginTop: 4,
+    textAlign: 'center' as const,
   },
   heroStatSep: {
     width: 1,
@@ -439,8 +441,8 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: TEXT_MUTED,
     marginBottom: 8,
-    marginLeft: 4,
-    textTransform: 'uppercase' as const,
+    marginRight: 4,
+    textAlign: 'right' as const,
     letterSpacing: 0.5,
   },
   sectionTitleRTL: {
@@ -463,7 +465,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   progressHeader: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
@@ -472,6 +474,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: DEEP_GREEN,
     fontWeight: '500' as const,
+    textAlign: 'right' as const,
   },
   progressValue: {
     fontSize: 14,
@@ -534,7 +537,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_WHITE,
     borderRadius: 20,
     padding: 20,
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     marginBottom: 16,
     shadowColor: '#000',
@@ -554,7 +557,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   favoriteContent: {
-    marginLeft: 16,
+    marginRight: 16,
     flex: 1,
   },
   favoriteArabic: {
@@ -568,6 +571,7 @@ const styles = StyleSheet.create({
   favoriteStats: {
     fontSize: 13,
     color: TEXT_MUTED,
+    textAlign: 'right' as const,
   },
   dhikrListCard: {
     backgroundColor: CARD_WHITE,
@@ -584,7 +588,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   dhikrStatHeader: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
