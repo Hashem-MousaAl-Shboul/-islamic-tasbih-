@@ -283,4 +283,5 @@ export const tr: TranslationKeys = {
   termsTerminationText: 'Bu Kullanım Şartlarını ihlal ettiğine veya diğer kullanıcılara veya uygulamaya zararlı olduğuna inandığımız davranışlar için herhangi bir zamanda, bildirim olmaksızın uygulamaya erişimi sonlandırma veya askıya alma hakkını saklı tutarız.',
   termsContactTitle: '10. Bize Ulaşın',
   termsContactText: 'Bu Kullanım Şartları hakkında herhangi bir sorunuz varsa, lütfen bize şu adresten ulaşın:',
+  comingSoon: 'Yakında',
 };

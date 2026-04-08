@@ -283,4 +283,5 @@ export const fr: TranslationKeys = {
   termsTerminationText: 'Nous nous réservons le droit de résilier ou de suspendre l\'accès à l\'application à tout moment, sans préavis, pour tout comportement que nous estimons contraire à ces Conditions d\'Utilisation ou nuisible aux autres utilisateurs ou à l\'application.',
   termsContactTitle: '10. Nous contacter',
   termsContactText: 'Si vous avez des questions sur ces Conditions d\'Utilisation, veuillez nous contacter à :',
+  comingSoon: 'Bientôt disponible',
 };

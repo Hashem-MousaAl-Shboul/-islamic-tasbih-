@@ -283,4 +283,5 @@ export const es: TranslationKeys = {
   termsTerminationText: 'Nos reservamos el derecho de terminar o suspender el acceso a la aplicación en cualquier momento, sin previo aviso, por conductas que creamos que violan estos Términos de Uso o que son perjudiciales para otros usuarios o la aplicación.',
   termsContactTitle: '10. Contáctanos',
   termsContactText: 'Si tienes alguna pregunta sobre estos Términos de Uso, contáctanos en:',
+  comingSoon: 'Próximamente',
 };

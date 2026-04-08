@@ -281,4 +281,5 @@ export interface TranslationKeys {
   termsTerminationText: string;
   termsContactTitle: string;
   termsContactText: string;
+  comingSoon: string;
 }

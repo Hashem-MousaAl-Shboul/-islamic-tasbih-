@@ -283,4 +283,5 @@ export const en: TranslationKeys = {
   termsTerminationText: 'We reserve the right to terminate or suspend access to the application at any time, without notice, for conduct that we believe violates these Terms of Use or is harmful to other users or the application.',
   termsContactTitle: '10. Contact Us',
   termsContactText: 'If you have any questions about these Terms of Use, please contact us at:',
+  comingSoon: 'Coming Soon',
 };

@@ -1,8 +1,15 @@
-# Update Privacy Policy & Terms of Use — Replace Email with WhatsApp Button
+# Lock Color Theme Picker with "Coming Soon" Label
 
 **Changes**
 
-- **Privacy Policy page**: Remove the `support@subbah.app` email address from the contact section and replace it with a tappable WhatsApp button (green WhatsApp icon + text) that opens a direct WhatsApp chat using the same number already configured in the app.
-- **Terms of Use page**: Same change — remove the email address and add the WhatsApp contact button.
-- Both pages will have a clean, styled WhatsApp button that matches the existing app design (deep green / gold / ivory theme).
+- **Color Theme row** in the Appearance section of Settings will remain visible but become non-interactive (tapping it does nothing).
+- A small "Coming Soon" badge will appear next to the current theme value, styled in a soft muted color to indicate it's not yet available.
+- The Color Theme picker modal will no longer open when tapping the row.
+- The row will appear slightly faded/dimmed compared to other active rows, giving a clear visual hint that it's locked.
+
+**Design**
+
+- A rounded "Coming Soon" pill badge in a light gold/amber tone with small text, sitting next to the theme name.
+- The row text and icon will have reduced opacity (~0.5) to signal it's disabled.
+- Everything else in the Appearance section (Dark Mode toggle, Language selector) stays fully functional.
 

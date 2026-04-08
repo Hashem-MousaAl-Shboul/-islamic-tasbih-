@@ -283,4 +283,5 @@ export const ms: TranslationKeys = {
   termsTerminationText: 'Kami berhak untuk menamatkan atau menggantung akses kepada aplikasi pada bila-bila masa, tanpa notis, bagi kelakuan yang kami percaya melanggar Terma Penggunaan ini atau memudaratkan pengguna lain atau aplikasi.',
   termsContactTitle: '10. Hubungi Kami',
   termsContactText: 'Jika anda mempunyai sebarang soalan mengenai Terma Penggunaan ini, sila hubungi kami di:',
+  comingSoon: 'Akan datang',
 };

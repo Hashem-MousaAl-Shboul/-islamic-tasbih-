@@ -59,34 +59,42 @@ interface SettingsRowProps {
   onToggle?: () => void;
   danger?: boolean;
   isLast?: boolean;
+  disabled?: boolean;
+  badge?: string;
 }
 
-function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, danger, isLast }: SettingsRowProps) {
+function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, danger, isLast, disabled, badge }: SettingsRowProps) {
   const handlePress = useCallback(() => {
+    if (disabled) return;
     if (type === 'toggle' && onToggle) {
       onToggle();
     } else if (onPress) {
       onPress();
     }
-  }, [type, onToggle, onPress]);
+  }, [type, onToggle, onPress, disabled]);
 
   return (
     <TouchableOpacity
-      style={[styles.row, !isLast && styles.rowBorder]}
+      style={[styles.row, !isLast && styles.rowBorder, disabled && styles.rowDisabled]}
       onPress={handlePress}
-      activeOpacity={0.6}
+      activeOpacity={disabled ? 1 : 0.6}
       testID={`settings-row-${title}`}
     >
       <View style={styles.rowLeft}>
-        <View style={[styles.rowIcon, danger && styles.rowIconDanger]}>
+        <View style={[styles.rowIcon, danger && styles.rowIconDanger, disabled && styles.rowIconDisabled]}>
           {icon}
         </View>
         <View style={styles.rowTextContainer}>
-          <Text style={[styles.rowTitle, danger && styles.dangerText]}>{title}</Text>
-          {subtitle ? <Text style={styles.rowSubtitle}>{subtitle}</Text> : null}
+          <Text style={[styles.rowTitle, danger && styles.dangerText, disabled && styles.rowTitleDisabled]}>{title}</Text>
+          {subtitle ? <Text style={[styles.rowSubtitle, disabled && styles.rowSubtitleDisabled]}>{subtitle}</Text> : null}
         </View>
       </View>
       <View style={styles.rowRight}>
+        {badge ? (
+          <View style={styles.comingSoonBadge}>
+            <Text style={styles.comingSoonText}>{badge}</Text>
+          </View>
+        ) : null}
         {type === 'toggle' ? (
           <Switch
             value={Boolean(value)}
@@ -101,10 +109,10 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
             pointerEvents="none"
           />
         ) : null}
-        {type === 'select' ? (
+        {type === 'select' && !badge ? (
           <View style={styles.selectContainer}>
-            <Text style={styles.selectValue}>{String(value ?? '')}</Text>
-            <ChevronRight size={16} color={TEXT_MUTED} />
+            <Text style={[styles.selectValue, disabled && styles.selectValueDisabled]}>{String(value ?? '')}</Text>
+            <ChevronRight size={16} color={disabled ? '#ccc' : TEXT_MUTED} />
           </View>
         ) : null}
         {type === 'action' ? (
@@ -264,7 +272,9 @@ export default function SettingsScreen() {
             title={t('colorTheme')}
             type="select"
             value={t(settings.colorTheme || 'gold')}
-            onPress={() => setShowColorPicker(true)}
+            onPress={() => {}}
+            disabled
+            badge={t('comingSoon')}
           />
           <SettingsRow
             icon={<Globe size={20} color="#3B7DD8" />}
@@ -523,6 +533,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: TEXT_MUTED,
     fontWeight: '500' as const,
+  },
+  selectValueDisabled: {
+    opacity: 0.4,
+  },
+  rowDisabled: {
+    opacity: 0.55,
+  },
+  rowIconDisabled: {
+    opacity: 0.5,
+  },
+  rowTitleDisabled: {
+    opacity: 0.6,
+  },
+  rowSubtitleDisabled: {
+    opacity: 0.5,
+  },
+  comingSoonBadge: {
+    backgroundColor: 'rgba(212, 168, 83, 0.15)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  comingSoonText: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    color: GOLD,
+    letterSpacing: 0.3,
   },
   switchIOS: {
     transform: [{ scale: 0.9 }],

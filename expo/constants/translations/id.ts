@@ -283,4 +283,5 @@ export const id: TranslationKeys = {
   termsTerminationText: 'Kami berhak untuk menghentikan atau menangguhkan akses ke aplikasi kapan saja, tanpa pemberitahuan, untuk perilaku yang kami yakini melanggar Syarat Penggunaan ini atau berbahaya bagi pengguna lain atau aplikasi.',
   termsContactTitle: '10. Hubungi Kami',
   termsContactText: 'Jika Anda memiliki pertanyaan tentang Syarat Penggunaan ini, silakan hubungi kami di:',
+  comingSoon: 'Segera hadir',
 };
