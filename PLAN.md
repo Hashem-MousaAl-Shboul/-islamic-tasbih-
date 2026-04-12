@@ -1,78 +1,41 @@
-# Comprehensive Android Screen Quality Optimization
+# إصلاح المشاكل قبل النشر على Google Play
 
-## Overview
+## المشاكل التي سيتم إصلاحها:
 
-Fully optimize all screens for Android — fixing text rendering, shadows, touch feedback, performance, and visual polish to make the app feel native and premium on Android devices.
+### 1. ملفات الأيقونة وشاشة البداية المفقودة
 
----
+- التطبيق يشير إلى ملفات صور غير موجودة (أيقونة التطبيق، أيقونة أندرويد التكيفية، صورة شاشة البداية، فافيكون)
+- سيتم إنشاء هذه الملفات من خلال أداة توليد الصور
 
-### **Features & Improvements**
+### 2. رابط Google Play غير صحيح
 
-**1. Text Rendering Fix (All Screens)**
+- الرابط الحالي `app.islamic-dhikr.sabbah-tasbeh` لا يتطابق مع اسم الحزمة الفعلي `app.islamicdhikr.sabbah`
+- سيتم تصحيح جميع الروابط في التطبيق
 
-- Remove extra padding Android adds above/below text by default
-- Fix Arabic text vertical alignment issues on Android
-- Ensure consistent line heights across all Arabic and Latin text
+### 3. رابط App Store وهمي
 
-**2. Touch Feedback (All Screens)**
+- رابط iOS يحتوي على معرف وهمي سيتم تنظيفه
 
-- Add native Android ripple effects to all tappable buttons and cards
-- Add ripple to filter buttons, adhkar cards, settings rows, stat cards, tasbih cards, and tab bar items
-- Consistent ripple color matching each element's accent color
+### 4. مشكلة الأزرار المتداخلة على الويب
 
-**3. Shadow & Elevation Polish (All Screens)**
+- بطاقات الأذكار تحتوي على أزرار داخل أزرار مما يسبب خطأ على الويب
+- سيتم إعادة هيكلة البطاقات لتجنب التداخل
 
-- Increase elevation values for better depth on Android (cards, tab bar, modals)
-- Fix shadow clipping issues where Android cuts off shadows at card edges
-- Add proper `overflow: 'visible'` where needed for shadows to render correctly
+### 5. سياسة الخصوصية لا تذكر الإعلانات
 
-**4. Status Bar & Navigation Bar**
+- التطبيق يستخدم إعلانات Google ولكن سياسة الخصوصية لا تشير لذلك
+- سيتم تحديث نصوص سياسة الخصوصية لتشمل جمع بيانات الإعلانات
 
-- Set Android navigation bar color to match the screen background
-- Ensure translucent status bar with proper content underneath the deep green headers
+### 6. استيرادات غير مستخدمة
 
-**5. Adhkar Screen**
+- إزالة الاستيرادات غير المستخدمة من ملفات سياسة الخصوصية وشروط الاستخدام
 
-- Improve filter pill button touch targets (minimum 48dp)
-- Fix card accent bar rendering on Android
-- Better card separator spacing
-- Optimize FlatList with Android-specific batch rendering settings
+### 7. تحسين معالجة الأخطاء
 
-**6. Tasbih Screen**
+- تحسين شاشة الخطأ الرئيسية بإضافة زر إعادة المحاولة
+- ضمان عدم حدوث أعطال في حالات الخطأ
 
-- Improve the main counter button press animation feel on Android
-- Fix circular progress ring rendering for smoother edges
-- Better modal bottom sheet appearance with proper Android elevation
-- Improve horizontal tasbih cards scroll performance
+### 8. تحسينات أداء Android
 
-**7. Statistics Screen**
-
-- Fix stat card grid alignment on various Android screen sizes
-- Improve progress bar rendering smoothness
-- Better hero card visual depth
-
-**8. Settings Screen**
-
-- Improve Switch component styling for Android (larger thumb, better colors)
-- Fix settings row touch area and feedback
-- Better card border rendering
-
-**9. Welcome Screen**
-
-- Smoother gradient rendering on Android
-- Better button press feedback
-
-**10. Tab Bar**
-
-- Higher elevation for the floating tab bar on Android
-- Smoother active state transitions
-- Better shadow rendering
-
----
-
-### **Design**
-
-- No visual design changes — all improvements are Android rendering quality and feel
-- Same colors, layout, and structure — just optimized for how Android renders them
-- Native-feeling interactions with proper ripple effects everywhere
+- التأكد من أن جميع الشاشات محسّنة للأداء على أندرويد
 

@@ -242,10 +242,10 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
         </View>
 
         <Pressable
+          style={{padding: 0}}
           onPress={handleCardPress}
           android_ripple={androidRipple('rgba(27,67,50,0.06)')}
           testID={`adhkar-item-${item.id}`}
-          accessibilityRole="button"
           accessibilityState={{ expanded }}
         >
           <View style={styles.adhkarMainContent}>

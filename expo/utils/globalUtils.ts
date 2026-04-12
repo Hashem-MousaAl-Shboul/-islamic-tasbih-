@@ -5,8 +5,8 @@ import i18n from '@/constants/translations';
 
 // App Store URLs for different platforms
 const APP_STORE_URLS = {
-  ios: 'https://apps.apple.com/app/sabbah-tasbih/id6670000000',
-  android: 'https://play.google.com/store/apps/details?id=app.islamic-dhikr.sabbah-tasbeh',
+  ios: 'https://apps.apple.com/app/sabbah-tasbih/id6744919498',
+  android: 'https://play.google.com/store/apps/details?id=app.islamicdhikr.sabbah',
   web: 'https://subbah.app',
 };
 
