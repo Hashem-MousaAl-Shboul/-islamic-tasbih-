@@ -1,18 +1,16 @@
-# إنشاء ملف eas.json في مجلد المشروع
+# Fix EAS build npm peer dependency error
 
-## ما سيتم تنفيذه
+**Problem**
 
-سيتم إنشاء ملف **eas.json** في المجلد الرئيسي للمشروع بجانب ملف `app.json`، مع الإعدادات التالية:
+The cloud build is failing because the installer is strict about version mismatches between two libraries used by the AI toolkit and the core app framework.
 
-### الإعدادات المتضمنة:
+**Fix**
 
-- **development**: بيئة تطوير للاختبار
-- **preview**: بيئة معاينة لتجربة التطبيق قبل النشر (ملف APK)
-- **production**: بيئة الإنتاج للنشر على Google Play (ملف AAB)
+- Add a small configuration file that tells the installer to allow these minor version mismatches (the standard approach for Expo/React Native projects using the AI toolkit).
+- This makes the build install dependencies successfully without changing any app behavior, UI, or features.
 
-### التفاصيل:
+**Result**
 
-- ملف الإنتاج سيكون بصيغة **AAB** (Android App Bundle) وهو المطلوب من Google Play
-- سيتم تفعيل التوقيع التلقائي من EAS
-- الملف سيكون جاهزاً لبناء التطبيق باستخدام أمر `eas build --platform android --profile production`
+- `eas build --platform android --profile production` will proceed past the install step.
+- No visual or functional changes to the app.
 
