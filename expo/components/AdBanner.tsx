@@ -6,7 +6,7 @@ const AD_UNIT_ID = 'ca-app-pub-4282819777610118/8296707892';
 let BannerAdComponent: React.ComponentType<any> | null = null;
 let BannerAdSizeValue: string | null = null;
 let TestIdsValue: { BANNER?: string } | null = null;
-let mobileAdsInit: (() => { initialize: () => Promise<any> }) | null = null;
+let mobileAdsInit: { initialize: () => Promise<any> } | null = null;
 
 try {
   const adsModule = require('react-native-google-mobile-ads');
@@ -24,7 +24,7 @@ let adsInitialized = false;
 function initializeAds() {
   if (adsInitialized || !mobileAdsInit || Platform.OS === 'web') return;
   try {
-    mobileAdsInit().initialize().then(() => {
+    mobileAdsInit.initialize().then(() => {
       console.log('[AdBanner] Mobile Ads SDK initialized');
       adsInitialized = true;
     }).catch((err: any) => {
@@ -51,9 +51,9 @@ const AdBanner = memo(function AdBanner() {
     ? TestIdsValue.BANNER
     : AD_UNIT_ID;
 
-  if (adError) {
-    return null;
-  }
+  // if (adError) {
+  //   return null;
+  // }
 
   const NativeAd = BannerAdComponent;
 

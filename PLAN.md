@@ -1,16 +1,18 @@
-# Fix EAS build npm peer dependency error
+# تعديلات ملف AdBanner.tsx - إصلاح الإعلانات
 
-**Problem**
+## المطلوب
 
-The cloud build is failing because the installer is strict about version mismatches between two libraries used by the AI toolkit and the core app framework.
+ثلاثة تعديلات على ملف `expo/components/AdBanner.tsx` لإصلاح مشاكل تشغيل الإعلانات:
 
-**Fix**
+### 1. تعليق سطر إخفاء الإعلان عند الخطأ (السطر 54-56)
 
-- Add a small configuration file that tells the installer to allow these minor version mismatches (the standard approach for Expo/React Native projects using the AI toolkit).
-- This makes the build install dependencies successfully without changing any app behavior, UI, or features.
+- [x] إضافة `//` في بداية السطر `if (adError) { return null; }` ليصبح تعليقاً
 
-**Result**
+### 2. إصلاح استدعاء تهيئة الإعلانات (السطر 9 و 27)
 
-- `eas build --platform android --profile production` will proceed past the install step.
-- No visual or functional changes to the app.
+- [x] السطر 9: تعديل النوع من `(() => { initialize: () => Promise<any> })` إلى `{ initialize: () => Promise<any> }`
+- [x] السطر 27: تغيير `mobileAdsInit().initialize()` إلى `mobileAdsInit.initialize()`
 
+### 3. لون الخلفية - سليم بالفعل
+
+- [x] القيمة `backgroundColor: '#F7F4EE'` موجودة بشكل صحيح في الملف حالياً
