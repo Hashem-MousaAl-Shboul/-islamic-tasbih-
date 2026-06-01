@@ -1,18 +1,15 @@
-# تعديلات ملف AdBanner.tsx - إصلاح الإعلانات
+# Fix Metro build error — remove expo-web-browser from plugins
 
-## المطلوب
+## The Problem
 
-ثلاثة تعديلات على ملف `expo/components/AdBanner.tsx` لإصلاح مشاكل تشغيل الإعلانات:
+The build fails because `"expo-web-browser"` is listed in the `plugins` array of `app.json`. Expo tries to load it as a config plugin, but `expo-web-browser` is a **runtime-only API** (used for `openBrowserAsync`, etc.) — it has no build-time plugin. This causes:
 
-### 1. تعليق سطر إخفاء الإعلان عند الخطأ (السطر 54-56)
+```
+ENOENT while resolving package 'expo-web-browser/package.json'
+```
 
-- [x] إضافة `//` في بداية السطر `if (adError) { return null; }` ليصبح تعليقاً
+## The Fix
 
-### 2. إصلاح استدعاء تهيئة الإعلانات (السطر 9 و 27)
+**One change in `expo/app.json`** — remove `"expo-web-browser"` from the `plugins` array (line 52).
 
-- [x] السطر 9: تعديل النوع من `(() => { initialize: () => Promise<any> })` إلى `{ initialize: () => Promise<any> }`
-- [x] السطر 27: تغيير `mobileAdsInit().initialize()` إلى `mobileAdsInit.initialize()`
-
-### 3. لون الخلفية - سليم بالفعل
-
-- [x] القيمة `backgroundColor: '#F7F4EE'` موجودة بشكل صحيح في الملف حالياً
+The package itself stays installed in `package.json` and all runtime usage of `expo-web-browser` continues to work normally. Only the unnecessary plugin entry is removed.

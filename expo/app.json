@@ -49,7 +49,6 @@
       ],
       "expo-localization",
       "expo-av",
-      "expo-web-browser",
       "expo-mail-composer",
       [
         "react-native-google-mobile-ads",
