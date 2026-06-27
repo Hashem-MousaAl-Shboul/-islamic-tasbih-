@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 
-const AD_UNIT_ID = 'ca-app-pub-4282819777610118/8296707892';
+const AD_UNIT_ID = 'ca-app-pub-4282819777610118/9248009059';
 
 let BannerAdComponent: React.ComponentType<any> | null = null;
 let BannerAdSizeValue: string | null = null;
