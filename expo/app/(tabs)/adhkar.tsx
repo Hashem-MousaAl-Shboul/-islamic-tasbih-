@@ -658,7 +658,9 @@ export default function AdhkarScreen() {
           />
         </View>
       </ErrorBoundary>
-      <AdBanner />
+      <View style={{ paddingBottom: Math.max(insets.bottom, 10), backgroundColor: '#F7F4EE' }}>
+  <AdBanner />
+</View>
     </View>
   );
 }
