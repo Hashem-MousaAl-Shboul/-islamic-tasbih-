@@ -318,7 +318,9 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
 
       </ScrollView>
+    <View style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
       <AdBanner />
+    </View>
     </View>
   );
 });
