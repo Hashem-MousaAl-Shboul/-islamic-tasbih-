@@ -450,7 +450,9 @@ export default function TasbihScreen() {
           </TouchableOpacity>
         </ScrollView>
       </View>
-      <AdBanner />
+      <View style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
+  <AdBanner />
+</View>
       <Modal visible={showAddModal} animationType="slide" transparent onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
