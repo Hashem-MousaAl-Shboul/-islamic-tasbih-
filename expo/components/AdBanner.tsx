@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 
 const AD_UNIT_ID = 'ca-app-pub-4282819777610118/9248009059';
 
@@ -11,6 +11,7 @@ let mobileAdsInit: { initialize: () => Promise<any> } | null = null;
 try {
   const adsModule = require('react-native-google-mobile-ads');
   BannerAdComponent = adsModule.BannerAd;
+  // Fallback to FULL_BANNER if ANCHORED_ADAPTIVE_BANNER is missing
   BannerAdSizeValue = adsModule.BannerAdSize?.ANCHORED_ADAPTIVE_BANNER || adsModule.BannerAdSize?.FULL_BANNER;
   TestIdsValue = adsModule.TestIds;
   mobileAdsInit = adsModule.default;
@@ -47,18 +48,20 @@ const AdBanner = memo(function AdBanner() {
     return null;
   }
 
+  // Hide the banner layout completely if it explicitly fails to load
+  if (adError) {
+    return null;
+  }
+
   const unitId = __DEV__ && TestIdsValue?.BANNER
     ? TestIdsValue.BANNER
     : AD_UNIT_ID;
 
-  // if (adError) {
-  //   return null;
-  // }
-
   const NativeAd = BannerAdComponent;
 
   return (
-    <View style={[styles.container, !adLoaded && styles.hidden]} testID="ad-banner">
+    // Instead of setting height to 0, use opacity to preserve layout boundaries while loading
+    <View style={[styles.container, !adLoaded && styles.invisible]} testID="ad-banner">
       <NativeAd
         unitId={unitId}
         size={BannerAdSizeValue}
@@ -85,9 +88,11 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     backgroundColor: '#F7F4EE',
+    minHeight: 80, 
+    justifyContent: 'center',
+    paddingVertical: 4,
   },
-  hidden: {
-    height: 0,
-    overflow: 'hidden',
+  invisible: {
+    opacity: 0,
   },
 });
