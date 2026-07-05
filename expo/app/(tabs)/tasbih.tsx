@@ -15,6 +15,7 @@ import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCard from '@/components/TasbihCard';
 import AdBanner from '@/components/AdBanner';
+import UnifiedHeader from '@/components/UnifiedHeader';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
@@ -87,11 +88,6 @@ const CircularProgress = memo(({ progress, color, size = 220 }: { progress: numb
   );
 });
 CircularProgress.displayName = 'CircularProgress';
-
-const TasbihHeader = memo(() => {
-  return null;
-});
-TasbihHeader.displayName = 'TasbihHeader';
 
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
@@ -267,7 +263,7 @@ export default function TasbihScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]} testID="tasbih-loading">
+      <View style={[styles.container, styles.loadingContainer]} testID="tasbih-loading">
         <ActivityIndicator size="large" color={GOLD} />
         <Text style={[styles.loadingText, androidTextFix]}>{t('loading')}</Text>
       </View>
@@ -276,7 +272,7 @@ export default function TasbihScreen() {
 
   if (!selectedItem) {
     return (
-      <View style={[styles.container, styles.errorContainer, { paddingTop: insets.top }]} testID="tasbih-no-item">
+      <View style={[styles.container, styles.errorContainer]} testID="tasbih-no-item">
         <Text style={[styles.errorText, androidTextFix]}>{t('noTasbihAvailable')}</Text>
       </View>
     );
@@ -287,15 +283,8 @@ export default function TasbihScreen() {
     : 0;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]} testID="tasbih-screen">
-      <View style={styles.topBar}>
-        <Text style={[styles.topBarTitle, androidTextFix]}>{t('tasbih') || '\u0627\u0644\u062a\u0633\u0628\u064a\u062d'}</Text>
-        <View style={styles.topBarOrnament}>
-          <View style={styles.topBarOrnamentLine} />
-          <View style={styles.topBarOrnamentDiamond} />
-          <View style={styles.topBarOrnamentLine} />
-        </View>
-      </View>
+    <View style={styles.container} testID="tasbih-screen">
+      <UnifiedHeader title={t('tasbih') || 'التسبيح'} testID="tasbih-header" />
 
       <View style={styles.cardsSection}>
         <FlatList
@@ -438,9 +427,9 @@ export default function TasbihScreen() {
             <ChevronLeft size={18} color={TEXT_MUTED} />
             <View style={styles.liveStatsRight}>
               <View>
-                <Text style={[styles.liveStatsTitle, androidTextFix]}>{t('statistics') || '\u0627\u0644\u0625\u062d\u0635\u0627\u0626\u064a\u0627\u062a'}</Text>
+                <Text style={[styles.liveStatsTitle, androidTextFix]}>{t('statistics') || 'الإحصائيات'}</Text>
                 <Text style={[styles.liveStatsSubtitle, androidTextFix]}>
-                  {stats.completedSessions} {t('sessions') || '\u062c\u0644\u0633\u0627\u062a'} · {stats.todayCount} {t('today') || '\u0627\u0644\u064a\u0648\u0645'}
+                  {stats.completedSessions} {t('sessions') || 'جلسات'} · {stats.todayCount} {t('today') || 'اليوم'}
                 </Text>
               </View>
               <View style={styles.liveStatsIconCircle}>
@@ -451,8 +440,8 @@ export default function TasbihScreen() {
         </ScrollView>
       </View>
       <View style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
-  <AdBanner />
-</View>
+        <AdBanner />
+      </View>
       <Modal visible={showAddModal} animationType="slide" transparent onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -546,38 +535,6 @@ const styles = StyleSheet.create({
   loadingText: { fontSize: 15, color: TEXT_MUTED, marginTop: 12, fontWeight: '500' as const },
   errorContainer: { justifyContent: 'center', alignItems: 'center' },
   errorText: { fontSize: 18, color: DEEP_GREEN, textAlign: 'center', fontWeight: '600' as const },
-  topBar: {
-    backgroundColor: DEEP_GREEN,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  topBarTitle: {
-    fontSize: 26,
-    fontWeight: '700' as const,
-    color: '#fff',
-    writingDirection: 'rtl',
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
-  topBarOrnament: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 8,
-  },
-  topBarOrnamentLine: {
-    width: 32,
-    height: 1,
-    backgroundColor: GOLD,
-    opacity: 0.6,
-  },
-  topBarOrnamentDiamond: {
-    width: 6,
-    height: 6,
-    backgroundColor: GOLD,
-    transform: [{ rotate: '45deg' }],
-  },
   cardsSection: { backgroundColor: DEEP_GREEN, paddingBottom: 14, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   cardsScrollView: { maxHeight: 90 },
   cardsContainer: { paddingHorizontal: 12, paddingVertical: 6 },
@@ -598,7 +555,7 @@ const styles = StyleSheet.create({
   },
   dhikrIconContainer: { marginBottom: 8 },
   dhikrIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(27,67,50,0.08)', alignItems: 'center', justifyContent: 'center' },
-  mainArabicText: { fontSize: 22, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'center', marginBottom: 4, lineHeight: 34, paddingHorizontal: 8, alignSelf: 'stretch', writingDirection: 'rtl' },
+  mainArabicText: { fontSize: 22, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'center', marginBottom: 4, lineHeight: 34, paddingHorizontal: 8, alignSelf: 'stretch', writingDirection: 'rtl' as const },
   transliterationText: { fontSize: 14, fontWeight: '500' as const, color: DEEP_GREEN, opacity: 0.7, textAlign: 'center', marginTop: 4, lineHeight: 22, fontStyle: 'italic' },
   translationText: { fontSize: 13, fontWeight: '400' as const, color: TEXT_MUTED, textAlign: 'center', marginTop: 6, lineHeight: 20 },
   counterSection: { alignItems: 'center', marginBottom: 10 },
@@ -607,12 +564,12 @@ const styles = StyleSheet.create({
   progressArc: { position: 'absolute' },
   progressArcFill: { position: 'absolute', borderLeftColor: 'transparent', borderBottomColor: 'transparent' },
   counterButtonContainer: { position: 'absolute', zIndex: 10 },
-  mainCounterButton: { width: 180, height: 180, borderRadius: 90, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 16, overflow: 'hidden' as const },
+  mainCounterButton: { width: 180, height: 180, borderRadius: 90, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 12 },
   counterButtonPressed: { opacity: 0.92 },
   counterNumber: { fontSize: 56, fontWeight: '800' as const, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
   counterDivider: { width: 40, height: 2, backgroundColor: 'rgba(255,255,255,0.5)', marginVertical: 6 },
   counterTarget: { fontSize: 22, fontWeight: '600' as const, color: 'rgba(255,255,255,0.85)' },
-  completedBadge: { position: 'absolute' as const, bottom: 10, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 6, elevation: 4 },
+  completedBadge: { position: 'absolute' as const, bottom: 10, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
   completedText: { fontSize: 12, fontWeight: '700' as const, color: '#FFFFFF' },
   tapHint: { fontSize: 12, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 8 },
   progressBarContainer: { width: '100%', maxWidth: 260, marginTop: 10 },
@@ -622,7 +579,7 @@ const styles = StyleSheet.create({
   controlButtonsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 4 },
   controlButton: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 4 },
   controlButtonGradient: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(0,0,0,0.04)' },
-  statsDisplay: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, gap: 20, backgroundColor: CARD_WHITE, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 5, borderWidth: 1, borderColor: 'rgba(212,168,83,0.1)' },
+  statsDisplay: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, gap: 20, backgroundColor: CARD_WHITE, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
   statItem: { alignItems: 'center' },
   statLabel: { fontSize: 11, fontWeight: '500' as const, marginBottom: 2, color: TEXT_MUTED, textAlign: 'center' as const },
   statValue: { fontSize: 20, fontWeight: '800' as const, color: DEEP_GREEN },
@@ -631,14 +588,14 @@ const styles = StyleSheet.create({
   modalContent: { maxHeight: '90%', borderTopLeftRadius: 28, borderTopRightRadius: 28, backgroundColor: IVORY, elevation: 24 },
   modalHandle: { width: 40, height: 4, backgroundColor: 'rgba(0,0,0,0.12)', borderRadius: 2, alignSelf: 'center', marginTop: 10, marginBottom: 4 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)' },
-  modalCloseButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: CARD_WHITE, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  modalCloseButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: CARD_WHITE, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   modalSaveButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: DEEP_GREEN, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
   modalTitle: { fontSize: 18, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'center', writingDirection: 'rtl' as const },
   modalForm: { paddingHorizontal: 20, paddingTop: 20 },
   inputGroup: { marginBottom: 20 },
   inputLabel: { fontSize: 14, fontWeight: '600' as const, color: DEEP_GREEN, marginBottom: 8, textAlign: 'right' as const, writingDirection: 'rtl' as const },
-  textInput: { backgroundColor: CARD_WHITE, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: DEEP_GREEN, borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)', minHeight: 48, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.02, shadowRadius: 4, elevation: 1 },
-  numberInput: { backgroundColor: CARD_WHITE, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: DEEP_GREEN, borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)', textAlign: 'center', width: 100, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.02, shadowRadius: 4, elevation: 1 },
+  textInput: { backgroundColor: CARD_WHITE, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: DEEP_GREEN, borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)', minHeight: 100 },
+  numberInput: { backgroundColor: CARD_WHITE, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: DEEP_GREEN, borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)', textAlign: 'center' as const },
   colorPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   colorOption: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: 'transparent' },
   selectedColor: { borderColor: DEEP_GREEN, borderWidth: 3 },
