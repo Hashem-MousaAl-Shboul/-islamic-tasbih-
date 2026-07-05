@@ -14,6 +14,7 @@ import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import i18n from '@/constants/translations';
 import AdBanner from '@/components/AdBanner';
+import UnifiedHeader from '@/components/UnifiedHeader';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -178,14 +179,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
     <View style={styles.container} testID="statistics-screen"
       accessibilityLabel="Statistics Screen"
       accessibilityHint="View your dhikr progress and stats">
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={[styles.headerTitle, androidTextFix]}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
-        <View style={styles.headerOrnament}>
-          <View style={styles.ornamentLine} />
-          <View style={styles.ornamentDiamond} />
-          <View style={styles.ornamentLine} />
-        </View>
-      </View>
+      <UnifiedHeader title={i18n.t('statistics') || 'الإحصائيات'} testID="statistics-header" />
 
       <ScrollView
         style={styles.scrollContainer}
@@ -318,9 +312,9 @@ const StatisticsScreen = memo(function StatisticsScreen() {
 
 
       </ScrollView>
-    <View style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
-      <AdBanner />
-    </View>
+      <View style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
+        <AdBanner />
+      </View>
     </View>
   );
 });
@@ -331,39 +325,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: IVORY,
-  },
-  header: {
-    backgroundColor: DEEP_GREEN,
-    paddingBottom: 14,
-    alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '700' as const,
-    color: '#fff',
-    writingDirection: 'rtl',
-    paddingTop: 18,
-    letterSpacing: 1,
-  },
-  headerOrnament: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 8,
-  },
-  ornamentLine: {
-    width: 32,
-    height: 1,
-    backgroundColor: GOLD,
-    opacity: 0.6,
-  },
-  ornamentDiamond: {
-    width: 6,
-    height: 6,
-    backgroundColor: GOLD,
-    transform: [{ rotate: '45deg' }],
   },
   scrollContainer: {
     flex: 1,
