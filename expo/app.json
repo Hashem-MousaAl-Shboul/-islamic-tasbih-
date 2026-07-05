@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1B4332"
       },
-      "versionCode": 102,
+      "versionCode": 104,
       "package": "app.islamicdhikr.sabbah",
       "permissions": [
         "android.permission.VIBRATE",
