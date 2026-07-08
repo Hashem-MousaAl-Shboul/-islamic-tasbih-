@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,7 +32,7 @@ const UnifiedHeader = memo(function UnifiedHeader({
       style={[
         styles.header,
         {
-          paddingTop: insets.top,
+          paddingTop: Math.max(insets.top, 16), // ✅ ضمان حد أدنى 16px
           marginBottom: 0,
         },
       ]}
@@ -45,8 +44,8 @@ const UnifiedHeader = memo(function UnifiedHeader({
       <View style={styles.headerContent}>
         <Text
           style={[styles.headerTitle, androidTextFix]}
-          numberOfLines={1}
-          allowFontScaling={false}
+          numberOfLines={2}
+          allowFontScaling={true}
         >
           {title}
         </Text>
@@ -92,6 +91,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
     letterSpacing: 1,
     textAlign: 'center',
+    flexShrink: 1,  // ✅ اسمح للنص بالانكماش بدلاً من القطع
   },
   ornament: {
     flexDirection: 'row',
