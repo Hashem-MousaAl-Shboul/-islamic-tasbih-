@@ -15,7 +15,7 @@ export const Colors = {
     tabBar: "#1A202C",
   },
   light: {
-    background: "#f5f5f5",
+    background: "#F5F1E8",
     surface: "#FFFFFF",
     text: "#1a5c4c",
     textSecondary: "#666666",
