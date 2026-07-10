@@ -90,7 +90,7 @@ export const ColorThemePicker = memo(function ColorThemePicker({
                 >
                   {currentTheme === colorTheme.key && (
                     <View style={styles.checkContainer}>
-                      <Check size={20} color="#FFFFFF" strokeWidth={3} />
+                      <Check size={20} color="#15805D" strokeWidth={3} />
                     </View>
                   )}
                 </View>
