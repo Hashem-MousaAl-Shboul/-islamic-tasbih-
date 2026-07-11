@@ -59,14 +59,14 @@ const UnifiedHeader = memo(function UnifiedHeader({
 UnifiedHeader.displayName = 'UnifiedHeader';
 
 const styles = StyleSheet.create({
-  header: {
+  /**header: {
     backgroundColor: DEEP_GREEN,
-  /**  height: HEADER_TOTAL_HEIGHT,*/ // ✅ ارتفاع ثابت وموحد 180dp
+    height: HEADER_TOTAL_HEIGHT, // ✅ ارتفاع ثابت وموحد 180dp
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'flex-end', // لضبط المحتوى للأسفل ضمن الارتفاع الكلي
     borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomRightRadius: 24,*/
     // ظلال نظامية
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
