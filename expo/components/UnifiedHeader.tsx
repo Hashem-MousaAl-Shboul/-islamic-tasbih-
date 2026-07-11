@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   ornamentLine: {
     width: 32,
-    height: 1,
+    height: 2,
     backgroundColor: GOLD,
     opacity: 0.6,
   },
