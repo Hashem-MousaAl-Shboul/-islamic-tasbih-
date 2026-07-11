@@ -5,7 +5,6 @@ import { androidTextFix } from '@/utils/androidOptimizations';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
-const HEADER_TOTAL_HEIGHT = 100; // الارتفاع الثابت الموحد
 
 interface UnifiedHeaderProps {
   title: string;
@@ -14,24 +13,28 @@ interface UnifiedHeaderProps {
 }
 
 /**
- * UnifiedHeader - رأس موحد لجميع الشاشات
- * ✅ محمي كاملاً من شريط الحالة (بطارية/وقت)
- * ✅ ارتفاع ثابت وموحد: 180dp في كل الصفحات
- * ✅ حواف سفلية دائرية موحدة
- * ✅ تصميم متوافق مع العربية (RTL)
+ * UnifiedHeader - موحد رأس التطبيق لجميع الشاشات
+ * - لون أخضر داكن موحد (#1B4332)
+ * - ارتفاع موحد (56px من الأسفل)
+ * - حواف سفلية موحدة (24px)
+ * - توج محمي بـ SafeAreaView
+ * - محاذاة موحدة للعنوان
  */
 const UnifiedHeader = memo(function UnifiedHeader({
   title,
   testID = 'unified-header',
   accessibilityLabel,
 }: UnifiedHeaderProps) {
-  const insets = useSafeAreaInsets(); // يأخذ مساحة شريط الحالة تلقائياً
+  const insets = useSafeAreaInsets();
 
   return (
     <View
       style={[
         styles.header,
-        { paddingTop: insets.top }, // ✅ يدفع المحتوى أسفل شريط الحالة مباشرة
+        {
+          paddingTop: insets.top,
+          marginBottom: 7,
+        },
       ]}
       testID={testID}
       accessible
@@ -61,23 +64,25 @@ UnifiedHeader.displayName = 'UnifiedHeader';
 const styles = StyleSheet.create({
   header: {
     backgroundColor: DEEP_GREEN,
-    height: HEADER_TOTAL_HEIGHT, // ✅ ارتفاع ثابت وموحد 180dp
-    paddingHorizontal: 24,
+    paddingBottom: 18,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    justifyContent: 'flex-end', // لضبط المحتوى للأسفل ضمن الارتفاع الكلي
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    // ظلال نظامية
+    // Shadow for iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
+    // Elevation for Android
     elevation: 3,
+    // Ensure no gap with status bar
+    marginTop: 0,
   },
   headerContent: {
     width: '100%',
     alignItems: 'center',
-    paddingBottom: 18, // مسافة سفلية داخلية ثابتة
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 26,
