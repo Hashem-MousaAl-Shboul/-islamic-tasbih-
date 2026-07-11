@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'flex-end', // لضبط المحتوى للأسفل ضمن الارتفاع الكلي
-    borderBottomLeftRadius: 24,
+    borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
     // ظلال نظامية
     shadowColor: '#000',
