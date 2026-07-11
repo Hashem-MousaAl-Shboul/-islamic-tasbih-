@@ -5,7 +5,7 @@ import { androidTextFix } from '@/utils/androidOptimizations';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
-const HEADER_TOTAL_HEIGHT = 100; // الارتفاع الثابت الموحد
+const HEADER_TOTAL_HEIGHT = 10; // الارتفاع الثابت الموحد
 
 interface UnifiedHeaderProps {
   title: string;
