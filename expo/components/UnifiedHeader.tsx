@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: DEEP_GREEN,
     height: HEADER_TOTAL_HEIGHT, // ✅ ارتفاع ثابت وموحد 180dp
-    paddingHorizontal: 50,
+    paddingHorizontal: 400,
     alignItems: 'center',
     justifyContent: 'flex-end', // لضبط المحتوى للأسفل ضمن الارتفاع الكلي
     borderBottomLeftRadius: 24,
