@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 26,
-    fontWeight: '70' as const,
+    fontWeight: '700' as const,
     color: '#FFFFFF',
     writingDirection: 'rtl',
     letterSpacing: 1,
