@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     paddingBottom: 18, // مسافة سفلية داخلية ثابتة
   },
   headerTitle: {
-    fontSize: 200,
-    fontWeight: '700' as const,
+    fontSize: 26,
+    fontWeight: '70' as const,
     color: '#FFFFFF',
     writingDirection: 'rtl',
     letterSpacing: 1,
