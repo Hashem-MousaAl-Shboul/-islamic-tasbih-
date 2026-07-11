@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end', // لضبط المحتوى للأسفل ضمن الارتفاع الكلي
     borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 20,
+    borderBottomRightRadius: 1000,
     // ظلال نظامية
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
