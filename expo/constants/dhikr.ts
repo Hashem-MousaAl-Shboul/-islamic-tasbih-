@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 
-// ───────── الأنواع ─────────
+// ───────── تعريف الأنواع ─────────
 type Dhikr = {
   id: string;
   arabicText: string;
@@ -44,7 +44,7 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   { id: "5", arabicText: "أستغفر الله", count: 0, targetCount: 100, color: DefaultDhikrColors["أستغفر الله"], category: "general" },
 ];
 
-// ───────── التصنيفات ─────────
+// ───────── التصنيفات الكاملة ─────────
 export const DHIKR_CATEGORIES: DhikrCategory[] = [
   { id: "all", name: "الكل", nameArabic: "الكل", icon: "✨" },
   { id: "morning", name: "الصباح", nameArabic: "أذكار الصباح", icon: "☀️" },
@@ -55,8 +55,9 @@ export const DHIKR_CATEGORIES: DhikrCategory[] = [
   { id: "wakeup", name: "الاستيقاظ", nameArabic: "أذكار الاستيقاظ", icon: "🌅" },
 ];
 
-// ───────── قائمة الأذكار ─────────
+// ───────── قائمة الأذكار الكاملة ─────────
 export const ADHKAR_LIST: Dhikr[] = [
+  // أذكار الصباح
   { id: "morning-1", arabicText: "﴿اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾", category: "morning", repeatCount: 1 },
   { id: "morning-2", arabicText: "﴿قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ﴾\n\n﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ﴾\n\n﴿قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ﴾", category: "morning", repeatCount: 3 },
   { id: "morning-3", arabicText: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ.", category: "morning", repeatCount: 1 },
@@ -72,6 +73,7 @@ export const ADHKAR_LIST: Dhikr[] = [
   { id: "morning-13", arabicText: "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ.", category: "morning", repeatCount: 100 },
   { id: "morning-14", arabicText: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", category: "morning", repeatCount: 100 },
   { id: "morning-15", arabicText: "اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَىٰ نَفْسِي سُوءًا أَوْ أَجُرَّهُ إِلَىٰ مُسْلِمٍ.", category: "morning", repeatCount: 1 },
+  // أذكار المساء
   { id: "evening-1", arabicText: "﴿اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾", category: "evening", repeatCount: 1 },
   { id: "evening-2", arabicText: "﴿قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ﴾\n\n﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ﴾\n\n﴿قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ﴾", category: "evening", repeatCount: 3 },
   { id: "evening-3", arabicText: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ.", category: "evening", repeatCount: 1 },
@@ -89,89 +91,104 @@ export const ADHKAR_LIST: Dhikr[] = [
   { id: "evening-15", arabicText: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", category: "evening", repeatCount: 100 },
 ];
 
-// ───────── الشاشة الرئيسية ─────────
+// ───────── شاشة عرض الذكر ─────────
 const AdhkarItemScreen = ({ route }: { route: AdhkarItemRouteProp }) => {
-  const { categoryId, itemId } = route.params;
+  // استخراج المعاملات
+  const { categoryId, itemId } = route.params || {};
 
+  // التحقق الأساسي
   if (!categoryId || !itemId) {
     return (
       <View style={styles.screen}>
         <View style={styles.card}>
-          <Text style={[styles.arabicText, { textAlign: "center" }]}>بيانات غير صالحة</Text>
+          <Text style={styles.errorText}>بيانات غير صالحة</Text>
         </View>
       </View>
     );
   }
 
-  const currentCategory = DHIKR_CATEGORIES.find(c => c.id === categoryId);
-  const currentItem = ADHKAR_LIST.find(i => i.id === itemId);
+  // البحث عن البيانات
+  const currentCategory = DHIKR_CATEGORIES.find((c) => c.id === categoryId);
+  const currentItem = ADHKAR_LIST.find((i) => i.id === itemId);
 
   if (!currentCategory || !currentItem) {
     return (
       <View style={styles.screen}>
         <View style={styles.card}>
-          <Text style={[styles.arabicText, { textAlign: "center" }]}>هذا الذكر غير متوفر حالياً</Text>
+          <Text style={styles.errorText}>هذا الذكر غير متوفر حالياً</Text>
         </View>
       </View>
     );
   }
 
+  // إعداد القيم المعروضة
   const categoryLabel = currentCategory.nameArabic;
   const icon = currentCategory.icon;
   const displayCount = currentItem.repeatCount || 1;
 
+  // الحصول على العنوان
   const getDisplayTitle = () => {
     const text = currentItem.arabicText;
-    if (text.indexOf("آيَةُ الْكُرْسِيِّ") !== -1) return "آيَةُ الْكُرْسِيِّ";
-    if (text.substring(0, 12) === "﴿قُلْ هُوَ") return "المعوذات وسورة الإخلاص";
-    if (categoryId === "after-prayer") return "أذكار ما بعد الصلاة";
-    if (categoryId === "duas") return "دعاء";
-    if (categoryId === "morning") return "ذكر من أذكار الصباح";
-    if (categoryId === "evening") return "ذكر من أذكار المساء";
-    if (categoryId === "sleep") return "ذكر من أذكار النوم";
-    if (categoryId === "wakeup") return "ذكر من أذكار الاستيقاظ";
-    return "ذكر";
+    if (text.indexOf("آيَةُ الْكُرْسِيِّ") >= 0) return "آيَةُ الْكُرْسِيِّ";
+    if (text.substr(0, 12) === "﴿قُلْ هُوَ") return "المعوذات وسورة الإخلاص";
+    switch (categoryId) {
+      case "after-prayer": return "أذكار ما بعد الصلاة";
+      case "duas": return "دعاء";
+      case "morning": return "ذكر من أذكار الصباح";
+      case "evening": return "ذكر من أذكار المساء";
+      case "sleep": return "ذكر من أذكار النوم";
+      case "wakeup": return "ذكر من أذكار الاستيقاظ";
+      default: return "ذكر";
+    }
   };
   const itemTitle = getDisplayTitle();
 
   return (
     <View style={styles.screen}>
       <View style={styles.card}>
+        {/* شريط العنوان العلوي */}
         <View style={styles.headerBar}>
           <View style={styles.categoryTag}>
             <Text style={styles.tagIcon}>{icon}</Text>
-            <Text style={styles.tagText}>  {categoryLabel}</Text>
+            <Text style={styles.tagText}>{categoryLabel}</Text>
           </View>
           <View style={styles.actionBtns}>
-            <TouchableOpacity style={styles.iconBtn} accessibilityLabel="إضافة للمفضلة">
+            <TouchableOpacity style={styles.iconBtn}>
               <Text style={styles.btnText}>🤍</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconBtn, { marginHorizontal: 10 }]} accessibilityLabel="مشاركة">
+            <TouchableOpacity style={[styles.iconBtn, { marginLeft: 10 }]}>
               <Text style={styles.btnText}>🔗</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn} accessibilityLabel="خيارات إضافية">
+            <TouchableOpacity style={[styles.iconBtn, { marginLeft: 10 }]}>
               <Text style={styles.btnText}>⋮</Text>
             </TouchableOpacity>
           </View>
         </View>
 
+        {/* عنوان الذكر */}
         <View style={styles.titleWrap}>
           <Text style={styles.decor}>✿</Text>
-          <Text style={styles.itemTitle} numberOfLines={1}>{itemTitle}</Text>
+          <Text style={styles.itemTitle} numberOfLines={1}>
+            {itemTitle}
+          </Text>
           <Text style={styles.decor}>✿</Text>
         </View>
         <View style={styles.divider} />
 
-        <Text style={styles.arabicText}>{currentItem.arabicText}</Text>
+        {/* نص الذكر */}
+        <Text style={styles.arabicText}>
+          {currentItem.arabicText}
+        </Text>
 
+        {/* شريط التكرار السفلي */}
         <View style={styles.footerBar}>
-          <TouchableOpacity style={styles.circleBtn} accessibilityLabel="تكرار">
+          <TouchableOpacity style={styles.circleBtn}>
             <Text style={styles.btnText}>🔁</Text>
           </TouchableOpacity>
           <View style={styles.countBadge}>
             <Text style={styles.countNum}>{displayCount}</Text>
           </View>
-          <TouchableOpacity style={styles.circleBtn} accessibilityLabel="الرجوع">
+          <TouchableOpacity style={styles.circleBtn}>
             <Text style={styles.btnText}>↩</Text>
           </TouchableOpacity>
         </View>
@@ -180,7 +197,7 @@ const AdhkarItemScreen = ({ route }: { route: AdhkarItemRouteProp }) => {
   );
 };
 
-// ───────── الأنماط النهائية ─────────
+// ───────── الأنماط النهائية المتوافقة ─────────
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -199,6 +216,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 10,
     elevation: 5,
+  },
+  errorText: {
+    fontSize: 20,
+    textAlign: "center",
+    color: "#B44",
+    marginTop: 40,
   },
   headerBar: {
     flexDirection: "row",
@@ -233,7 +256,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   decor: { fontSize: 18, color: "#D4AF67" },
-  itemTitle: { fontSize: 24, fontWeight: "700", color: "#8A692D" },
+  itemTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#8A692D",
+    marginHorizontal: 10,
+  },
   divider: {
     height: 2,
     backgroundColor: "#E8D8B8",
@@ -243,7 +271,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 42,
     textAlign: "right",
-    writingDirection: "rtl",
     color: "#1A473B",
   },
   footerBar: {
