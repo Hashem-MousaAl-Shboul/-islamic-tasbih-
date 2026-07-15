@@ -157,6 +157,7 @@ export const tr: TranslationKeys = {
   resetError: 'Veri sıfırlanamadı',
   cantOpenLink: 'Bağlantı açılamıyor',
   reset: 'Sıfırla',
+  undo: 'Geri Al',
   teal: 'Deniz mavisi',
   rose: 'Gül',
   customizeAppearance: 'Görünümü özelleştir',

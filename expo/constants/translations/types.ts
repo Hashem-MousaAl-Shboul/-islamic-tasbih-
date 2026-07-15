@@ -142,6 +142,7 @@ export interface TranslationKeys {
   resetError: string;
   cantOpenLink: string;
   reset: string;
+  undo: string;
   teal: string;
   rose: string;
   customizeAppearance: string;

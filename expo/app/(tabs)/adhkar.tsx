@@ -6,7 +6,7 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { useAdhkarCountsStore } from '@/hooks/useAdhkarCountsStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
-import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Lock } from 'lucide-react-native';
+import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Lock, RotateCcw, Undo } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import AdBanner from '@/components/AdBanner';
 import { PolygonCounter } from '@/components/PolygonCounter';
@@ -35,6 +35,17 @@ interface AdhkarItem {
 const getRepeatLabel = (count: number, t: (key: string) => string): string => {
   if (count <= 1) return '';
   return `${count} ${t('times')}`;
+};
+
+const getDhikrTitle = (arabicText: string): string => {
+  const firstLine = (arabicText.split('\n')[0] || '').trim();
+  const cleaned = firstLine
+    .replace(/[﴿﴾۝\d]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (cleaned.length === 0) return '';
+  if (cleaned.length <= 34) return cleaned;
+  return cleaned.slice(0, 34) + '…';
 };
 
 type FilterType = 'all' | 'morning' | 'evening' | 'after-prayer' | 'duas' | 'sleep' | 'wakeup' | 'favorites';
@@ -125,7 +136,7 @@ interface AdhkarCardProps {
 
 const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, reducedMotion: _reducedMotion, isFavorite, onToggleFavorite, onShare, onLockedPress }) => {
   const { t } = useLanguageStore();
-  const { getCount, increment, reset } = useAdhkarCountsStore();
+  const { getCount, increment, reset, undo, canUndo } = useAdhkarCountsStore();
   const [expanded, setExpanded] = useState<boolean>(false);
 
   const currentCount = getCount(item.id);
@@ -165,10 +176,21 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
     increment(item.id, targetCount);
   }, [item.id, targetCount, increment]);
 
-  const handleCounterLongPress = useCallback((e?: any) => {
+  const handleResetPress = useCallback((e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
+    if (Platform.OS !== 'web') {
+      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (error) { console.log('Haptic error:', error); }
+    }
     reset(item.id);
   }, [item.id, reset]);
+
+  const handleUndoPress = useCallback((e?: any) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (Platform.OS !== 'web') {
+      try { void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (error) { console.log('Haptic error:', error); }
+    }
+    undo(item.id);
+  }, [item.id, undo]);
 
   const getCategoryIcon = (category: string) => {
     const size = 14;
@@ -208,9 +230,11 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
   };
 
   const accent = getAccentColor(item.category);
+  const title = useMemo(() => getDhikrTitle(item.arabicText), [item.arabicText]);
+  const canUndoThis = canUndo(item.id);
 
   return (
-    <View style={styles.adhkarCard} testID={`adhkar-card-${item.id}`}>
+    <View style={[styles.adhkarCard, Platform.OS === 'android' && styles.adhkarCardAndroid]} testID={`adhkar-card-${item.id}`}>
       <View style={styles.adhkarCardTouchable}>
         <View style={[styles.cardAccentBar, { backgroundColor: accent }]} />
 
@@ -259,74 +283,124 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
           </Pressable>
         </View>
 
-        <Pressable
-          style={{padding: 0}}
-          onPress={handleCardPress}
-          android_ripple={androidRipple('rgba(27,67,50,0.06)')}
-          testID={`adhkar-item-${item.id}`}
-          accessibilityState={{ expanded }}
-        >
-          <View style={styles.adhkarMainContent}>
-            <Text
-              style={[styles.adhkarArabicText, expanded && styles.adhkarArabicTextExpanded, androidTextFix]}
-              testID="adhkar-arabic-text"
-              selectable
-            >
-              {item.arabicText}
-            </Text>
-
-            {item.transliteration && (
-              <Text
-                style={[styles.adhkarTransliteration, expanded && styles.adhkarTransliterationExpanded, androidTextFix]}
-                numberOfLines={expanded ? undefined : 3}
-                selectable
-              >
-                {item.transliteration}
-              </Text>
-            )}
-
-            {item.translation && (
-              <Text
-                style={[styles.adhkarTranslation, expanded && styles.adhkarTranslationExpanded, androidTextFix]}
-                numberOfLines={expanded ? undefined : 3}
-                selectable
-              >
-                {item.translation}
-              </Text>
-            )}
-          </View>
-
-          <View style={styles.adhkarFooter}>
-            <View style={styles.readingIndicator}>
-              <View style={[styles.readingDot, { backgroundColor: expanded ? accent : TEXT_MUTED }]} />
-              <Text style={[styles.readingText, expanded && { color: accent }, androidTextFix]}>
-                {expanded ? t('readingModeActive') : t('tapToRead')}
-              </Text>
+        {Platform.OS === 'android' ? (
+          <View style={styles.androidCardBody}>
+            <View style={styles.titleRow}>
+              <View style={styles.titleOrnament} />
+              <Text style={styles.dhikrTitle} numberOfLines={1} selectable={false}>{title}</Text>
+              <View style={styles.titleOrnament} />
             </View>
-            {Platform.OS === 'android' ? (
-            <PolygonCounter
-              count={currentCount}
-              targetCount={targetCount}
-              size={56}
-              onPress={handleCounterPress}
-              onLongPress={handleCounterLongPress}
-              textColor={isCompleted ? GOLD : DEEP_GREEN}
-              fillColor={isCompleted ? GOLD + '18' : CREAM}
-              testID={`adhkar-repeat-counter-${item.id}`}
-              accessibilityLabel={`${currentCount} / ${targetCount} ${t('times')}`}
-              style={{ elevation: isCompleted ? 6 : 2 }}
-            />
-          ) : (
-            item.repeatCount && item.repeatCount > 1 && (
-              <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
-                <Text style={[styles.repeatBadgeText, { color: accent }, androidTextFix]}>
-                  {getRepeatLabel(item.repeatCount, t)}
+
+            <View style={styles.adhkarMainContentAndroid}>
+              <Text
+                style={[styles.adhkarArabicTextFull, androidTextFix]}
+                testID="adhkar-arabic-text"
+                selectable
+              >
+                {item.arabicText}
+              </Text>
+
+              {item.transliteration && (
+                <Text style={[styles.adhkarTransliterationFull, androidTextFix]} selectable>
+                  {item.transliteration}
+                </Text>
+              )}
+
+              {item.translation && (
+                <Text style={[styles.adhkarTranslationFull, androidTextFix]} selectable>
+                  {item.translation}
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.counterBar}>
+              <Pressable
+                style={styles.sideCounterButton}
+                onPress={handleResetPress}
+                android_ripple={androidRipple('rgba(212,168,83,0.2)', true, 18)}
+                accessibilityRole="button"
+                accessibilityLabel={t('reset')}
+              >
+                <RotateCcw size={18} color={GOLD} />
+              </Pressable>
+              <PolygonCounter
+                count={currentCount}
+                targetCount={targetCount}
+                size={58}
+                onPress={handleCounterPress}
+                textColor={isCompleted ? GOLD : DEEP_GREEN}
+                fillColor={isCompleted ? GOLD + '18' : CREAM}
+                testID={`adhkar-repeat-counter-${item.id}`}
+                accessibilityLabel={`${currentCount} / ${targetCount} ${t('times')}`}
+                style={{ elevation: isCompleted ? 6 : 2 }}
+              />
+              <Pressable
+                style={[styles.sideCounterButton, !canUndoThis && styles.sideCounterButtonDisabled]}
+                onPress={handleUndoPress}
+                disabled={!canUndoThis}
+                android_ripple={androidRipple('rgba(212,168,83,0.2)', true, 18)}
+                accessibilityRole="button"
+                accessibilityLabel={t('undo')}
+              >
+                <Undo size={18} color={canUndoThis ? GOLD : TEXT_MUTED} />
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          <Pressable
+            style={{padding: 0}}
+            onPress={handleCardPress}
+            android_ripple={androidRipple('rgba(27,67,50,0.06)')}
+            testID={`adhkar-item-${item.id}`}
+            accessibilityState={{ expanded }}
+          >
+            <View style={styles.adhkarMainContent}>
+              <Text
+                style={[styles.adhkarArabicText, expanded && styles.adhkarArabicTextExpanded, androidTextFix]}
+                testID="adhkar-arabic-text"
+                selectable
+              >
+                {item.arabicText}
+              </Text>
+
+              {item.transliteration && (
+                <Text
+                  style={[styles.adhkarTransliteration, expanded && styles.adhkarTransliterationExpanded, androidTextFix]}
+                  numberOfLines={expanded ? undefined : 3}
+                  selectable
+                >
+                  {item.transliteration}
+                </Text>
+              )}
+
+              {item.translation && (
+                <Text
+                  style={[styles.adhkarTranslation, expanded && styles.adhkarTranslationExpanded, androidTextFix]}
+                  numberOfLines={expanded ? undefined : 3}
+                  selectable
+                >
+                  {item.translation}
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.adhkarFooter}>
+              <View style={styles.readingIndicator}>
+                <View style={[styles.readingDot, { backgroundColor: expanded ? accent : TEXT_MUTED }]} />
+                <Text style={[styles.readingText, expanded && { color: accent }, androidTextFix]}>
+                  {expanded ? t('readingModeActive') : t('tapToRead')}
                 </Text>
               </View>
-            )
-          )}
-          </View>
-        </Pressable>
+              {item.repeatCount && item.repeatCount > 1 && (
+                <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
+                  <Text style={[styles.repeatBadgeText, { color: accent }, androidTextFix]}>
+                    {getRepeatLabel(item.repeatCount, t)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -773,6 +847,12 @@ const styles = StyleSheet.create({
       android: { borderWidth: 0.5, borderColor: 'rgba(0,0,0,0.06)' },
     }),
   },
+  adhkarCardAndroid: {
+    backgroundColor: CREAM,
+    borderWidth: 1,
+    borderColor: GOLD + '35',
+    elevation: 6,
+  },
   adhkarCardTouchable: {
     padding: 18,
     overflow: 'hidden' as const,
@@ -820,6 +900,35 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 12,
   },
+  androidCardBody: {
+    gap: 12,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  titleOrnament: {
+    flex: 1,
+    height: 2,
+    maxWidth: 60,
+    borderRadius: 1,
+    backgroundColor: GOLD + '50',
+  },
+  dhikrTitle: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: DEEP_GREEN,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+  },
+  adhkarMainContentAndroid: {
+    gap: 12,
+    paddingVertical: 4,
+  },
   adhkarArabicText: {
     fontSize: 18,
     lineHeight: 32,
@@ -835,6 +944,16 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 38,
   },
+  adhkarArabicTextFull: {
+    fontSize: 19,
+    lineHeight: 34,
+    color: DEEP_GREEN,
+    textAlign: 'right',
+    fontWeight: '700' as const,
+    letterSpacing: 0.3,
+    writingDirection: 'rtl',
+    flexWrap: 'wrap',
+  },
   adhkarTransliteration: {
     fontSize: 15,
     color: DEEP_GREEN,
@@ -849,6 +968,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 26,
   },
+  adhkarTransliterationFull: {
+    fontSize: 15,
+    color: DEEP_GREEN,
+    opacity: 0.65,
+    textAlign: 'right',
+    lineHeight: 26,
+    fontStyle: 'italic',
+    fontWeight: '500' as const,
+    writingDirection: 'rtl',
+  },
   adhkarTranslation: {
     fontSize: 14,
     color: TEXT_MUTED,
@@ -860,6 +989,14 @@ const styles = StyleSheet.create({
   adhkarTranslationExpanded: {
     fontSize: 15,
     lineHeight: 26,
+  },
+  adhkarTranslationFull: {
+    fontSize: 14,
+    color: TEXT_MUTED,
+    textAlign: 'right',
+    lineHeight: 26,
+    fontWeight: '400' as const,
+    writingDirection: 'rtl',
   },
   adhkarFooter: {
     flexDirection: 'row-reverse',
@@ -892,6 +1029,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: TEXT_MUTED,
     fontWeight: '500' as const,
+  },
+  counterBar: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: GOLD + '20',
+  },
+  sideCounterButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: GOLD + '50',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden' as const,
+    elevation: 2,
+  },
+  sideCounterButtonDisabled: {
+    borderColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    elevation: 0,
   },
   emptyContainer: {
     marginHorizontal: 20,

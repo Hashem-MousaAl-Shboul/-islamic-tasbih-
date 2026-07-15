@@ -157,6 +157,7 @@ export const en: TranslationKeys = {
   resetError: 'Failed to reset data',
   cantOpenLink: 'Cannot open link',
   reset: 'Reset',
+  undo: 'Undo',
   teal: 'Teal',
   rose: 'Rose',
   customizeAppearance: 'Customize appearance',

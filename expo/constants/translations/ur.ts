@@ -157,6 +157,7 @@ export const ur: TranslationKeys = {
   resetError: 'ڈیٹا ری سیٹ میں ناکامی',
   cantOpenLink: 'لنک نہیں کھل سکا',
   reset: 'ری سیٹ',
+  undo: 'واپس',
   teal: 'فیروزی',
   rose: 'گلابی',
   customizeAppearance: 'ظاہری شکل کو حسبِ ضرورت بنائیں',

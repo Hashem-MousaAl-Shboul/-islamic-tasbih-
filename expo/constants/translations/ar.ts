@@ -157,6 +157,7 @@ export const ar: TranslationKeys = {
   resetError: 'فشل في إعادة تعيين البيانات',
   cantOpenLink: 'لا يمكن فتح الرابط',
   reset: 'إعادة تعيين',
+  undo: 'تراجع',
   teal: 'أزرق مخضر',
   rose: 'وردي',
   customizeAppearance: 'تخصيص المظهر',

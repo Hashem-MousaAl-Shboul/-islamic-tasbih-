@@ -157,6 +157,7 @@ export const fr: TranslationKeys = {
   resetError: 'Échec de la réinitialisation des données',
   cantOpenLink: 'Impossible d\'ouvrir le lien',
   reset: 'Réinitialiser',
+  undo: 'Annuler',
   teal: 'Sarcelle',
   rose: 'Rose',
   customizeAppearance: 'Personnaliser l\'apparence',

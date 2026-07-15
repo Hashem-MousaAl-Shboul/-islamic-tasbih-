@@ -157,6 +157,7 @@ export const bn: TranslationKeys = {
   resetError: 'ডেটা রিসেট করতে ব্যর্থ',
   cantOpenLink: 'লিংক খুলতে পারছে না',
   reset: 'রিসেট',
+  undo: 'পূর্বাবস্থায় ফেরান',
   teal: 'টিল',
   rose: 'গোলাপী',
   customizeAppearance: 'চেহারা কাস্টমাইজ করুন',

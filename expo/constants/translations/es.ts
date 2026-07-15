@@ -157,6 +157,7 @@ export const es: TranslationKeys = {
   resetError: 'Error al restablecer datos',
   cantOpenLink: 'No se puede abrir el enlace',
   reset: 'Restablecer',
+  undo: 'Deshacer',
   teal: 'Verde azulado',
   rose: 'Rosa',
   customizeAppearance: 'Personalizar apariencia',

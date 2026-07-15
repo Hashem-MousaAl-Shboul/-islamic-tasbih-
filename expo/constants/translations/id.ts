@@ -157,6 +157,7 @@ export const id: TranslationKeys = {
   resetError: 'Gagal mereset data',
   cantOpenLink: 'Tidak dapat membuka tautan',
   reset: 'Reset',
+  undo: 'Batalkan',
   teal: 'Hijau kebiruan',
   rose: 'Mawar',
   customizeAppearance: 'Sesuaikan tampilan',

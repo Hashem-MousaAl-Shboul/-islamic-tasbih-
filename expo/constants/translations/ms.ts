@@ -157,6 +157,7 @@ export const ms: TranslationKeys = {
   resetError: 'Gagal mereset data',
   cantOpenLink: 'Tidak dapat membuka pautan',
   reset: 'Reset',
+  undo: 'Undur',
   teal: 'Hijau kebiruan',
   rose: 'Mawar',
   customizeAppearance: 'Sesuaikan penampilan',
