@@ -20,14 +20,15 @@
     "production": {
       "autoIncrement": true,
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "image": "latest",
+        "gradleCommand": ":app:bundleRelease"
       }
     }
   },
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "./google-services.json",
         "track": "production"
       }
     }
