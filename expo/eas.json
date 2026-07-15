@@ -1,39 +1,38 @@
 {
- "cli": {
- "version": ">= 12.0.0",
- "appVersionSource": "local"
- },
- "build": {
- "development": {
- "developmentClient": true,
- "distribution": "internal",
- "android": {
- "buildType": "apk"
- }
- },
- "preview": {
- "distribution": "internal",
- "android": {
- "buildType": "apk"
- }
- },
- "production": {
- "autoIncrement": true,
- "env": {
- "KOTLIN_VERSION": "2.3.0"
- },
- "android": {
- "buildType": "app-bundle",
- "image": "latest",
- "gradleCommand": ":app:bundleRelease"
- }
- }
- },
- "submit": {
- "production": {
- "android": {
- "track": "production"
- }
- }
- }
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "KOTLIN_VERSION": "1.9.20"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "image": "latest"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "production"
+      }
+    }
+  }
 }
