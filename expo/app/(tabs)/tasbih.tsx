@@ -16,6 +16,7 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCard from '@/components/TasbihCard';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
+import { PolygonCounter } from '@/components/PolygonCounter';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
@@ -29,24 +30,6 @@ const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
 const TASBIH_TAG = '[TasbihScreen]';
 
-const AnimatedCounter = memo(({ count }: { count: number }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const prevCount = useRef(count);
-
-  useEffect(() => {
-    if (prevCount.current === count) return;
-    prevCount.current = count;
-    scaleAnim.setValue(1.15);
-    Animated.spring(scaleAnim, { toValue: 1, tension: 400, friction: 10, useNativeDriver: true }).start();
-  }, [count, scaleAnim]);
-
-  return (
-    <Animated.Text style={[styles.counterNumber, androidTextFix, { transform: [{ scale: scaleAnim }] }]}>
-      {count}
-    </Animated.Text>
-  );
-});
-AnimatedCounter.displayName = 'AnimatedCounter';
 
 const CircularProgress = memo(({ progress, color, size = 220 }: { progress: number; color: string; size?: number }) => {
   const animatedProgress = useRef(new Animated.Value(progress)).current;
@@ -355,22 +338,13 @@ export default function TasbihScreen() {
             <View style={styles.progressRingContainer}>
               <CircularProgress progress={progressPercent / 100} color={selectedItem.color} />
               <Animated.View style={[styles.counterButtonContainer, { transform: [{ scale: pulseAnim }] }]}>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.mainCounterButton,
-                    { backgroundColor: selectedItem.color },
-                    pressed && styles.counterButtonPressed,
-                  ]}
+                <PolygonCounter
+                  count={selectedItem.count}
+                  size={180}
                   onPress={handleIncrement}
-                  android_ripple={{ color: 'rgba(255,255,255,0.2)', borderless: true, radius: 90 }}
                   testID="increment-button"
-                  accessibilityRole="button"
                   accessibilityLabel="Increment counter"
-                >
-                  <AnimatedCounter count={selectedItem.count} />
-                  <View style={styles.counterDivider} />
-                  <Text style={[styles.counterTarget, androidTextFix]}>{selectedItem.targetCount}</Text>
-                </Pressable>
+                />
               </Animated.View>
               {selectedItem.isCompleted && (
                 <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
@@ -564,11 +538,6 @@ const styles = StyleSheet.create({
   progressArc: { position: 'absolute' },
   progressArcFill: { position: 'absolute', borderLeftColor: 'transparent', borderBottomColor: 'transparent' },
   counterButtonContainer: { position: 'absolute', zIndex: 10 },
-  mainCounterButton: { width: 180, height: 180, borderRadius: 90, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 12 },
-  counterButtonPressed: { opacity: 0.92 },
-  counterNumber: { fontSize: 56, fontWeight: '800' as const, color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.2)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
-  counterDivider: { width: 40, height: 2, backgroundColor: 'rgba(255,255,255,0.5)', marginVertical: 6 },
-  counterTarget: { fontSize: 22, fontWeight: '600' as const, color: 'rgba(255,255,255,0.85)' },
   completedBadge: { position: 'absolute' as const, bottom: 10, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
   completedText: { fontSize: 12, fontWeight: '700' as const, color: '#FFFFFF' },
   tapHint: { fontSize: 12, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 8 },
