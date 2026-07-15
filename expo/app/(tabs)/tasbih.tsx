@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
   loadingText: { fontSize: 15, color: TEXT_MUTED, marginTop: 12, fontWeight: '500' as const },
   errorContainer: { justifyContent: 'center', alignItems: 'center' },
   errorText: { fontSize: 18, color: DEEP_GREEN, textAlign: 'center', fontWeight: '600' as const },
-  cardsSection: { backgroundColor: DEEP_GREEN, paddingBottom: 14, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
+  cardsSection: { backgroundColor: IVORY, paddingBottom: 14 },
   cardsScrollView: { maxHeight: 90 },
   cardsContainer: { paddingHorizontal: 12, paddingVertical: 6 },
   addCard: { marginHorizontal: 6 },
