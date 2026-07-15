@@ -1,22 +1,22 @@
 import { Platform } from 'react-native';
 
-let AudioModule: any = null;
+let audioModule: any = null;
 
 async function getAudio(): Promise<any> {
-  if (AudioModule) return AudioModule;
+  if (audioModule) return audioModule;
   try {
-    const mod = await import('expo-av');
-    AudioModule = mod.Audio;
-    return AudioModule;
+    const mod = await import('expo-audio');
+    audioModule = mod;
+    return audioModule;
   } catch (e) {
-    console.log('[SoundService] expo-av not available:', e);
+    console.log('[SoundService] expo-audio not available:', e);
     return null;
   }
 }
 
 class SoundService {
-  private clickSound: any | null = null;
-  private completionSound: any | null = null;
+  private clickPlayer: any | null = null;
+  private completionPlayer: any | null = null;
   private isLoaded: boolean = false;
 
   private isInitializing: boolean = false;
@@ -24,18 +24,20 @@ class SoundService {
   async initialize() {
     if (this.isLoaded || this.isInitializing || Platform.OS === 'web') return;
     this.isInitializing = true;
-    
+
     try {
-      const Audio = await getAudio();
-      if (!Audio) {
+      const audio = await getAudio();
+      if (!audio) {
         console.log('[SoundService] Audio module not available');
         return;
       }
 
-      const audioModePromise = Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,
+      const audioModePromise = audio.setAudioModeAsync({
+        playsInSilentMode: true,
+        shouldPlayInBackground: false,
+        interruptionMode: 'duckOthers',
+        allowsRecording: false,
+        shouldRouteThroughEarpiece: false,
       });
 
       const timeoutPromise = new Promise<void>((resolve) => {
@@ -65,34 +67,32 @@ class SoundService {
   }
 
   private async ensureClickSound(): Promise<void> {
-    if (this.clickSound) return;
+    if (this.clickPlayer) return;
     try {
-      const Audio = await getAudio();
-      if (!Audio) return;
-      this.clickSound = new Audio.Sound();
-      await this.clickSound.loadAsync(
-        { uri: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3' },
-        { shouldPlay: false, volume: 0.5 }
+      const audio = await getAudio();
+      if (!audio) return;
+      this.clickPlayer = audio.createAudioPlayer(
+        { uri: 'https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3' }
       );
+      this.clickPlayer.volume = 0.5;
     } catch (e) {
       console.log('[SoundService] Failed to load click sound:', e);
-      this.clickSound = null;
+      this.clickPlayer = null;
     }
   }
 
   private async ensureCompletionSound(): Promise<void> {
-    if (this.completionSound) return;
+    if (this.completionPlayer) return;
     try {
-      const Audio = await getAudio();
-      if (!Audio) return;
-      this.completionSound = new Audio.Sound();
-      await this.completionSound.loadAsync(
-        { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },
-        { shouldPlay: false, volume: 0.7 }
+      const audio = await getAudio();
+      if (!audio) return;
+      this.completionPlayer = audio.createAudioPlayer(
+        { uri: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' }
       );
+      this.completionPlayer.volume = 0.7;
     } catch (e) {
       console.log('[SoundService] Failed to load completion sound:', e);
-      this.completionSound = null;
+      this.completionPlayer = null;
     }
   }
 
@@ -110,14 +110,20 @@ class SoundService {
 
     if (!this.isLoaded) return;
 
-    if (this.clickSound) {
-      this.clickSound.replayAsync().catch((error: unknown) => {
+    if (this.clickPlayer) {
+      try {
+        this.clickPlayer.seekTo(0);
+        this.clickPlayer.play();
+      } catch (error) {
         console.log('[SoundService] Click sound replay error:', error);
-        this.clickSound = null;
-      });
+        this.clickPlayer = null;
+      }
     } else {
       this.ensureClickSound().then(() => {
-        this.clickSound?.replayAsync().catch(() => {});
+        try {
+          this.clickPlayer?.seekTo(0);
+          this.clickPlayer?.play();
+        } catch {}
       }).catch(() => {});
     }
   }
@@ -140,14 +146,20 @@ class SoundService {
 
     if (!this.isLoaded) return;
 
-    if (this.completionSound) {
-      this.completionSound.replayAsync().catch((error: unknown) => {
+    if (this.completionPlayer) {
+      try {
+        this.completionPlayer.seekTo(0);
+        this.completionPlayer.play();
+      } catch (error) {
         console.log('[SoundService] Completion sound replay error:', error);
-        this.completionSound = null;
-      });
+        this.completionPlayer = null;
+      }
     } else {
       this.ensureCompletionSound().then(() => {
-        this.completionSound?.replayAsync().catch(() => {});
+        try {
+          this.completionPlayer?.seekTo(0);
+          this.completionPlayer?.play();
+        } catch {}
       }).catch(() => {});
     }
   }
@@ -160,13 +172,13 @@ class SoundService {
     if (Platform.OS === 'web') return;
 
     try {
-      if (this.clickSound) {
-        await this.clickSound.unloadAsync();
-        this.clickSound = null;
+      if (this.clickPlayer) {
+        try { this.clickPlayer.release(); } catch {}
+        this.clickPlayer = null;
       }
-      if (this.completionSound) {
-        await this.completionSound.unloadAsync();
-        this.completionSound = null;
+      if (this.completionPlayer) {
+        try { this.completionPlayer.release(); } catch {}
+        this.completionPlayer = null;
       }
       this.isLoaded = false;
       console.log('[SoundService] Sounds unloaded');

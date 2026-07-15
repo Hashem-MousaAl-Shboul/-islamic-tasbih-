@@ -381,6 +381,7 @@ type PlaybackListener = (state: { isPlaying: boolean; currentId: string | null }
 export class YasAI {
   private config: YasAIConfig;
   private currentSound: any | null = null;
+  private currentSoundListener: { remove: () => void } | null = null;
   private webAudio: HTMLAudioElement | null = null;
   private isPlaying: boolean = false;
   private currentId: string | null = null;
@@ -533,14 +534,14 @@ export class YasAI {
         this.webAudio = null;
       } else if (this.currentSound) {
         try {
-          await this.currentSound.stopAsync?.();
+          if (this.currentSoundListener) {
+            this.currentSoundListener.remove();
+            this.currentSoundListener = null;
+          }
+          this.currentSound.pause?.();
+          this.currentSound.release?.();
         } catch (e) {
-          console.log('[YasAI] stopAsync failed:', e);
-        }
-        try {
-          await this.currentSound.unloadAsync?.();
-        } catch (e) {
-          console.log('[YasAI] unloadAsync failed:', e);
+          console.log('[YasAI] stop/release failed:', e);
         }
         this.currentSound = null;
       }
@@ -564,15 +565,12 @@ export class YasAI {
         }
       } else if (this.currentSound) {
         try {
-          const status = await this.currentSound.getStatusAsync?.();
-          if (status && 'isLoaded' in status && status.isLoaded) {
-            if (status.isPlaying) {
-              await this.currentSound.pauseAsync?.();
-              this.isPlaying = false;
-            } else {
-              await this.currentSound.playAsync?.();
-              this.isPlaying = true;
-            }
+          if (this.currentSound.playing) {
+            this.currentSound.pause?.();
+            this.isPlaying = false;
+          } else {
+            this.currentSound.play?.();
+            this.isPlaying = true;
           }
         } catch (e) {
           console.log('[YasAI] pause/play toggle failed:', e);
@@ -660,22 +658,21 @@ export class YasAI {
   
   // تشغيل الصوت على الجوال
   private async playNativeAudio(sources: AudioSource[]): Promise<boolean> {
-    let Audio: any = null;
+    let audioMod: any = null;
     try {
-      const mod = await import('expo-av');
-      Audio = (mod as any).Audio;
+      audioMod = await import('expo-audio');
     } catch (e) {
-      console.log('[YasAI] expo-av not available:', e);
+      console.log('[YasAI] expo-audio not available:', e);
       return false;
     }
 
     try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: true,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
+      await audioMod.setAudioModeAsync({
+        allowsRecording: false,
+        shouldPlayInBackground: true,
+        playsInSilentMode: true,
+        interruptionMode: 'duckOthers',
+        shouldRouteThroughEarpiece: false,
       });
     } catch (e) {
       console.log('[YasAI] setAudioModeAsync failed:', e);
@@ -683,26 +680,23 @@ export class YasAI {
     
     for (const source of sources) {
       try {
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: source.url },
-          { 
-            shouldPlay: true,
-            volume: this.config.volume,
-            rate: this.config.speed,
-            shouldCorrectPitch: true
-          },
-          (status: any) => {
-            if (status && 'didJustFinish' in status && status.didJustFinish) {
-              this.isPlaying = false;
-              this.currentId = null;
-              this.notifyListeners();
-            }
-          }
-        );
+        const player = audioMod.createAudioPlayer({ uri: source.url });
+        player.volume = this.config.volume;
+        player.playbackRate = this.config.speed;
         
-        this.currentSound = sound;
+        const listener = player.addListener('playbackStatusUpdate', (status: any) => {
+          if (status && status.didJustFinish) {
+            this.isPlaying = false;
+            this.currentId = null;
+            this.notifyListeners();
+          }
+        });
+        
+        this.currentSound = player;
+        this.currentSoundListener = listener;
         this.isPlaying = true;
         this.notifyListeners();
+        player.play();
         return true;
       } catch (error) {
         console.log('[YasAI] Failed to play native audio source:', source.url, error);

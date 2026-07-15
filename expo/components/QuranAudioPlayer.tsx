@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
-import { Audio } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { Play, Pause, Square, Volume2, RotateCcw } from 'lucide-react-native';
 import { getQuranRecitationUrl, getAvailableReciters, type ReciterId, RECITER_NAMES } from '@/utils/ttsService';
 import { stopAudio as stopYasAI } from '@/utils/yasAI';
@@ -12,51 +12,50 @@ interface QuranAudioPlayerProps {
   onReciterChange?: (reciter: ReciterId) => void;
 }
 
-export default function QuranAudioPlayer({ 
-  surahNumber, 
-  surahName, 
+export default function QuranAudioPlayer({
+  surahNumber,
+  surahName,
   selectedReciter = 'alafasy',
-  onReciterChange 
+  onReciterChange
 }: QuranAudioPlayerProps) {
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [player, setPlayer] = useState<AudioPlayer | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [position, setPosition] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [currentReciter, setCurrentReciter] = useState<ReciterId>(selectedReciter);
   const [showReciters, setShowReciters] = useState<boolean>(false);
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const lastStatusUpdateRef = useRef<number>(0);
-
-  console.log('[QuranAudioPlayer] Rendered with surah:', surahNumber, 'reciter:', currentReciter);
+  const playerRef = useRef<AudioPlayer | null>(null);
+  const statusListenerRef = useRef<{ remove: () => void } | null>(null);
 
   useEffect(() => {
     return () => {
-      console.log('[QuranAudioPlayer] Cleanup - unloading sound');
-      if (soundRef.current) {
-        soundRef.current.unloadAsync().catch(e => 
-          console.log('[QuranAudioPlayer] Cleanup error:', e)
-        );
+      if (statusListenerRef.current) {
+        statusListenerRef.current.remove();
+        statusListenerRef.current = null;
+      }
+      if (playerRef.current) {
+        try { playerRef.current.release(); } catch {}
+        playerRef.current = null;
       }
     };
   }, []);
 
   useEffect(() => {
-    if (sound !== soundRef.current) {
-      soundRef.current = sound;
+    if (player !== playerRef.current) {
+      playerRef.current = player;
     }
-  }, [sound]);
+  }, [player]);
 
   const setupAudio = async () => {
     try {
-      console.log('[QuranAudioPlayer] Setting up audio mode');
       if (Platform.OS !== 'web') {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          staysActiveInBackground: true,
-          playsInSilentModeIOS: true,
-          shouldDuckAndroid: true,
-          playThroughEarpieceAndroid: false,
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: true,
+          interruptionMode: 'duckOthers',
+          shouldRouteThroughEarpiece: false,
+          allowsRecording: false,
         });
       }
     } catch (error) {
@@ -67,15 +66,16 @@ export default function QuranAudioPlayer({
   const loadAudio = async (reciter: ReciterId) => {
     try {
       setIsLoading(true);
-      console.log('[QuranAudioPlayer] Loading audio for surah', surahNumber, 'with reciter', reciter);
-      
-      // Ensure YasAI audio is stopped before loading
+
       try { await stopYasAI(); } catch {}
-      
-      if (sound) {
-        console.log('[QuranAudioPlayer] Unloading previous sound');
-        await sound.unloadAsync();
-        setSound(null);
+
+      if (playerRef.current) {
+        if (statusListenerRef.current) {
+          statusListenerRef.current.remove();
+          statusListenerRef.current = null;
+        }
+        try { playerRef.current.release(); } catch {}
+        setPlayer(null);
       }
 
       const audioUrl = getQuranRecitationUrl(surahNumber, reciter);
@@ -83,21 +83,29 @@ export default function QuranAudioPlayer({
         throw new Error('لا يوجد رابط صوتي لهذه السورة');
       }
 
-      console.log('[QuranAudioPlayer] Loading from URL:', audioUrl);
       await setupAudio();
-      
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audioUrl },
-        { 
-          shouldPlay: false,
-          isLooping: false,
-          volume: 1.0,
-        },
-        onPlaybackStatusUpdate
-      );
 
-      setSound(newSound);
-      console.log('[QuranAudioPlayer] Audio loaded successfully');
+      const newPlayer = createAudioPlayer({ uri: audioUrl });
+      newPlayer.volume = 1.0;
+
+      statusListenerRef.current = newPlayer.addListener('playbackStatusUpdate', (status: any) => {
+        if (!status?.isLoaded) return;
+
+        const nextIsPlaying = Boolean(status.playing);
+        const nextPos = Number(status.currentTime ?? 0) * 1000;
+        const nextDur = Number(status.duration ?? 0) * 1000;
+
+        setIsPlaying(prev => (prev !== nextIsPlaying ? nextIsPlaying : prev));
+        setPosition(prev => (prev !== nextPos ? nextPos : prev));
+        setDuration(prev => (prev !== nextDur ? nextDur : prev));
+
+        if (status.didJustFinish) {
+          setIsPlaying(false);
+          setPosition(0);
+        }
+      });
+
+      setPlayer(newPlayer);
     } catch (error) {
       console.error('[QuranAudioPlayer] Load error:', error);
       Alert.alert('خطأ', 'فشل في تحميل التلاوة. تأكد من الاتصال بالإنترنت.');
@@ -106,46 +114,22 @@ export default function QuranAudioPlayer({
     }
   };
 
-  const onPlaybackStatusUpdate = (status: any) => {
-    const now = Date.now();
-    if (!status?.isLoaded) return;
-
-    if (now - (lastStatusUpdateRef.current ?? 0) < 200) {
-      return;
-    }
-    lastStatusUpdateRef.current = now;
-
-    const nextIsPlaying = Boolean(status.isPlaying);
-    const nextPos = Number(status.positionMillis ?? 0);
-    const nextDur = Number(status.durationMillis ?? 0);
-
-    setIsPlaying(prev => (prev !== nextIsPlaying ? nextIsPlaying : prev));
-    setPosition(prev => (prev !== nextPos ? nextPos : prev));
-    setDuration(prev => (prev !== nextDur ? nextDur : prev));
-
-    if (status.didJustFinish) {
-      console.log('[QuranAudioPlayer] Playback finished');
-      setIsPlaying(false);
-      setPosition(0);
-    }
-  };
-
   const handlePlay = async () => {
     try {
-      // Stop any other app audio to avoid conflicts
       try { await stopYasAI(); } catch {}
 
-      if (!sound) {
+      if (!playerRef.current) {
         await loadAudio(currentReciter);
         return;
       }
 
       if (isPlaying) {
-        console.log('[QuranAudioPlayer] Pausing');
-        await sound.pauseAsync();
+        playerRef.current.pause();
       } else {
-        console.log('[QuranAudioPlayer] Playing');
-        await sound.playAsync();
+        if (playerRef.current.currentTime >= playerRef.current.duration && playerRef.current.duration > 0) {
+          await playerRef.current.seekTo(0);
+        }
+        playerRef.current.play();
       }
     } catch (error) {
       console.error('[QuranAudioPlayer] Play error:', error);
@@ -155,10 +139,9 @@ export default function QuranAudioPlayer({
 
   const handleStop = async () => {
     try {
-      if (sound) {
-        console.log('[QuranAudioPlayer] Stopping');
-        await sound.stopAsync();
-        await sound.setPositionAsync(0);
+      if (playerRef.current) {
+        playerRef.current.pause();
+        await playerRef.current.seekTo(0);
         setPosition(0);
         setIsPlaying(false);
       }
@@ -169,16 +152,19 @@ export default function QuranAudioPlayer({
 
   const handleReciterChange = async (reciter: ReciterId) => {
     try {
-      console.log('[QuranAudioPlayer] Changing reciter to:', reciter);
       setCurrentReciter(reciter);
       setShowReciters(false);
       onReciterChange?.(reciter);
-      
-      if (sound) {
-        await sound.unloadAsync();
-        setSound(null);
+
+      if (playerRef.current) {
+        if (statusListenerRef.current) {
+          statusListenerRef.current.remove();
+          statusListenerRef.current = null;
+        }
+        try { playerRef.current.release(); } catch {}
+        setPlayer(null);
       }
-      
+
       setPosition(0);
       setDuration(0);
       setIsPlaying(false);
@@ -201,7 +187,7 @@ export default function QuranAudioPlayer({
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>تلاوة سورة {surahName}</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.reciterButton}
           onPress={() => setShowReciters(!showReciters)}
         >
@@ -246,9 +232,9 @@ export default function QuranAudioPlayer({
         <TouchableOpacity
           style={styles.controlButton}
           onPress={handleStop}
-          disabled={!sound}
+          disabled={!player}
         >
-          <Square size={20} color={!sound ? '#666' : '#FFFFFF'} fill={!sound ? '#666' : '#FFFFFF'} />
+          <Square size={20} color={!player ? '#666' : '#FFFFFF'} fill={!player ? '#666' : '#FFFFFF'} />
         </TouchableOpacity>
 
         <TouchableOpacity
