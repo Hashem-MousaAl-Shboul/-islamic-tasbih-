@@ -180,7 +180,6 @@ export default function WelcomeScreen() {
       locations={[0, 0.3, 0.65, 1]}
       style={styles.background}
       testID="welcome-background"
-      accessibilityLabel="Welcome Screen"
     >
       <ScrollView
         style={styles.scrollView}
@@ -266,7 +265,6 @@ export default function WelcomeScreen() {
               android_ripple={androidRipple('rgba(212,168,83,0.25)')}
               testID="welcome-continue-btn"
               accessibilityRole="button"
-              accessibilityLabel="ابدأ التسبيح"
             >
               <Text style={[styles.buttonText, androidTextFix]}>ابدأ التسبيح</Text>
             </Pressable>
