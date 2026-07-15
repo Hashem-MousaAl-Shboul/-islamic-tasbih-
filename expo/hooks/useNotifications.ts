@@ -220,8 +220,9 @@ export function useNotifications(): NotificationsHook {
             {
               text: t('openSettings'),
               onPress: () => {
-                if (Platform.OS === 'ios') {
-                  void Linking.openSettings();
+                if (Platform.OS === 'web') {
+                  // Linking.openSettings() is native-only; open browser settings page as fallback
+                  void Linking.openURL('about:settings');
                 } else {
                   void Linking.openSettings();
                 }
