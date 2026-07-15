@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
+import { useAdhkarCountsStore } from '@/hooks/useAdhkarCountsStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
 import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Lock } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +17,7 @@ const DEEP_GREEN = '#1B4332';
 const IVORY = '#F7F4EE';
 const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
+const CREAM = '#FAF4E8';
 
 const ADHKAR_TAG = '[AdhkarScreen]';
 console.log(ADHKAR_TAG, 'module loaded, initializing adhkar screen with filters and TTS support');
@@ -122,7 +124,12 @@ interface AdhkarCardProps {
 
 const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, reducedMotion: _reducedMotion, isFavorite, onToggleFavorite, onShare, onLockedPress }) => {
   const { t } = useLanguageStore();
+  const { getCount, increment, reset } = useAdhkarCountsStore();
   const [expanded, setExpanded] = useState<boolean>(false);
+
+  const currentCount = getCount(item.id);
+  const targetCount = item.repeatCount ?? 1;
+  const isCompleted = currentCount >= targetCount;
 
   const handleCardPress = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -151,6 +158,16 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
     if (e && e.stopPropagation) e.stopPropagation();
     onLockedPress();
   }, [onLockedPress]);
+
+  const handleCounterPress = useCallback((e?: any) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    increment(item.id, targetCount);
+  }, [item.id, targetCount, increment]);
+
+  const handleCounterLongPress = useCallback((e?: any) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    reset(item.id);
+  }, [item.id, reset]);
 
   const getCategoryIcon = (category: string) => {
     const size = 14;
@@ -288,12 +305,16 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
             {item.repeatCount && item.repeatCount > 1 && (
               Platform.OS === 'android' ? (
                 <PolygonCounter
-                  count={item.repeatCount}
-                  size={44}
-                  textColor={accent}
+                  count={currentCount}
+                  targetCount={targetCount}
+                  size={56}
+                  onPress={handleCounterPress}
+                  onLongPress={handleCounterLongPress}
+                  textColor={isCompleted ? GOLD : DEEP_GREEN}
+                  fillColor={isCompleted ? GOLD + '18' : CREAM}
                   testID={`adhkar-repeat-counter-${item.id}`}
-                  accessibilityLabel={`${item.repeatCount} ${t('times')}`}
-                  style={{ elevation: 2 }}
+                  accessibilityLabel={`${currentCount} / ${targetCount} ${t('times')}`}
+                  style={{ elevation: isCompleted ? 6 : 2 }}
                 />
               ) : (
                 <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>

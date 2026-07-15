@@ -1,6 +1,7 @@
 import React, { memo, useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform, ViewStyle } from 'react-native';
 import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
+import { CheckCircle } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 const GOLD = '#D4A853' as const;
@@ -11,8 +12,10 @@ const DEEP_GREEN = '#1B4332' as const;
 
 interface PolygonCounterProps {
   count: number;
+  targetCount?: number;
   size?: number;
   onPress?: () => void;
+  onLongPress?: () => void;
   disabled?: boolean;
   fillColor?: string;
   borderColor?: string;
@@ -44,8 +47,10 @@ function createScallopedPath(cx: number, cy: number, outerR: number, innerR: num
 
 const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
   count,
+  targetCount,
   size = 180,
   onPress,
+  onLongPress,
   disabled = false,
   fillColor = CREAM,
   borderColor = GOLD,
@@ -64,7 +69,13 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
     return createScallopedPath(cx, cy, outerR, innerR, 12);
   }, [size]);
 
-  const displayCount = useMemo(() => count.toLocaleString('ar-SA'), [count]);
+  const isCompleted = targetCount !== undefined && count >= targetCount;
+  const displayCount = useMemo(() => {
+    if (targetCount !== undefined) {
+      return `${count.toLocaleString('ar-SA')}/${targetCount.toLocaleString('ar-SA')}`;
+    }
+    return count.toLocaleString('ar-SA');
+  }, [count, targetCount]);
   const gradientId = useMemo(() => `polygonFill-${Math.random().toString(36).substr(2, 9)}`, []);
   const borderGradientId = useMemo(() => `polygonBorder-${Math.random().toString(36).substr(2, 9)}`, []);
   const effectiveStrokeWidth = strokeWidth ?? Math.max(2, size * 0.016);
@@ -94,9 +105,18 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
 
   const textContent = (
     <View style={styles.textContainer} pointerEvents="none">
-      <Text style={[styles.countText, { color: textColor, fontSize: size * 0.28 }]}>
-        {displayCount}
-      </Text>
+      {isCompleted ? (
+        <View style={styles.completedContent}>
+          <CheckCircle size={size * 0.2} color={GOLD} />
+          <Text style={[styles.countText, { color: textColor, fontSize: size * 0.16 }]}>
+            {displayCount}
+          </Text>
+        </View>
+      ) : (
+        <Text style={[styles.countText, { color: textColor, fontSize: size * 0.24 }]}>
+          {displayCount}
+        </Text>
+      )}
     </View>
   );
 
@@ -128,9 +148,22 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
     onPress();
   };
 
+  const handleLongPress = () => {
+    if (!onLongPress) return;
+    if (haptic && Platform.OS !== 'web') {
+      try {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('[PolygonCounter] Haptic error:', error);
+      }
+    }
+    onLongPress();
+  };
+
   return (
     <Pressable
       onPress={handlePress}
+      onLongPress={onLongPress ? handleLongPress : undefined}
       disabled={disabled}
       testID={testID}
       accessibilityRole="button"
@@ -141,6 +174,7 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
         { width: size, height: size },
         style,
         pressed && styles.pressed,
+        isCompleted && styles.completed,
       ]}
     >
       {svgContent}
@@ -170,6 +204,22 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.92,
+  },
+  completed: {
+    ...Platform.select({
+      android: { elevation: 12 },
+      ios: {
+        shadowColor: '#D4A853',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+      },
+    }),
+  },
+  completedContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
   },
   textContainer: {
     position: 'absolute',

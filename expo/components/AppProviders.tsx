@@ -7,6 +7,7 @@ import { TasbihProvider } from '@/hooks/useTasbihStore';
 import { FavoritesProvider } from '@/hooks/useFavoritesStore';
 import { ReciterProvider } from '@/hooks/useReciterStore';
 import { CreditsProvider } from '@/hooks/useCreditsStore';
+import { AdhkarCountsProvider } from '@/hooks/useAdhkarCountsStore';
 import { queryClient } from '@/utils/queryClient';
 
 interface AppProvidersProps { children: ReactNode }
@@ -21,7 +22,9 @@ export function AppProviders({ children }: AppProvidersProps) {
               <FavoritesProvider>
                 <ThemeProvider>
                   <CreditsProvider>
-                    {children}
+                    <AdhkarCountsProvider>
+                      {children}
+                    </AdhkarCountsProvider>
                   </CreditsProvider>
                 </ThemeProvider>
               </FavoritesProvider>
