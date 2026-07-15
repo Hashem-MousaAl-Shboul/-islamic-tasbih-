@@ -99,6 +99,13 @@ async function scheduleReminder(
 
     const triggerDate = getNextTrigger(hour, minute);
 
+    // DAILY trigger repeats correctly on both Android and iOS
+    const trigger: Notifications.NotificationTriggerInput = {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      hour,
+      minute,
+    };
+
     await Notifications.scheduleNotificationAsync({
       identifier: id,
       content: {
@@ -110,11 +117,7 @@ async function scheduleReminder(
           priority: Notifications.AndroidNotificationPriority.HIGH,
         }),
       },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: triggerDate,
-        repeats: true,
-      } as Notifications.NotificationTriggerInput,
+      trigger,
     });
     console.log(NOTIF_TAG, `Scheduled ${id} for ${hour}:${minute}`);
   } catch (e) {

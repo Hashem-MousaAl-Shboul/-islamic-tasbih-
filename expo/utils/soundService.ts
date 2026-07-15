@@ -173,11 +173,11 @@ class SoundService {
 
     try {
       if (this.clickPlayer) {
-        try { this.clickPlayer.release(); } catch {}
+        try { this.clickPlayer.remove(); } catch {}
         this.clickPlayer = null;
       }
       if (this.completionPlayer) {
-        try { this.completionPlayer.release(); } catch {}
+        try { this.completionPlayer.remove(); } catch {}
         this.completionPlayer = null;
       }
       this.isLoaded = false;

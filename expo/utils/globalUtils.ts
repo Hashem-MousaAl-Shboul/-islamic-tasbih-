@@ -1,6 +1,7 @@
 import { Platform, Linking, Share, Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as StoreReview from 'expo-store-review';
+import Constants from 'expo-constants';
 import i18n from '@/constants/translations';
 
 // App Store URLs for different platforms
@@ -221,9 +222,8 @@ export const openTermsOfService = async () => {
 };
 
 // Get app version
-export const getAppVersion = () => {
-  // In a real app, you would get this from app.json or expo-constants
-  return '1.0.0';
+export const getAppVersion = (): string => {
+  return Constants.expoConfig?.version ?? '1.0.0';
 };
 
 // Analytics tracking for global distribution

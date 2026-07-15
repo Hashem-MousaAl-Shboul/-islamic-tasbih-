@@ -35,7 +35,7 @@ export default function QuranAudioPlayer({
         statusListenerRef.current = null;
       }
       if (playerRef.current) {
-        try { playerRef.current.release(); } catch {}
+        try { playerRef.current.remove(); } catch {}
         playerRef.current = null;
       }
     };
@@ -74,7 +74,7 @@ export default function QuranAudioPlayer({
           statusListenerRef.current.remove();
           statusListenerRef.current = null;
         }
-        try { playerRef.current.release(); } catch {}
+        try { playerRef.current.remove(); } catch {}
         setPlayer(null);
       }
 
@@ -161,7 +161,7 @@ export default function QuranAudioPlayer({
           statusListenerRef.current.remove();
           statusListenerRef.current = null;
         }
-        try { playerRef.current.release(); } catch {}
+        try { playerRef.current.remove(); } catch {}
         setPlayer(null);
       }
 

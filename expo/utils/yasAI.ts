@@ -539,7 +539,7 @@ export class YasAI {
             this.currentSoundListener = null;
           }
           this.currentSound.pause?.();
-          this.currentSound.release?.();
+          this.currentSound.remove?.();
         } catch (e) {
           console.log('[YasAI] stop/release failed:', e);
         }
