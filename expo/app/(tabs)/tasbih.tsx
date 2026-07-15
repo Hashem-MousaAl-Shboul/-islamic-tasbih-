@@ -199,7 +199,7 @@ export default function TasbihScreen() {
   const handleSelectItem = useCallback(async (itemId: string) => {
     console.log(TASBIH_TAG, 'Selecting tasbih item:', itemId);
     if (settings.hapticFeedback && Platform.OS !== 'web') {
-      try { await Haptics.selectionAsync(); } catch {}
+      try { await Haptics.selectionAsync(); } catch (e) { console.log(TASBIH_TAG, 'Haptics error:', e); }
     }
     setSelectedItem(itemId);
   }, [setSelectedItem, settings.hapticFeedback]);
@@ -208,7 +208,7 @@ export default function TasbihScreen() {
     console.log(TASBIH_TAG, 'Deleting tasbih:', itemId);
     deleteTasbih(itemId);
     if (settings.hapticFeedback && Platform.OS !== 'web') {
-      try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+      try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (e) { console.log(TASBIH_TAG, 'Haptics error:', e); }
     }
   }, [deleteTasbih, settings.hapticFeedback]);
 
@@ -216,14 +216,14 @@ export default function TasbihScreen() {
     console.log(TASBIH_TAG, 'Restoring tasbih:', itemId);
     restoreTasbih(itemId);
     if (settings.hapticFeedback && Platform.OS !== 'web') {
-      try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+      try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (e) { console.log(TASBIH_TAG, 'Haptics error:', e); }
     }
   }, [restoreTasbih, settings.hapticFeedback]);
 
   const handleAddTasbih = useCallback(() => {
     console.log(TASBIH_TAG, 'Opening add tasbih modal');
     if (settings.hapticFeedback && Platform.OS !== 'web') {
-      try { void Haptics.selectionAsync(); } catch {}
+      try { void Haptics.selectionAsync(); } catch (e) { console.log(TASBIH_TAG, 'Haptics error:', e); }
     }
     setShowAddModal(true);
   }, [settings.hapticFeedback]);
@@ -245,7 +245,7 @@ export default function TasbihScreen() {
     setNewTasbih({ arabicText: '', transliteration: '', translation: '', targetCount: 33, color: '#2D8B6F', category: 'custom' });
     setShowAddModal(false);
     if (settings.hapticFeedback && Platform.OS !== 'web') {
-      try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+      try { void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (e) { console.log(TASBIH_TAG, 'Haptics error:', e); }
     }
   }, [newTasbih, addCustomTasbih, settings.hapticFeedback, t]);
 

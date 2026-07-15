@@ -5,9 +5,8 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
-import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Volume2, VolumeX, Square, Headphones, Lock } from 'lucide-react-native';
+import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Lock } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { ttsService } from '@/utils/ttsService';
 import AdBanner from '@/components/AdBanner';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 

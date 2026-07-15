@@ -80,6 +80,12 @@ export const DHIKR_CATEGORIES: DhikrCategory[] = [
     icon: "clock",
   },
   {
+    id: "duas",
+    name: "Duas",
+    nameArabic: "أدعية",
+    icon: "heart",
+  },
+  {
     id: "sleep",
     name: "Sleep",
     nameArabic: "النوم",
