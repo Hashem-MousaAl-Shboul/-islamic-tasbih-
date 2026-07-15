@@ -107,7 +107,7 @@ export const shareApp = async () => {
   }
 };
 
-// Rate app functionality
+// Rate app functionality — opens the store listing directly
 export const rateApp = async () => {
   try {
     if (Platform.OS === 'web') {
@@ -116,20 +116,13 @@ export const rateApp = async () => {
       return;
     }
 
-    const isAvailable = await StoreReview.isAvailableAsync();
-    if (isAvailable) {
-      console.log('[RateApp] Requesting native store review');
-      await StoreReview.requestReview();
-      return;
-    }
-
-    console.log('[RateApp] Native review not available, opening store URL');
     const url = Platform.select({
       ios: APP_STORE_URLS.ios,
       android: APP_STORE_URLS.android,
       default: APP_STORE_URLS.web,
     });
 
+    console.log('[RateApp] Opening store URL:', url);
     const supported = await Linking.canOpenURL(url);
     if (supported) {
       await Linking.openURL(url);
