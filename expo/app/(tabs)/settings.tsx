@@ -40,6 +40,7 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 import AdBanner from '@/components/AdBanner';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
+import UnifiedHeader from '@/components/UnifiedHeader';
 
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
 
@@ -242,14 +243,7 @@ export default function SettingsScreen() {
     <View style={styles.container} testID="settings-screen"
       accessibilityLabel="Settings Screen"
       accessibilityHint="Manage app preferences and data">
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={[styles.headerTitle, androidTextFix]}>{t('settings')}</Text>
-        <View style={styles.headerOrnament}>
-          <View style={styles.ornamentLine} />
-          <View style={styles.ornamentDiamond} />
-          <View style={styles.ornamentLine} />
-        </View>
-      </View>
+      <UnifiedHeader title={t('settings') || 'الإعدادات'} testID="settings-header" />
 
       <ScrollView
         style={styles.scrollView}
@@ -415,39 +409,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: IVORY,
-  },
-  header: {
-    backgroundColor: DEEP_GREEN,
-    paddingBottom: 14,
-    alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '700' as const,
-    color: '#fff',
-    writingDirection: 'rtl',
-    paddingTop: 18,
-    letterSpacing: 1,
-  },
-  headerOrnament: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 8,
-  },
-  ornamentLine: {
-    width: 32,
-    height: 1,
-    backgroundColor: GOLD,
-    opacity: 0.6,
-  },
-  ornamentDiamond: {
-    width: 6,
-    height: 6,
-    backgroundColor: GOLD,
-    transform: [{ rotate: '45deg' }],
   },
   scrollView: {
     flex: 1,

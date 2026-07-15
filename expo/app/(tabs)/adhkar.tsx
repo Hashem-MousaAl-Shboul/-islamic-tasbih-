@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import AdBanner from '@/components/AdBanner';
 import { PolygonCounter } from '@/components/PolygonCounter';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
+import UnifiedHeader from '@/components/UnifiedHeader';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -648,18 +649,11 @@ export default function AdhkarScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]} testID="adhkar-screen"
+    <View style={styles.container} testID="adhkar-screen"
       accessibilityLabel="Adhkar Screen"
       accessibilityHint="Browse and listen to adhkar collections">
       <ErrorBoundary t={t}>
-        <View style={styles.topBar}>
-          <Text style={[styles.topBarTitle, androidTextFix]}>{t('adhkar')}</Text>
-          <View style={styles.topBarOrnament}>
-            <View style={styles.ornamentLine} />
-            <View style={styles.ornamentDiamond} />
-            <View style={styles.ornamentLine} />
-          </View>
-        </View>
+        <UnifiedHeader title={t('adhkar') || 'الأذكار'} testID="adhkar-header" />
         <AdhkarHeader selectedFilter={selectedFilter} onFilterChange={handleFilterChange} />
 
         <PlayAllButton
@@ -728,38 +722,6 @@ const styles = StyleSheet.create({
     color: TEXT_MUTED,
     marginTop: 12,
     fontWeight: '500' as const,
-  },
-  topBar: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    backgroundColor: DEEP_GREEN,
-    alignItems: 'center',
-  },
-  topBarTitle: {
-    fontSize: 26,
-    fontWeight: '700' as const,
-    textAlign: 'center',
-    color: '#fff',
-    writingDirection: 'rtl',
-    letterSpacing: 1,
-  },
-  topBarOrnament: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 8,
-  },
-  ornamentLine: {
-    width: 32,
-    height: 1,
-    backgroundColor: GOLD,
-    opacity: 0.6,
-  },
-  ornamentDiamond: {
-    width: 6,
-    height: 6,
-    backgroundColor: GOLD,
-    transform: [{ rotate: '45deg' }],
   },
   headerSection: {
     backgroundColor: CARD_WHITE,

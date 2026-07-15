@@ -33,7 +33,6 @@ const UnifiedHeader = memo(function UnifiedHeader({
         styles.header,
         {
           paddingTop: insets.top,
-          marginBottom: 7,
         },
       ]}
       testID={testID}
