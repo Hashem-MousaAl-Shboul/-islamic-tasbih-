@@ -15,3 +15,13 @@ export interface DhikrCategory {
   nameArabic: string;
   icon: string;
 }
+
+export interface AdhkarItem {
+  id: string;
+  title?: string;
+  arabicText: string;
+  transliteration?: string;
+  translation?: string;
+  category: string;
+  repeatCount?: number;
+}
