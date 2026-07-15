@@ -295,4 +295,6 @@ export const tr: TranslationKeys = {
   notificationsPermissionTitle: 'Bildirimler Etkin Değil',
   notificationsPermissionDenied: 'Bildirim izni verilmedi. Hatırlatmaları almak için ayarlardan etkinleştirin.',
   openSettings: 'Ayarları Aç',
+  notificationsExpoGoTitle: 'Önizlemede Bildirimler Kullanılamıyor',
+  notificationsExpoGoWarning: 'Bildirimler Android\'de Expo Go\'da çalışmaz. Adhkar hatırlatmaları gerçek uygulama derlemesinde tam olarak çalışacaktır.',
 };

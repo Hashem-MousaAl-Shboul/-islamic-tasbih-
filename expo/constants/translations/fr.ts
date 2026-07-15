@@ -295,4 +295,6 @@ export const fr: TranslationKeys = {
   notificationsPermissionTitle: 'Notifications non activées',
   notificationsPermissionDenied: 'L\'autorisation de notification n\'a pas été accordée. Veuillez l\'activer dans les paramètres pour recevoir les rappels.',
   openSettings: 'Ouvrir les paramètres',
+  notificationsExpoGoTitle: 'Notifications indisponibles dans l\'aperçu',
+  notificationsExpoGoWarning: 'Les notifications ne fonctionnent pas dans Expo Go sur Android. Les rappels d\'adhkar fonctionneront pleinement dans la version finale de l\'application.',
 };

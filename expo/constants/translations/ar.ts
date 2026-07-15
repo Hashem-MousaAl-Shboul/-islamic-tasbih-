@@ -295,4 +295,6 @@ export const ar: TranslationKeys = {
   notificationsPermissionTitle: 'الإشعارات غير مفعّلة',
   notificationsPermissionDenied: 'لم يتم منح إذن الإشعارات. يرجى تفعيلها من الإعدادات لتلقي تذكيرات الأذكار.',
   openSettings: 'فتح الإعدادات',
+  notificationsExpoGoTitle: 'الإشعارات غير متاحة في المعاينة',
+  notificationsExpoGoWarning: 'الإشعارات لا تعمل في Expo Go على Android. ستعمل تذكيرات الأذكار بشكل كامل في البناء الحقيقي للتطبيق.',
 };

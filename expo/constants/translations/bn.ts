@@ -295,4 +295,6 @@ export const bn: TranslationKeys = {
   notificationsPermissionTitle: 'বিজ্ঞপ্তি সক্রিয় নয়',
   notificationsPermissionDenied: 'বিজ্ঞপ্তির অনুমতি দেওয়া হয়নি। অনুস্মারক পেতে সেটিংসে সক্রিয় করুন।',
   openSettings: 'সেটিংস খুলুন',
+  notificationsExpoGoTitle: 'পূর্বরূপে বিজ্ঞপ্তি অনুপলব্ধ',
+  notificationsExpoGoWarning: 'এক্সপো গো-তে অ্যান্ড্রয়েডে বিজ্ঞপ্তি কাজ করে না। আজকার অনুস্মারকগুলি আসল অ্যাপ বিল্ডে সম্পূর্ণভাবে কাজ করবে।',
 };

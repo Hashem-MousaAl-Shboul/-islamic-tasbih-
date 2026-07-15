@@ -295,4 +295,6 @@ export const es: TranslationKeys = {
   notificationsPermissionTitle: 'Notificaciones no activadas',
   notificationsPermissionDenied: 'No se concedió permiso de notificaciones. Habilítalo en configuración para recibir recordatorios.',
   openSettings: 'Abrir configuración',
+  notificationsExpoGoTitle: 'Notificaciones no disponibles en vista previa',
+  notificationsExpoGoWarning: 'Las notificaciones no funcionan en Expo Go en Android. Los recordatorios de adhkar funcionarán completamente en la compilación real de la aplicación.',
 };

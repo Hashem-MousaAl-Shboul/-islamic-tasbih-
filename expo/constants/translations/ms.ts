@@ -295,4 +295,6 @@ export const ms: TranslationKeys = {
   notificationsPermissionTitle: 'Pemberitahuan Tidak Diaktifkan',
   notificationsPermissionDenied: 'Kebenaran pemberitahuan tidak diberikan. Sila aktifkan dalam tetapan untuk menerima peringatan.',
   openSettings: 'Buka Tetapan',
+  notificationsExpoGoTitle: 'Pemberitahuan Tidak Tersedia di Pratonton',
+  notificationsExpoGoWarning: 'Pemberitahuan tidak berfungsi di Expo Go pada Android. Peringatan adhkar akan berfungsi sepenuhnya dalam binaan aplikasi sebenar.',
 };

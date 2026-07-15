@@ -293,4 +293,6 @@ export interface TranslationKeys {
   notificationsPermissionTitle: string;
   notificationsPermissionDenied: string;
   openSettings: string;
+  notificationsExpoGoTitle: string;
+  notificationsExpoGoWarning: string;
 }

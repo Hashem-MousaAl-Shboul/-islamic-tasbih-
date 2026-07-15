@@ -141,6 +141,7 @@ export default function SettingsScreen() {
     toggleNotifications,
     toggleMorningReminder,
     toggleEveningReminder,
+    isExpoGoEnvironment,
   } = useNotifications();
   const [notificationsLoading, setNotificationsLoading] = useState<boolean>(false);
 
@@ -325,16 +326,26 @@ export default function SettingsScreen() {
 
         <Text style={[styles.sectionTitle, androidTextFix]}>{t('notifications')}</Text>
         <View style={styles.card}>
-          <SettingsRow
-            icon={<Bell size={20} color={GOLD} />}
-            title={t('notifications')}
-            subtitle={t('notificationsDescription')}
-            type="toggle"
-            value={settings.notificationsEnabled}
-            onToggle={handleToggleNotifications}
-            disabled={notificationsLoading}
-          />
-          {settings.notificationsEnabled ? (
+          {isExpoGoEnvironment ? (
+            <View style={styles.expoGoWarning}>
+              <Bell size={20} color={GOLD} />
+              <View style={styles.expoGoWarningText}>
+                <Text style={[styles.expoGoWarningTitle, androidTextFix]}>{t('notificationsExpoGoTitle')}</Text>
+                <Text style={[styles.expoGoWarningBody, androidTextFix]}>{t('notificationsExpoGoWarning')}</Text>
+              </View>
+            </View>
+          ) : (
+            <SettingsRow
+              icon={<Bell size={20} color={GOLD} />}
+              title={t('notifications')}
+              subtitle={t('notificationsDescription')}
+              type="toggle"
+              value={settings.notificationsEnabled}
+              onToggle={handleToggleNotifications}
+              disabled={notificationsLoading}
+            />
+          )}
+          {settings.notificationsEnabled && !isExpoGoEnvironment ? (
             <>
               <SettingsRow
                 icon={<Sunrise size={20} color="#E07A3A" />}
@@ -591,6 +602,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
     gap: 4,
+  },
+  expoGoWarning: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    gap: 14,
+  },
+  expoGoWarningText: {
+    flex: 1,
+    gap: 4,
+  },
+  expoGoWarningTitle: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: DEEP_GREEN,
+    textAlign: 'right' as const,
+  },
+  expoGoWarningBody: {
+    fontSize: 13,
+    color: TEXT_MUTED,
+    textAlign: 'right' as const,
+    lineHeight: 19,
   },
   footerOrnament: {
     flexDirection: 'row',

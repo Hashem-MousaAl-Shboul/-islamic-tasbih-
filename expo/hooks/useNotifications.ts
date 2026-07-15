@@ -11,19 +11,37 @@ const NOTIF_TAG = '[Notifications]';
 const MORNING_REMINDER_ID = 'morning-adhkar-reminder';
 const EVENING_REMINDER_ID = 'evening-adhkar-reminder';
 
-Notifications.setNotificationHandler({
-  handleNotification: () =>
-    Promise.resolve({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
-});
+/**
+ * Detects whether the app is running inside Expo Go.
+ * expo-notifications remote push functionality was removed from Expo Go in SDK 53+,
+ * which causes a runtime error on Android even for local-only notifications.
+ */
+export function isExpoGo(): boolean {
+  if (Platform.OS === 'web') return false;
+  return (
+    Constants.executionEnvironment === 'storeClient' ||
+    Constants.appOwnership === 'expo'
+  );
+}
+
+// Only register the notification handler outside Expo Go to avoid the
+// "Android Push notifications removed from Expo Go" runtime error.
+if (!isExpoGo()) {
+  Notifications.setNotificationHandler({
+    handleNotification: () =>
+      Promise.resolve({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+  });
+}
 
 async function ensureAndroidChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
+  if (isExpoGo()) return;
   try {
     const existing = await Notifications.getNotificationChannelAsync('adhkar-reminders');
     if (!existing) {
@@ -41,6 +59,7 @@ async function ensureAndroidChannel(): Promise<void> {
 }
 
 async function requestPermissions(): Promise<boolean> {
+  if (isExpoGo()) return false;
   try {
     const current = await Notifications.getPermissionsAsync();
     if (current.granted) return true;
@@ -94,6 +113,7 @@ async function scheduleReminder(
   title: string,
   body: string,
 ): Promise<void> {
+  if (isExpoGo()) return;
   try {
     await Notifications.cancelScheduledNotificationAsync(id);
 
@@ -126,6 +146,7 @@ async function scheduleReminder(
 }
 
 async function cancelReminder(id: string): Promise<void> {
+  if (isExpoGo()) return;
   try {
     await Notifications.cancelScheduledNotificationAsync(id);
     console.log(NOTIF_TAG, `Cancelled ${id}`);
@@ -140,6 +161,7 @@ export interface NotificationsHook {
   toggleEveningReminder: (enabled: boolean) => void;
   setMorningTime: (time: string) => void;
   setEveningTime: (time: string) => void;
+  isExpoGoEnvironment: boolean;
 }
 
 export function useNotifications(): NotificationsHook {
@@ -191,11 +213,13 @@ export function useNotifications(): NotificationsHook {
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
+    if (isExpoGo()) return;
     void ensureAndroidChannel();
   }, []);
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
+    if (isExpoGo()) return;
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
@@ -205,6 +229,15 @@ export function useNotifications(): NotificationsHook {
 
   const toggleNotifications = useCallback(
     async (enabled: boolean) => {
+      if (isExpoGo()) {
+        Alert.alert(
+          t('notificationsExpoGoTitle'),
+          t('notificationsExpoGoWarning'),
+          [{ text: t('ok'), style: 'default' }],
+        );
+        return;
+      }
+
       if (!enabled) {
         await cancelReminder(MORNING_REMINDER_ID);
         await cancelReminder(EVENING_REMINDER_ID);
@@ -276,5 +309,6 @@ export function useNotifications(): NotificationsHook {
     toggleEveningReminder,
     setMorningTime,
     setEveningTime,
+    isExpoGoEnvironment: isExpoGo(),
   };
 }

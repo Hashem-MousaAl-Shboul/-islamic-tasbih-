@@ -295,4 +295,6 @@ export const ur: TranslationKeys = {
   notificationsPermissionTitle: 'اطلاعات فعال نہیں ہیں',
   notificationsPermissionDenied: 'اطلاعات کی اجازت نہیں دی گئی۔ یاد دہانی حاصل کرنے کے لیے ترتیبات میں فعال کریں۔',
   openSettings: 'ترتیبات کھولیں',
+  notificationsExpoGoTitle: 'پیش نظارہ میں اطلاعات دستیاب نہیں ہیں',
+  notificationsExpoGoWarning: 'ایکسپو گو میں اینڈروئڈ پر اطلاعات کام نہیں کرتیں۔ اذکار کی یاد دہانی اصل ایپ بلڈ میں مکمل طور پر کام کرے گی۔',
 };

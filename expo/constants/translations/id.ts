@@ -295,4 +295,6 @@ export const id: TranslationKeys = {
   notificationsPermissionTitle: 'Notifikasi Tidak Diaktifkan',
   notificationsPermissionDenied: 'Izin notifikasi tidak diberikan. Aktifkan di pengaturan untuk menerima pengingat.',
   openSettings: 'Buka Pengaturan',
+  notificationsExpoGoTitle: 'Notifikasi Tidak Tersedia di Pratinjau',
+  notificationsExpoGoWarning: 'Notifikasi tidak berfungsi di Expo Go di Android. Pengingat adhkar akan berfungsi sepenuhnya di build aplikasi yang sebenarnya.',
 };
