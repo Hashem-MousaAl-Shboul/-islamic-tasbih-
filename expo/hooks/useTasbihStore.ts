@@ -33,6 +33,12 @@ export interface TasbihSettings {
   animationsEnabled: boolean;
   fontSize: 'small' | 'medium' | 'large';
   reducedMotion: boolean;
+
+  notificationsEnabled: boolean;
+  morningReminderEnabled: boolean;
+  morningReminderTime: string;
+  eveningReminderEnabled: boolean;
+  eveningReminderTime: string;
 }
 
 interface TasbihStats {
@@ -143,6 +149,12 @@ const DEFAULT_SETTINGS: TasbihSettings = {
   animationsEnabled: true,
   fontSize: 'medium',
   reducedMotion: false,
+
+  notificationsEnabled: false,
+  morningReminderEnabled: true,
+  morningReminderTime: '06:00',
+  eveningReminderEnabled: true,
+  eveningReminderTime: '17:00',
 };
 
 const DEFAULT_STATS: TasbihStats = {

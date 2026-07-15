@@ -34,7 +34,10 @@
       "permissions": [
         "android.permission.VIBRATE",
         "INTERNET",
-        "com.google.android.gms.permission.AD_ID"
+        "com.google.android.gms.permission.AD_ID",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM"
       ],
       "navigationBarColor": "#F7F4EE",
       "navigationBarStyle": "dark"
@@ -60,7 +63,22 @@
           "userTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "androidChannels": [
+            {
+              "id": "adhkar-reminders",
+              "name": "Adhkar Reminders",
+              "description": "Daily reminders for morning, evening, and after-prayer adhkar",
+              "importance": "high",
+              "lightColor": "#D4A853",
+              "vibration": true
+            }
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

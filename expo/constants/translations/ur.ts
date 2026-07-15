@@ -286,4 +286,13 @@ export const ur: TranslationKeys = {
   termsContactText: 'اگر آپ کو ان استعمال کی شرائط کے بارے میں کوئی سوال ہے تو براہ کرم ہم سے رابطہ کریں:',
   comingSoon: 'جلد آرہا ہے',
   featureComingSoon: 'یہ فیچر جلد دستیاب ہوگا',
+  notifications: 'اطلاعات',
+  notificationsDescription: 'صبح اور شام کے اذکار کے لیے روزانہ یاد دہانی',
+  morningReminder: 'صبح کے اذکار کی یاد دہانی',
+  eveningReminder: 'شام کے اذکار کی یاد دہانی',
+  morningReminderBody: 'صبح کے اذکار کا وقت ہے۔ اپنے دن کا آغاز اللہ کی یاد سے کریں',
+  eveningReminderBody: 'شام کے اذکار کا وقت ہے۔ اللہ کی یاد کو نہ بھولیں',
+  notificationsPermissionTitle: 'اطلاعات فعال نہیں ہیں',
+  notificationsPermissionDenied: 'اطلاعات کی اجازت نہیں دی گئی۔ یاد دہانی حاصل کرنے کے لیے ترتیبات میں فعال کریں۔',
+  openSettings: 'ترتیبات کھولیں',
 };

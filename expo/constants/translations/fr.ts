@@ -286,4 +286,13 @@ export const fr: TranslationKeys = {
   termsContactText: 'Si vous avez des questions sur ces Conditions d\'Utilisation, veuillez nous contacter à :',
   comingSoon: 'Bientôt disponible',
   featureComingSoon: 'Cette fonctionnalité sera bientôt disponible',
+  notifications: 'Notifications',
+  notificationsDescription: 'Rappels quotidiens pour les adhkar du matin et du soir',
+  morningReminder: 'Rappel Adhkar du Matin',
+  eveningReminder: 'Rappel Adhkar du Soir',
+  morningReminderBody: 'Il est temps pour vos adhkar du matin. Commencez votre journée par le rappel d\'Allah',
+  eveningReminderBody: 'Il est temps pour vos adhkar du soir. N\'oubliez pas de rappeler Allah',
+  notificationsPermissionTitle: 'Notifications non activées',
+  notificationsPermissionDenied: 'L\'autorisation de notification n\'a pas été accordée. Veuillez l\'activer dans les paramètres pour recevoir les rappels.',
+  openSettings: 'Ouvrir les paramètres',
 };

@@ -28,6 +28,9 @@ import {
   Sun,
   Info,
   ChevronLeft,
+  Bell,
+  Sunrise,
+  Sunset,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -36,6 +39,7 @@ import Constants from 'expo-constants';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { rateApp, shareApp, contactViaWhatsApp } from '@/utils/globalUtils';
+import { useNotifications } from '@/hooks/useNotifications';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 import AdBanner from '@/components/AdBanner';
@@ -133,6 +137,22 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
+  const {
+    toggleNotifications,
+    toggleMorningReminder,
+    toggleEveningReminder,
+  } = useNotifications();
+  const [notificationsLoading, setNotificationsLoading] = useState<boolean>(false);
+
+  const handleToggleNotifications = useCallback(async () => {
+    if (notificationsLoading) return;
+    setNotificationsLoading(true);
+    try {
+      await toggleNotifications(!settings.notificationsEnabled);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, [notificationsLoading, settings.notificationsEnabled, toggleNotifications]);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
   const buildNumber = Platform.OS === 'ios'
@@ -301,6 +321,40 @@ export default function SettingsScreen() {
             onToggle={handleToggleSound}
             isLast
           />
+        </View>
+
+        <Text style={[styles.sectionTitle, androidTextFix]}>{t('notifications')}</Text>
+        <View style={styles.card}>
+          <SettingsRow
+            icon={<Bell size={20} color={GOLD} />}
+            title={t('notifications')}
+            subtitle={t('notificationsDescription')}
+            type="toggle"
+            value={settings.notificationsEnabled}
+            onToggle={handleToggleNotifications}
+            disabled={notificationsLoading}
+          />
+          {settings.notificationsEnabled ? (
+            <>
+              <SettingsRow
+                icon={<Sunrise size={20} color="#E07A3A" />}
+                title={t('morningReminder')}
+                subtitle={settings.morningReminderTime}
+                type="toggle"
+                value={settings.morningReminderEnabled}
+                onToggle={() => toggleMorningReminder(!settings.morningReminderEnabled)}
+              />
+              <SettingsRow
+                icon={<Sunset size={20} color="#8B5CF6" />}
+                title={t('eveningReminder')}
+                subtitle={settings.eveningReminderTime}
+                type="toggle"
+                value={settings.eveningReminderEnabled}
+                onToggle={() => toggleEveningReminder(!settings.eveningReminderEnabled)}
+                isLast
+              />
+            </>
+          ) : null}
         </View>
 
         <Text style={[styles.sectionTitle, androidTextFix]}>{t('contactSupport')}</Text>

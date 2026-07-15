@@ -286,4 +286,13 @@ export const ar: TranslationKeys = {
   termsContactText: 'إذا كانت لديك أي أسئلة حول شروط الاستخدام هذه، يرجى التواصل معنا على:',
   comingSoon: 'قريباً',
   featureComingSoon: 'هذه الميزة ستكون متاحة قريباً',
+  notifications: 'الإشعارات',
+  notificationsDescription: 'تذكير يومي بأذكار الصباح والمساء',
+  morningReminder: 'تذكير أذكار الصباح',
+  eveningReminder: 'تذكير أذكار المساء',
+  morningReminderBody: 'حان وقت أذكار الصباح، ابدأ يومك بذكر الله',
+  eveningReminderBody: 'حان وقت أذكار المساء، لا تنسَ ذكر الله',
+  notificationsPermissionTitle: 'الإشعارات غير مفعّلة',
+  notificationsPermissionDenied: 'لم يتم منح إذن الإشعارات. يرجى تفعيلها من الإعدادات لتلقي تذكيرات الأذكار.',
+  openSettings: 'فتح الإعدادات',
 };

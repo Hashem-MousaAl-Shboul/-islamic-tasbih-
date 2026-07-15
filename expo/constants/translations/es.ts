@@ -286,4 +286,13 @@ export const es: TranslationKeys = {
   termsContactText: 'Si tienes alguna pregunta sobre estos Términos de Uso, contáctanos en:',
   comingSoon: 'Próximamente',
   featureComingSoon: 'Esta función estará disponible pronto',
+  notifications: 'Notificaciones',
+  notificationsDescription: 'Recordatorios diarios para los adhkar de la mañana y la tarde',
+  morningReminder: 'Recordatorio de Adhkar Matutino',
+  eveningReminder: 'Recordatorio de Adhkar Vespertino',
+  morningReminderBody: 'Es hora de tus adhkar de la mañana. Comienza tu día recordando a Allah',
+  eveningReminderBody: 'Es hora de tus adhkar de la tarde. No olvides recordar a Allah',
+  notificationsPermissionTitle: 'Notificaciones no activadas',
+  notificationsPermissionDenied: 'No se concedió permiso de notificaciones. Habilítalo en configuración para recibir recordatorios.',
+  openSettings: 'Abrir configuración',
 };

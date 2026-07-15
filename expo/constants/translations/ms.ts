@@ -286,4 +286,13 @@ export const ms: TranslationKeys = {
   termsContactText: 'Jika anda mempunyai sebarang soalan mengenai Terma Penggunaan ini, sila hubungi kami di:',
   comingSoon: 'Akan datang',
   featureComingSoon: 'Ciri ini akan tersedia tidak lama lagi',
+  notifications: 'Pemberitahuan',
+  notificationsDescription: 'Peringatan harian untuk adhkar pagi dan petang',
+  morningReminder: 'Peringatan Adhkar Pagi',
+  eveningReminder: 'Peringatan Adhkar Petang',
+  morningReminderBody: 'Tibanya masanya untuk adhkar pagi anda. Mulakan hari anda dengan mengingati Allah',
+  eveningReminderBody: 'Tibanya masanya untuk adhkar petang anda. Jangan lupa mengingati Allah',
+  notificationsPermissionTitle: 'Pemberitahuan Tidak Diaktifkan',
+  notificationsPermissionDenied: 'Kebenaran pemberitahuan tidak diberikan. Sila aktifkan dalam tetapan untuk menerima peringatan.',
+  openSettings: 'Buka Tetapan',
 };

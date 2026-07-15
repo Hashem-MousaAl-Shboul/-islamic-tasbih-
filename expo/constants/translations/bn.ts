@@ -286,4 +286,13 @@ export const bn: TranslationKeys = {
   termsContactText: 'এই ব্যবহারের শর্তাবলী সম্পর্কে আপনার কোন প্রশ্ন থাকলে, অনুগ্রহ করে আমাদের সাথে যোগাযোগ করুন:',
   comingSoon: 'শীঘ্রই আসছে',
   featureComingSoon: 'এই বৈশিষ্ট্যটি শীঘ্রই উপলব্ধ হবে',
+  notifications: 'বিজ্ঞপ্তি',
+  notificationsDescription: 'সকাল এবং সন্ধ্যার অজকারের জন্য দৈনিক অনুস্মারক',
+  morningReminder: 'সকালের অজকার অনুস্মারক',
+  eveningReminder: 'সন্ধ্যার অজকার অনুস্মারক',
+  morningReminderBody: 'আপনার সকালের অজকারের সময় হয়েছে। আল্লাহর স্মরণ দিয়ে আপনার দিন শুরু করুন',
+  eveningReminderBody: 'আপনার সন্ধ্যার অজকারের সময় হয়েছে। আল্লাহর স্মরণ ভুলবেন না',
+  notificationsPermissionTitle: 'বিজ্ঞপ্তি সক্রিয় নয়',
+  notificationsPermissionDenied: 'বিজ্ঞপ্তির অনুমতি দেওয়া হয়নি। অনুস্মারক পেতে সেটিংসে সক্রিয় করুন।',
+  openSettings: 'সেটিংস খুলুন',
 };

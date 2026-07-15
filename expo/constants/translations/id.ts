@@ -286,4 +286,13 @@ export const id: TranslationKeys = {
   termsContactText: 'Jika Anda memiliki pertanyaan tentang Syarat Penggunaan ini, silakan hubungi kami di:',
   comingSoon: 'Segera hadir',
   featureComingSoon: 'Fitur ini akan segera tersedia',
+  notifications: 'Notifikasi',
+  notificationsDescription: 'Pengingat harian untuk adhkar pagi dan sore',
+  morningReminder: 'Pengingat Adhkar Pagi',
+  eveningReminder: 'Pengingat Adhkar Sore',
+  morningReminderBody: 'Saatnya untuk adhkar pagi Anda. Mulai hari Anda dengan mengingat Allah',
+  eveningReminderBody: 'Saatnya untuk adhkar sore Anda. Jangan lupa mengingat Allah',
+  notificationsPermissionTitle: 'Notifikasi Tidak Diaktifkan',
+  notificationsPermissionDenied: 'Izin notifikasi tidak diberikan. Aktifkan di pengaturan untuk menerima pengingat.',
+  openSettings: 'Buka Pengaturan',
 };

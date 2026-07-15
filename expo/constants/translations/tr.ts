@@ -286,4 +286,13 @@ export const tr: TranslationKeys = {
   termsContactText: 'Bu Kullanım Şartları hakkında herhangi bir sorunuz varsa, lütfen bize şu adresten ulaşın:',
   comingSoon: 'Yakında',
   featureComingSoon: 'Bu özellik yakında kullanılabilir olacak',
+  notifications: 'Bildirimler',
+  notificationsDescription: 'Sabah ve akşam adhkar için günlük hatırlatmalar',
+  morningReminder: 'Sabah Adhkar Hatırlatması',
+  eveningReminder: 'Akşam Adhkar Hatırlatması',
+  morningReminderBody: 'Sabah adhkarınızın zamanı. Gününüze Allah\'ı anarak başlayın',
+  eveningReminderBody: 'Akşam adhkarınızın zamanı. Allah\'ı anmayı unutmayın',
+  notificationsPermissionTitle: 'Bildirimler Etkin Değil',
+  notificationsPermissionDenied: 'Bildirim izni verilmedi. Hatırlatmaları almak için ayarlardan etkinleştirin.',
+  openSettings: 'Ayarları Aç',
 };

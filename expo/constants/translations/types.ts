@@ -284,4 +284,13 @@ export interface TranslationKeys {
   termsContactText: string;
   comingSoon: string;
   featureComingSoon: string;
+  notifications: string;
+  notificationsDescription: string;
+  morningReminder: string;
+  eveningReminder: string;
+  morningReminderBody: string;
+  eveningReminderBody: string;
+  notificationsPermissionTitle: string;
+  notificationsPermissionDenied: string;
+  openSettings: string;
 }

@@ -286,4 +286,13 @@ export const en: TranslationKeys = {
   termsContactText: 'If you have any questions about these Terms of Use, please contact us at:',
   comingSoon: 'Coming Soon',
   featureComingSoon: 'This feature will be available soon',
+  notifications: 'Notifications',
+  notificationsDescription: 'Daily reminders for morning and evening adhkar',
+  morningReminder: 'Morning Adhkar Reminder',
+  eveningReminder: 'Evening Adhkar Reminder',
+  morningReminderBody: 'Time for your morning adhkar. Start your day with the remembrance of Allah',
+  eveningReminderBody: 'Time for your evening adhkar. Don\'t forget to remember Allah',
+  notificationsPermissionTitle: 'Notifications Not Enabled',
+  notificationsPermissionDenied: 'Notification permission was not granted. Please enable it in settings to receive adhkar reminders.',
+  openSettings: 'Open Settings',
 };
