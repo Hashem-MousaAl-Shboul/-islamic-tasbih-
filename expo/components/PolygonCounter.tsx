@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform, ViewStyle } from 'react-native';
 import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import { CheckCircle } from 'lucide-react-native';
@@ -9,6 +9,16 @@ const DEEP_GOLD = '#B8923E' as const;
 const CREAM = '#FAF4E8' as const;
 const IVORY = '#FFFDF8' as const;
 const DEEP_GREEN = '#1B4332' as const;
+
+let idCounter = 0;
+function useUniqueId(prefix: string): string {
+  const idRef = useRef<string | null>(null);
+  if (idRef.current === null) {
+    idCounter += 1;
+    idRef.current = `${prefix}-${idCounter}`;
+  }
+  return idRef.current;
+}
 
 interface PolygonCounterProps {
   count: number;
@@ -76,8 +86,9 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
     }
     return count.toLocaleString('ar-SA');
   }, [count, targetCount]);
-  const gradientId = useMemo(() => `polygonFill-${Math.random().toString(36).substr(2, 9)}`, []);
-  const borderGradientId = useMemo(() => `polygonBorder-${Math.random().toString(36).substr(2, 9)}`, []);
+
+  const gradientId = useUniqueId('polygonFill');
+  const borderGradientId = useUniqueId('polygonBorder');
   const effectiveStrokeWidth = strokeWidth ?? Math.max(2, size * 0.016);
 
   const svgContent = useMemo(() => (
@@ -88,9 +99,9 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
           <Stop offset="1" stopColor={fillColor} />
         </SvgLinearGradient>
         <SvgLinearGradient id={borderGradientId} x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor={GOLD} />
+          <Stop offset="0" stopColor={borderColor} />
           <Stop offset="0.5" stopColor={DEEP_GOLD} />
-          <Stop offset="1" stopColor={GOLD} />
+          <Stop offset="1" stopColor={borderColor} />
         </SvgLinearGradient>
       </Defs>
       <Path
@@ -101,7 +112,7 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
         strokeLinejoin="round"
       />
     </Svg>
-  ), [size, gradientId, borderGradientId, path, fillColor, effectiveStrokeWidth]);
+  ), [size, gradientId, borderGradientId, path, fillColor, borderColor, effectiveStrokeWidth]);
 
   const textContent = (
     <View style={styles.textContainer} pointerEvents="none">

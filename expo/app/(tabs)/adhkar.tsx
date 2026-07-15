@@ -302,28 +302,28 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
                 {expanded ? t('readingModeActive') : t('tapToRead')}
               </Text>
             </View>
-            {item.repeatCount && item.repeatCount > 1 && (
-              Platform.OS === 'android' ? (
-                <PolygonCounter
-                  count={currentCount}
-                  targetCount={targetCount}
-                  size={56}
-                  onPress={handleCounterPress}
-                  onLongPress={handleCounterLongPress}
-                  textColor={isCompleted ? GOLD : DEEP_GREEN}
-                  fillColor={isCompleted ? GOLD + '18' : CREAM}
-                  testID={`adhkar-repeat-counter-${item.id}`}
-                  accessibilityLabel={`${currentCount} / ${targetCount} ${t('times')}`}
-                  style={{ elevation: isCompleted ? 6 : 2 }}
-                />
-              ) : (
-                <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
-                  <Text style={[styles.repeatBadgeText, { color: accent }, androidTextFix]}>
-                    {getRepeatLabel(item.repeatCount, t)}
-                  </Text>
-                </View>
-              )
-            )}
+            {Platform.OS === 'android' ? (
+            <PolygonCounter
+              count={currentCount}
+              targetCount={targetCount}
+              size={56}
+              onPress={handleCounterPress}
+              onLongPress={handleCounterLongPress}
+              textColor={isCompleted ? GOLD : DEEP_GREEN}
+              fillColor={isCompleted ? GOLD + '18' : CREAM}
+              testID={`adhkar-repeat-counter-${item.id}`}
+              accessibilityLabel={`${currentCount} / ${targetCount} ${t('times')}`}
+              style={{ elevation: isCompleted ? 6 : 2 }}
+            />
+          ) : (
+            item.repeatCount && item.repeatCount > 1 && (
+              <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
+                <Text style={[styles.repeatBadgeText, { color: accent }, androidTextFix]}>
+                  {getRepeatLabel(item.repeatCount, t)}
+                </Text>
+              </View>
+            )
+          )}
           </View>
         </Pressable>
       </View>
