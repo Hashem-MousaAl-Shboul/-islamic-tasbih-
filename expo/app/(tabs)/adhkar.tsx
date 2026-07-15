@@ -8,6 +8,7 @@ import { ADHKAR_LIST } from '@/constants/dhikr';
 import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Lock } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import AdBanner from '@/components/AdBanner';
+import { PolygonCounter } from '@/components/PolygonCounter';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 const GOLD = '#D4A853';
@@ -285,11 +286,22 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
               </Text>
             </View>
             {item.repeatCount && item.repeatCount > 1 && (
-              <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
-                <Text style={[styles.repeatBadgeText, { color: accent }, androidTextFix]}>
-                  {getRepeatLabel(item.repeatCount, t)}
-                </Text>
-              </View>
+              Platform.OS === 'android' ? (
+                <PolygonCounter
+                  count={item.repeatCount}
+                  size={44}
+                  textColor={accent}
+                  testID={`adhkar-repeat-counter-${item.id}`}
+                  accessibilityLabel={`${item.repeatCount} ${t('times')}`}
+                  style={{ elevation: 2 }}
+                />
+              ) : (
+                <View style={[styles.repeatBadge, { backgroundColor: accent + '14' }]}>
+                  <Text style={[styles.repeatBadgeText, { color: accent }, androidTextFix]}>
+                    {getRepeatLabel(item.repeatCount, t)}
+                  </Text>
+                </View>
+              )
             )}
           </View>
         </Pressable>

@@ -17,6 +17,7 @@ interface PolygonCounterProps {
   fillColor?: string;
   borderColor?: string;
   textColor?: string;
+  strokeWidth?: number;
   testID?: string;
   accessibilityLabel?: string;
   style?: ViewStyle;
@@ -49,6 +50,7 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
   fillColor = CREAM,
   borderColor = GOLD,
   textColor = DEEP_GREEN,
+  strokeWidth,
   testID,
   accessibilityLabel,
   style,
@@ -65,6 +67,55 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
   const displayCount = useMemo(() => count.toLocaleString('ar-SA'), [count]);
   const gradientId = useMemo(() => `polygonFill-${Math.random().toString(36).substr(2, 9)}`, []);
   const borderGradientId = useMemo(() => `polygonBorder-${Math.random().toString(36).substr(2, 9)}`, []);
+  const effectiveStrokeWidth = strokeWidth ?? Math.max(2, size * 0.016);
+
+  const svgContent = useMemo(() => (
+    <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={StyleSheet.absoluteFill}>
+      <Defs>
+        <SvgLinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor={IVORY} />
+          <Stop offset="1" stopColor={fillColor} />
+        </SvgLinearGradient>
+        <SvgLinearGradient id={borderGradientId} x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor={GOLD} />
+          <Stop offset="0.5" stopColor={DEEP_GOLD} />
+          <Stop offset="1" stopColor={GOLD} />
+        </SvgLinearGradient>
+      </Defs>
+      <Path
+        d={path}
+        fill={`url(#${gradientId})`}
+        stroke={`url(#${borderGradientId})`}
+        strokeWidth={effectiveStrokeWidth}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  ), [size, gradientId, borderGradientId, path, fillColor, effectiveStrokeWidth]);
+
+  const textContent = (
+    <View style={styles.textContainer} pointerEvents="none">
+      <Text style={[styles.countText, { color: textColor, fontSize: size * 0.28 }]}>
+        {displayCount}
+      </Text>
+    </View>
+  );
+
+  if (!onPress) {
+    return (
+      <View
+        testID={testID}
+        accessibilityLabel={accessibilityLabel}
+        style={[
+          styles.container,
+          { width: size, height: size },
+          style,
+        ]}
+      >
+        {svgContent}
+        {textContent}
+      </View>
+    );
+  }
 
   const handlePress = () => {
     if (haptic && Platform.OS !== 'web') {
@@ -74,7 +125,7 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
         console.log('[PolygonCounter] Haptic error:', error);
       }
     }
-    onPress?.();
+    onPress();
   };
 
   return (
@@ -92,31 +143,8 @@ const PolygonCounterComponent: React.FC<PolygonCounterProps> = ({
         pressed && styles.pressed,
       ]}
     >
-      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={StyleSheet.absoluteFill}>
-        <Defs>
-          <SvgLinearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={IVORY} />
-            <Stop offset="1" stopColor={fillColor} />
-          </SvgLinearGradient>
-          <SvgLinearGradient id={borderGradientId} x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor={GOLD} />
-            <Stop offset="0.5" stopColor={DEEP_GOLD} />
-            <Stop offset="1" stopColor={GOLD} />
-          </SvgLinearGradient>
-        </Defs>
-        <Path
-          d={path}
-          fill={`url(#${gradientId})`}
-          stroke={`url(#${borderGradientId})`}
-          strokeWidth={3}
-          strokeLinejoin="round"
-        />
-      </Svg>
-      <View style={styles.textContainer} pointerEvents="none">
-        <Text style={[styles.countText, { color: textColor, fontSize: size * 0.28 }]}>
-          {displayCount}
-        </Text>
-      </View>
+      {svgContent}
+      {textContent}
     </Pressable>
   );
 };

@@ -16,7 +16,6 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCard from '@/components/TasbihCard';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
-import { PolygonCounter } from '@/components/PolygonCounter';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
@@ -338,13 +337,17 @@ export default function TasbihScreen() {
             <View style={styles.progressRingContainer}>
               <CircularProgress progress={progressPercent / 100} color={selectedItem.color} />
               <Animated.View style={[styles.counterButtonContainer, { transform: [{ scale: pulseAnim }] }]}>
-                <PolygonCounter
-                  count={selectedItem.count}
-                  size={180}
+                <TouchableOpacity
+                  style={styles.mainCounterButton}
                   onPress={handleIncrement}
+                  activeOpacity={0.85}
                   testID="increment-button"
                   accessibilityLabel="Increment counter"
-                />
+                >
+                  <Text style={styles.mainCounterButtonText}>
+                    {selectedItem.count.toLocaleString('ar-SA')}
+                  </Text>
+                </TouchableOpacity>
               </Animated.View>
               {selectedItem.isCompleted && (
                 <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
@@ -538,6 +541,38 @@ const styles = StyleSheet.create({
   progressArc: { position: 'absolute' },
   progressArcFill: { position: 'absolute', borderLeftColor: 'transparent', borderBottomColor: 'transparent' },
   counterButtonContainer: { position: 'absolute', zIndex: 10 },
+  mainCounterButton: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: '#FAF4E8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: GOLD,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0px 6px 24px rgba(0,0,0,0.12)',
+      },
+    }),
+  },
+  mainCounterButtonText: {
+    fontSize: 50,
+    fontWeight: '800' as const,
+    color: DEEP_GREEN,
+    textAlign: 'center' as const,
+    includeFontPadding: false,
+    textAlignVertical: 'center' as const,
+  },
   completedBadge: { position: 'absolute' as const, bottom: 10, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
   completedText: { fontSize: 12, fontWeight: '700' as const, color: '#FFFFFF' },
   tapHint: { fontSize: 12, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 8 },
