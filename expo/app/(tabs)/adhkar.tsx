@@ -6,7 +6,7 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useFavoritesStore } from '@/hooks/useFavoritesStore';
 import { useAdhkarCountsStore } from '@/hooks/useAdhkarCountsStore';
 import { ADHKAR_LIST } from '@/constants/dhikr';
-import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, Lock, RotateCcw, Undo, MoreVertical } from 'lucide-react-native';
+import { Sparkles, Sun, Moon, Clock, Heart, Star, Share2, MoonStar, Sunrise, RotateCcw, Undo, MoreVertical } from 'lucide-react-native';
 import { AdhkarItem } from '@/types';
 import * as Haptics from 'expo-haptics';
 import AdBanner from '@/components/AdBanner';
@@ -160,11 +160,6 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
     onLockedPress();
   }, [onLockedPress]);
 
-  const handleLockedSpeak = useCallback((e?: any) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    onLockedPress();
-  }, [onLockedPress]);
-
   const handleCounterPress = useCallback((e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
     increment(item.id, targetCount);
@@ -268,24 +263,6 @@ const AdhkarCardComponent: React.FC<AdhkarCardProps> = ({ item, index: _index, r
           </View>
         </View>
 
-        <View style={styles.speakRow}>
-          <Pressable
-            style={[styles.speakButton, styles.speakButtonLocked]}
-            onPress={handleLockedSpeak}
-            android_ripple={androidRipple('rgba(0,0,0,0.08)')}
-            testID="adhkar-speak-button"
-            accessibilityRole="button"
-          >
-            <View style={styles.comingSoonBadgeMini}>
-              <Text style={[styles.comingSoonBadgeMiniText, androidTextFix]}>{t('comingSoon')}</Text>
-            </View>
-            <Text style={[styles.speakButtonText, styles.speakButtonTextLocked, androidTextFix]}>
-              {t('listenToAdhkar')}
-            </Text>
-            <Lock size={14} color={TEXT_MUTED} />
-          </Pressable>
-        </View>
-
         <View style={styles.androidCardBody}>
           <View style={styles.titleRow}>
             <GoldOrnament />
@@ -359,109 +336,6 @@ const AdhkarCard = memo(
 );
 
 AdhkarCard.displayName = 'AdhkarCard';
-
-const AudioWaveAnimation: React.FC<{ color: string; isPlaying: boolean }> = memo(({ color, isPlaying }) => {
-  const bars = useRef([0, 1, 2, 3].map(() => new Animated.Value(0.3))).current;
-
-  useEffect(() => {
-    if (isPlaying) {
-      const animations = bars.map((bar, i) =>
-        Animated.loop(
-          Animated.sequence([
-            Animated.timing(bar, {
-              toValue: 1,
-              duration: 300 + i * 100,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: false,
-            }),
-            Animated.timing(bar, {
-              toValue: 0.3,
-              duration: 300 + i * 100,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: false,
-            }),
-          ])
-        )
-      );
-      animations.forEach(a => a.start());
-      return () => animations.forEach(a => a.stop());
-    } else {
-      bars.forEach(bar => bar.setValue(0.3));
-    }
-  }, [isPlaying, bars]);
-
-  return (
-    <View style={styles.audioWaveContainer}>
-      {bars.map((bar, i) => (
-        <Animated.View
-          key={i}
-          style={[
-            styles.audioWaveBar,
-            {
-              backgroundColor: color,
-              height: bar.interpolate({
-                inputRange: [0.3, 1],
-                outputRange: [6, 16],
-              }),
-            },
-          ]}
-        />
-      ))}
-    </View>
-  );
-});
-
-AudioWaveAnimation.displayName = 'AudioWaveAnimation';
-
-interface PlayAllButtonProps {
-  isPlayingAll: boolean;
-  onPlayAll: () => void;
-  onStopAll: () => void;
-  itemCount: number;
-  currentIndex: number;
-}
-
-const PlayAllButtonComponent: React.FC<PlayAllButtonProps> = ({ isPlayingAll: _isPlayingAll, onPlayAll, onStopAll: _onStopAll, itemCount, currentIndex: _currentIndex }) => {
-  const { t } = useLanguageStore();
-
-  const handleLockedPress = useCallback(() => {
-    Alert.alert(t('comingSoon'), t('featureComingSoon'));
-  }, [t]);
-
-  if (itemCount === 0) return null;
-
-  return (
-    <View style={styles.playAllContainer}>
-      <Pressable
-        style={[styles.playAllButton, styles.playAllButtonLocked]}
-        onPress={handleLockedPress}
-        android_ripple={androidRipple('rgba(0,0,0,0.06)')}
-        testID="play-all-button"
-        accessibilityRole="button"
-      >
-        <View style={styles.playAllLeft}>
-          <View style={[styles.playAllIconCircle, styles.playAllIconCircleLocked]}>
-            <Lock size={18} color={TEXT_MUTED} />
-          </View>
-          <View style={styles.playAllTextContainer}>
-            <Text style={[styles.playAllTitle, styles.playAllTitleLocked, androidTextFix]}>
-              {t('listenToAdhkar')}
-            </Text>
-            <Text style={[styles.playAllSubtitle, androidTextFix]}>
-              {itemCount} {t('adhkar')}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.comingSoonBadge}>
-          <Text style={[styles.comingSoonBadgeText, androidTextFix]}>{t('comingSoon')}</Text>
-        </View>
-      </Pressable>
-    </View>
-  );
-};
-
-const PlayAllButton = memo(PlayAllButtonComponent);
-PlayAllButton.displayName = 'PlayAllButton';
 
 const AdhkarHeader = memo<{ selectedFilter: FilterType; onFilterChange: (filter: FilterType) => void }>(({ selectedFilter, onFilterChange }) => {
   const { t } = useLanguageStore();
@@ -672,18 +546,10 @@ export default function AdhkarScreen() {
   return (
     <View style={styles.container} testID="adhkar-screen"
       accessibilityLabel="Adhkar Screen"
-      accessibilityHint="Browse and listen to adhkar collections">
+      accessibilityHint="Browse adhkar collections">
       <ErrorBoundary t={t}>
         <UnifiedHeader title={t('adhkar') || 'الأذكار'} testID="adhkar-header" />
         <AdhkarHeader selectedFilter={selectedFilter} onFilterChange={handleFilterChange} />
-
-        <PlayAllButton
-          isPlayingAll={false}
-          onPlayAll={handleLockedPress}
-          onStopAll={handleLockedPress}
-          itemCount={filteredAdhkar.length}
-          currentIndex={0}
-        />
 
         <View style={styles.contentContainer}>
           <FlatList
@@ -970,129 +836,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 180,
-  },
-  speakRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end' as const,
-    marginBottom: 10,
-  },
-  speakButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(27,67,50,0.06)',
-    overflow: 'hidden' as const,
-  },
-  speakButtonLocked: {
-    backgroundColor: 'rgba(0,0,0,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-  },
-  speakButtonText: {
-    fontSize: 12,
-    fontWeight: '600' as const,
-    color: DEEP_GREEN,
-  },
-  speakButtonTextLocked: {
-    color: TEXT_MUTED,
-  },
-  comingSoonBadgeMini: {
-    backgroundColor: GOLD + '20',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginRight: 4,
-  },
-  comingSoonBadgeMiniText: {
-    fontSize: 9,
-    fontWeight: '700' as const,
-    color: GOLD,
-  },
-  audioWaveContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    height: 18,
-  },
-  audioWaveBar: {
-    width: 3,
-    borderRadius: 2,
-  },
-  playAllContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
-    backgroundColor: IVORY,
-  },
-  playAllButton: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: CARD_WHITE,
-    borderWidth: 1.5,
-    borderColor: DEEP_GREEN + '20',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 4,
-    overflow: 'hidden' as const,
-  },
-  playAllButtonLocked: {
-    opacity: 0.75,
-    borderColor: 'rgba(0,0,0,0.08)',
-  },
-  playAllLeft: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 14,
-  },
-  playAllIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: DEEP_GREEN + '10',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playAllIconCircleLocked: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-  },
-  playAllTextContainer: {
-    gap: 2,
-  },
-  playAllTitle: {
-    fontSize: 15,
-    fontWeight: '700' as const,
-    color: DEEP_GREEN,
-    textAlign: 'right' as const,
-  },
-  playAllTitleLocked: {
-    color: TEXT_MUTED,
-  },
-  comingSoonBadge: {
-    backgroundColor: GOLD + '20',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  comingSoonBadgeText: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: GOLD,
-  },
-  playAllSubtitle: {
-    fontSize: 12,
-    fontWeight: '500' as const,
-    color: TEXT_MUTED,
-    textAlign: 'right' as const,
   },
   playAllProgress: {
     fontSize: 12,
