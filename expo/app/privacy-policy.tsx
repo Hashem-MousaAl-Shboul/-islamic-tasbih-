@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, MessageCircle } from 'lucide-react-native';
+import { ArrowRight, MessageCircle } from 'lucide-react-native';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { contactViaWhatsApp } from '@/utils/globalUtils';
 
@@ -30,16 +30,16 @@ export default function PrivacyPolicyScreen() {
       accessibilityHint="Read our privacy policy">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
+          <View style={styles.headerSpacer} />
+          <Text style={styles.headerTitle}>{t('privacy')}</Text>
           <TouchableOpacity
             onPress={() => router.back()}
-            style={styles.backButton}
+            style={styles.actionButton}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             testID="privacy-back-button"
           >
-            <ArrowLeft size={22} color="#fff" />
+            <ArrowRight size={22} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('privacy')}</Text>
-          <View style={styles.backButton} />
         </View>
         <View style={styles.headerOrnament}>
           <View style={styles.ornamentLine} />
@@ -117,7 +117,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 18,
   },
-  backButton: {
+  headerSpacer: {
+    width: 40,
+  },
+  actionButton: {
     width: 40,
     height: 40,
     borderRadius: 12,
