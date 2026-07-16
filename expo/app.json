@@ -70,6 +70,7 @@
           }
         }
       ],
+      "./plugins/withKotlinMetadataCompat",
       [
         "expo-notifications",
         {
