@@ -32,6 +32,7 @@ import {
   Sunrise,
   Sunset,
   Sun as SunIcon,
+  TrendingUp,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -297,6 +298,11 @@ export default function SettingsScreen() {
     );
   }, [t, resetAllData]);
 
+  const handleOpenStatistics = useCallback(() => {
+    console.log(SETTINGS_TAG, 'Opening statistics screen');
+    router.push('/statistics');
+  }, [router]);
+
   const handleOpenPrivacy = useCallback(() => {
     console.log(SETTINGS_TAG, 'Opening in-app privacy policy');
     router.push('/privacy-policy');
@@ -344,6 +350,18 @@ export default function SettingsScreen() {
             type="select"
             value={languageInfo?.nativeName || 'العربية'}
             onPress={() => setShowLanguagePicker(true)}
+            isLast
+          />
+        </View>
+
+        <Text style={[styles.sectionTitle, androidTextFix]}>{t('statistics')}</Text>
+        <View style={styles.card}>
+          <SettingsRow
+            icon={<TrendingUp size={20} color="#2D8B6F" />}
+            title={t('statistics') || 'الإحصائيات'}
+            subtitle={t('totalDhikr') || 'إجمالي الذكر'}
+            type="action"
+            onPress={handleOpenStatistics}
             isLast
           />
         </View>

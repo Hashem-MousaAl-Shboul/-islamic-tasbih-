@@ -1,6 +1,7 @@
 import React, { memo, useMemo, useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Pressable, Dimensions, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import {
   TrendingUp,
   Calendar,
@@ -9,12 +10,12 @@ import {
   Flame,
   Star,
   RefreshCw,
+  ArrowRight,
 } from 'lucide-react-native';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import i18n from '@/constants/translations';
 import AdBanner from '@/components/AdBanner';
-import UnifiedHeader from '@/components/UnifiedHeader';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -104,6 +105,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
   const { stats, tasbihItems, settings, resetStats, saveData } = useTasbihStore();
   const { currentLanguage } = useLanguageStore();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const isRTL = currentLanguage === 'ar' || currentLanguage === 'ur';
 
@@ -179,7 +181,25 @@ const StatisticsScreen = memo(function StatisticsScreen() {
     <View style={styles.container} testID="statistics-screen"
       accessibilityLabel="Statistics Screen"
       accessibilityHint="View your dhikr progress and stats">
-      <UnifiedHeader title={i18n.t('statistics') || 'الإحصائيات'} testID="statistics-header" />
+      <View style={[styles.header, { paddingTop: insets.top }]} testID="statistics-header">
+        <View style={styles.headerRow}>
+          <View style={styles.headerSpacer} />
+          <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.actionButton}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            testID="statistics-back-button"
+          >
+            <ArrowRight size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.headerOrnament}>
+          <View style={styles.ornamentLine} />
+          <View style={styles.ornamentDiamond} />
+          <View style={styles.ornamentLine} />
+        </View>
+      </View>
 
       <ScrollView
         style={styles.scrollContainer}
@@ -325,6 +345,62 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: IVORY,
+  },
+  header: {
+    backgroundColor: DEEP_GREEN,
+    paddingBottom: 18,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+  },
+  headerSpacer: {
+    width: 44,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+    writingDirection: 'rtl',
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerOrnament: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  ornamentLine: {
+    width: 32,
+    height: 1,
+    backgroundColor: GOLD,
+    opacity: 0.6,
+  },
+  ornamentDiamond: {
+    width: 6,
+    height: 6,
+    backgroundColor: GOLD,
+    transform: [{ rotate: '45deg' }],
   },
   scrollContainer: {
     flex: 1,
