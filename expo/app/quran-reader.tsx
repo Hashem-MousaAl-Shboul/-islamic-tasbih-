@@ -7,7 +7,6 @@ import {
   FlatList,
   Platform,
   ActivityIndicator,
-  Alert,
   Modal,
   ScrollView,
 } from 'react-native';
@@ -19,19 +18,20 @@ import {
   ChevronLeft,
   Volume2,
   RotateCcw,
+  Repeat,
+  Repeat1,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { useQuery } from '@tanstack/react-query';
 
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useReciterStore } from '@/hooks/useReciterStore';
 import { useQuranStore } from '@/hooks/useQuranStore';
-import { getQuranRecitationUrl, RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
+import { useQuranAudio } from '@/hooks/useQuranAudio';
+import { RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
 import { SURAHS, getSurahByNumber, getSurahTypeLabel } from '@/utils/quranData';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { androidTextFix } from '@/utils/androidOptimizations';
-import { stopAudio as stopYasAI } from '@/utils/yasAI';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -82,19 +82,25 @@ export default function QuranReaderScreen() {
   const { t } = useLanguageStore();
   const { currentReciter, changeReciter } = useReciterStore();
   const { saveLastRead } = useQuranStore();
+  const {
+    currentSurah: audioSurah,
+    isPlaying,
+    isLoading: isLoadingAudio,
+    position,
+    duration,
+    repeatMode,
+    playSurah,
+    togglePlayPause,
+    stop,
+    seekTo,
+    toggleRepeat,
+    isCurrentSurah,
+  } = useQuranAudio();
 
   const surahNumber = parseInt(params.surah ?? '1', 10);
   const surahMeta = useMemo(() => getSurahByNumber(surahNumber), [surahNumber]);
 
-  const [player, setPlayer] = useState<AudioPlayer | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
-  const [position, setPosition] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(0);
   const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
-
-  const playerRef = useRef<AudioPlayer | null>(null);
-  const statusListenerRef = useRef<{ remove: () => void } | null>(null);
 
   const { data: verses, isLoading, isError, refetch } = useQuery<Verse[]>({
     queryKey: ['quran-verses', surahNumber],
@@ -116,143 +122,56 @@ export default function QuranReaderScreen() {
     }
   }, [surahNumber, surahMeta, saveLastRead]);
 
-  useEffect(() => {
-    return () => {
-      if (statusListenerRef.current) {
-        statusListenerRef.current.remove();
-        statusListenerRef.current = null;
-      }
-      if (playerRef.current) {
-        try { playerRef.current.remove(); } catch {}
-        playerRef.current = null;
-      }
-    };
-  }, []);
-
-  const setupAudio = useCallback(async () => {
-    try {
-      if (Platform.OS !== 'web') {
-        await setAudioModeAsync({
-          playsInSilentMode: true,
-          shouldPlayInBackground: true,
-          interruptionMode: 'duckOthers',
-          shouldRouteThroughEarpiece: false,
-          allowsRecording: false,
-        });
-      }
-    } catch (error) {
-      console.error('[QuranReader] Audio setup error:', error);
-    }
-  }, []);
-
-  const loadAndPlayAudio = useCallback(async (reciter: ReciterId) => {
-    try {
-      setIsLoadingAudio(true);
-      try { await stopYasAI(); } catch {}
-
-      if (playerRef.current) {
-        if (statusListenerRef.current) {
-          statusListenerRef.current.remove();
-          statusListenerRef.current = null;
-        }
-        try { playerRef.current.remove(); } catch {}
-        setPlayer(null);
-        playerRef.current = null;
-      }
-
-      const audioUrl = getQuranRecitationUrl(surahNumber, reciter);
-      if (!audioUrl) {
-        Alert.alert(t('error'), t('errorLoadingVerses'));
-        return;
-      }
-
-      await setupAudio();
-
-      const newPlayer = createAudioPlayer({ uri: audioUrl });
-      newPlayer.volume = 1.0;
-
-      statusListenerRef.current = newPlayer.addListener('playbackStatusUpdate', (status: any) => {
-        if (!status?.isLoaded) return;
-        const nextIsPlaying = Boolean(status.playing);
-        const nextPos = Number(status.currentTime ?? 0) * 1000;
-        const nextDur = Number(status.duration ?? 0) * 1000;
-        setIsPlaying(prev => (prev !== nextIsPlaying ? nextIsPlaying : prev));
-        setPosition(prev => (prev !== nextPos ? nextPos : prev));
-        setDuration(prev => (prev !== nextDur ? nextDur : prev));
-        if (status.didJustFinish) {
-          setIsPlaying(false);
-          setPosition(0);
-        }
-      });
-
-      playerRef.current = newPlayer;
-      setPlayer(newPlayer);
-      newPlayer.play();
-      setIsPlaying(true);
-
-      if (Platform.OS !== 'web') {
-        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      }
-    } catch (error) {
-      console.error('[QuranReader] Load audio error:', error);
-      Alert.alert(t('error'), t('errorLoadingVerses'));
-    } finally {
-      setIsLoadingAudio(false);
-    }
-  }, [surahNumber, setupAudio, t]);
+  const isThisSurahPlaying = isCurrentSurah(surahNumber);
 
   const handlePlayPause = useCallback(async () => {
-    try {
-      if (!playerRef.current) {
-        await loadAndPlayAudio(currentReciter);
-        return;
-      }
-      if (isPlaying) {
-        playerRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        if (playerRef.current.currentTime >= playerRef.current.duration && playerRef.current.duration > 0) {
-          await playerRef.current.seekTo(0);
-        }
-        playerRef.current.play();
-        setIsPlaying(true);
-      }
-    } catch (error) {
-      console.error('[QuranReader] Play/pause error:', error);
+    if (Platform.OS !== 'web') {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-  }, [isPlaying, currentReciter, loadAndPlayAudio]);
+    if (!isThisSurahPlaying && surahMeta) {
+      await playSurah(surahMeta);
+    } else {
+      await togglePlayPause();
+    }
+  }, [isThisSurahPlaying, surahMeta, playSurah, togglePlayPause]);
 
   const handleStop = useCallback(async () => {
-    try {
-      if (playerRef.current) {
-        playerRef.current.pause();
-        await playerRef.current.seekTo(0);
-        setPosition(0);
-        setIsPlaying(false);
-      }
-    } catch (error) {
-      console.error('[QuranReader] Stop error:', error);
+    if (Platform.OS !== 'web') {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-  }, []);
+    await stop();
+  }, [stop]);
+
+  const handleRestart = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
+    if (surahMeta) {
+      await playSurah(surahMeta);
+    }
+  }, [surahMeta, playSurah]);
 
   const handleReciterSelect = useCallback(async (reciter: ReciterId) => {
     setShowReciterPicker(false);
     await changeReciter(reciter);
-    if (playerRef.current || isPlaying) {
-      await loadAndPlayAudio(reciter);
+    if (isThisSurahPlaying || isPlaying) {
+      if (surahMeta) {
+        await playSurah(surahMeta, reciter);
+      }
     }
-  }, [changeReciter, isPlaying, loadAndPlayAudio]);
+  }, [changeReciter, isThisSurahPlaying, isPlaying, surahMeta, playSurah]);
 
   const handleBack = useCallback(() => {
-    if (playerRef.current) {
-      try { playerRef.current.pause(); } catch {}
-    }
     if (router.canGoBack()) {
       router.back();
     } else {
       router.replace('/(tabs)/quran');
     }
   }, [router]);
+
+  const handleSeek = useCallback((millis: number) => {
+    void seekTo(millis);
+  }, [seekTo]);
 
   const formatTime = useCallback((millis: number): string => {
     const totalSeconds = Math.floor(millis / 1000);
@@ -378,9 +297,18 @@ export default function QuranReaderScreen() {
 
         {duration > 0 && (
           <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
+            <TouchableOpacity
+              style={styles.progressBar}
+              activeOpacity={1}
+              onPress={(e) => {
+                const { locationX } = e.nativeEvent;
+                const barWidth = 300;
+                const pct = locationX / barWidth;
+                void handleSeek(pct * duration);
+              }}
+            >
               <View style={[styles.progressFill, { width: `${progressPercentage}%` }]} />
-            </View>
+            </TouchableOpacity>
             <View style={styles.timeRow}>
               <Text style={styles.timeText}>{formatTime(position)}</Text>
               <Text style={styles.timeText}>{formatTime(duration)}</Text>
@@ -389,14 +317,35 @@ export default function QuranReaderScreen() {
         )}
 
         <View style={styles.controlsRow}>
+          {/* Repeat button */}
+          <TouchableOpacity
+            style={[
+              styles.controlButton,
+              repeatMode === 'surah' && styles.controlButtonActive,
+            ]}
+            onPress={toggleRepeat}
+          >
+            {repeatMode === 'surah' ? (
+              <Repeat1 size={18} color={GOLD} />
+            ) : (
+              <Repeat size={18} color={IVORY} />
+            )}
+          </TouchableOpacity>
+
+          {/* Stop button */}
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleStop}
-            disabled={!player}
+            disabled={!isThisSurahPlaying && position === 0}
           >
-            <Square size={18} color={!player ? '#555' : IVORY} fill={!player ? '#555' : IVORY} />
+            <Square
+              size={18}
+              color={(!isThisSurahPlaying && position === 0) ? '#555' : IVORY}
+              fill={(!isThisSurahPlaying && position === 0) ? '#555' : IVORY}
+            />
           </TouchableOpacity>
 
+          {/* Play/Pause button */}
           <TouchableOpacity
             style={[styles.playButton, isLoadingAudio && styles.playButtonDisabled]}
             onPress={handlePlayPause}
@@ -404,20 +353,24 @@ export default function QuranReaderScreen() {
           >
             {isLoadingAudio ? (
               <ActivityIndicator size="small" color={DARK_BG} />
-            ) : isPlaying ? (
+            ) : (isThisSurahPlaying && isPlaying) ? (
               <Pause size={26} color={DARK_BG} fill={DARK_BG} />
             ) : (
               <Play size={26} color={DARK_BG} fill={DARK_BG} />
             )}
           </TouchableOpacity>
 
+          {/* Restart button */}
           <TouchableOpacity
             style={styles.controlButton}
-            onPress={() => loadAndPlayAudio(currentReciter)}
+            onPress={handleRestart}
             disabled={isLoadingAudio}
           >
             <RotateCcw size={18} color={isLoadingAudio ? '#555' : IVORY} />
           </TouchableOpacity>
+
+          {/* Spacer for symmetry */}
+          <View style={styles.controlButtonSpacer} />
         </View>
       </View>
 
@@ -748,7 +701,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
-    gap: 24,
+    gap: 16,
   },
   controlButton: {
     width: 44,
@@ -757,6 +710,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
+  },
+  controlButtonActive: {
+    backgroundColor: 'rgba(212,168,83,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(212,168,83,0.4)',
+  },
+  controlButtonSpacer: {
+    width: 44,
+    height: 44,
   },
   playButton: {
     width: 56,

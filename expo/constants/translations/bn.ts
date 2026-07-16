@@ -345,4 +345,10 @@ export const bn: TranslationKeys = {
   hizbNumber: 'হিজব',
   ayahs: 'আয়াত',
   goToReader: 'আয়াত পড়ুন',
+  repeatSurah: 'সুরাহ পুনরাবৃত্তি',
+  repeat: 'পুনরাবৃত্তি',
+  audioNetworkError: 'তিলাওয়াত লোড করা যায়নি। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।',
+  noInternetConnection: 'ইন্টারনেট সংযোগ নেই',
+  closePlayer: 'প্লেয়ার বন্ধ করুন',
+  nowPlaying: 'এখন চলছে',
 };

@@ -345,4 +345,10 @@ export const tr: TranslationKeys = {
   hizbNumber: 'Hizb',
   ayahs: 'ayet',
   goToReader: 'Ayetleri Oku',
+  repeatSurah: 'Sureyi Tekrarla',
+  repeat: 'Tekrarla',
+  audioNetworkError: 'Tilavet yüklenemedi. İnternet bağlantınızı kontrol edin.',
+  noInternetConnection: 'İnternet bağlantısı yok',
+  closePlayer: 'Oynatıcıyı Kapat',
+  nowPlaying: 'Çalıyor',
 };

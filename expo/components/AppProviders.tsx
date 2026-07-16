@@ -7,6 +7,7 @@ import { TasbihProvider } from '@/hooks/useTasbihStore';
 import { FavoritesProvider } from '@/hooks/useFavoritesStore';
 import { ReciterProvider } from '@/hooks/useReciterStore';
 import { QuranStoreProvider } from '@/hooks/useQuranStore';
+import { QuranAudioProvider } from '@/hooks/useQuranAudio';
 import { CreditsProvider } from '@/hooks/useCreditsStore';
 import { AdhkarCountsProvider } from '@/hooks/useAdhkarCountsStore';
 import { queryClient } from '@/utils/queryClient';
@@ -20,17 +21,19 @@ export function AppProviders({ children }: AppProvidersProps) {
         <LanguageProvider>
           <ReciterProvider>
             <QuranStoreProvider>
-            <TasbihProvider>
-              <FavoritesProvider>
-                <ThemeProvider>
-                  <CreditsProvider>
-                    <AdhkarCountsProvider>
-                      {children}
-                    </AdhkarCountsProvider>
-                  </CreditsProvider>
-                </ThemeProvider>
-              </FavoritesProvider>
-            </TasbihProvider>
+              <QuranAudioProvider>
+                <TasbihProvider>
+                  <FavoritesProvider>
+                    <ThemeProvider>
+                      <CreditsProvider>
+                        <AdhkarCountsProvider>
+                          {children}
+                        </AdhkarCountsProvider>
+                      </CreditsProvider>
+                    </ThemeProvider>
+                  </FavoritesProvider>
+                </TasbihProvider>
+              </QuranAudioProvider>
             </QuranStoreProvider>
           </ReciterProvider>
         </LanguageProvider>

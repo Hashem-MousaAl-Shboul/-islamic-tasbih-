@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   FlatList,
   Platform,
   ActivityIndicator,
-  Alert,
   Modal,
   ScrollView,
 } from 'react-native';
@@ -19,21 +18,20 @@ import {
   ChevronLeft,
   Octagon,
   Volume2,
-  Square,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { useQuery } from '@tanstack/react-query';
 
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useReciterStore } from '@/hooks/useReciterStore';
 import { useQuranStore, type LastReadPosition } from '@/hooks/useQuranStore';
-import { getQuranRecitationUrl, RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
+import { useQuranAudio } from '@/hooks/useQuranAudio';
+import { RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
 import { SURAHS, JUZ_STARTS, HIZB_STARTS, TOTAL_PAGES, getSurahByNumber, getSurahTypeLabel, type SurahMeta } from '@/utils/quranData';
 import { androidTextFix } from '@/utils/androidOptimizations';
-import { stopAudio as stopYasAI } from '@/utils/yasAI';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
+import QuranMiniPlayer from '@/components/QuranMiniPlayer';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -332,14 +330,16 @@ export default function QuranScreen() {
   const router = useRouter();
   const { currentReciter, changeReciter } = useReciterStore();
   const { lastRead } = useQuranStore();
+  const {
+    currentSurah,
+    isPlaying,
+    isLoading,
+    playSurah,
+    isCurrentSurah,
+  } = useQuranAudio();
 
   const [activeMode, setActiveMode] = useState<QuranViewMode>('surah');
-  const [playingSurahNumber, setPlayingSurahNumber] = useState<number | null>(null);
-  const [isLoadingAudio, setIsLoadingAudio] = useState<boolean>(false);
   const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
-
-  const playerRef = useRef<AudioPlayer | null>(null);
-  const statusListenerRef = useRef<{ remove: () => void } | null>(null);
 
   const { data: surahs, isLoading: surahsLoading, isError: surahsError } = useQuery<SurahMeta[]>({
     queryKey: ['quran-surahs'],
@@ -351,96 +351,16 @@ export default function QuranScreen() {
 
   const surahList = useMemo(() => surahs ?? SURAHS, [surahs]);
 
-  useEffect(() => {
-    return () => {
-      if (statusListenerRef.current) {
-        statusListenerRef.current.remove();
-        statusListenerRef.current = null;
-      }
-      if (playerRef.current) {
-        try { playerRef.current.remove(); } catch {}
-        playerRef.current = null;
-      }
-    };
-  }, []);
-
-  const setupAudio = useCallback(async () => {
-    try {
-      if (Platform.OS !== 'web') {
-        await setAudioModeAsync({
-          playsInSilentMode: true,
-          shouldPlayInBackground: true,
-          interruptionMode: 'duckOthers',
-          shouldRouteThroughEarpiece: false,
-          allowsRecording: false,
-        });
-      }
-    } catch (error) {
-      console.error('[QuranScreen] Audio setup error:', error);
+  const handlePlaySurah = useCallback((surah: SurahMeta) => {
+    if (Platform.OS !== 'web') {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-  }, []);
-
-  const handlePlaySurah = useCallback(async (surah: SurahMeta) => {
-    try {
-      if (Platform.OS !== 'web') {
-        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-      }
-
-      if (playingSurahNumber === surah.number && playerRef.current) {
-        playerRef.current.pause();
-        setPlayingSurahNumber(null);
-        return;
-      }
-
-      try { await stopYasAI(); } catch {}
-
-      if (playerRef.current) {
-        if (statusListenerRef.current) {
-          statusListenerRef.current.remove();
-          statusListenerRef.current = null;
-        }
-        try { playerRef.current.remove(); } catch {}
-        playerRef.current = null;
-      }
-
-      setIsLoadingAudio(true);
-      const audioUrl = getQuranRecitationUrl(surah.number, currentReciter);
-      if (!audioUrl) {
-        Alert.alert(t('error'), t('errorLoadingVerses'));
-        setIsLoadingAudio(false);
-        return;
-      }
-
-      await setupAudio();
-
-      const newPlayer = createAudioPlayer({ uri: audioUrl });
-      newPlayer.volume = 1.0;
-
-      statusListenerRef.current = newPlayer.addListener('playbackStatusUpdate', (status: any) => {
-        if (!status?.isLoaded) return;
-        if (status.didJustFinish) {
-          setPlayingSurahNumber(null);
-        }
-      });
-
-      playerRef.current = newPlayer;
-      newPlayer.play();
-      setPlayingSurahNumber(surah.number);
-    } catch (error) {
-      console.error('[QuranScreen] Play surah error:', error);
-      Alert.alert(t('error'), t('errorLoadingVerses'));
-    } finally {
-      setIsLoadingAudio(false);
-    }
-  }, [playingSurahNumber, currentReciter, setupAudio, t]);
+    void playSurah(surah);
+  }, [playSurah]);
 
   const handleOpenReader = useCallback((surah: SurahMeta) => {
     if (Platform.OS !== 'web') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    }
-    if (playerRef.current) {
-      try { playerRef.current.pause(); } catch {}
-      setPlayingSurahNumber(null);
     }
     router.push(`/quran-reader?surah=${surah.number}`);
   }, [router]);
@@ -461,13 +381,15 @@ export default function QuranScreen() {
   const renderItem = useCallback(({ item, index }: { item: any; index: number }) => {
     if (activeMode === 'surah') {
       const surah = item as SurahMeta;
+      const isThisPlaying = isCurrentSurah(surah.number) && isPlaying;
+      const isThisLoading = isCurrentSurah(surah.number) && isLoading;
       return (
         <SurahItem
           surah={surah}
           onPlay={handlePlaySurah}
           onOpenReader={handleOpenReader}
-          isPlaying={playingSurahNumber === surah.number}
-          isLoadingAudio={isLoadingAudio && playingSurahNumber === surah.number}
+          isPlaying={isThisPlaying}
+          isLoadingAudio={isThisLoading}
         />
       );
     }
@@ -478,7 +400,7 @@ export default function QuranScreen() {
       return <HizbItem hizb={item} onOpen={(n) => handleOpenReader(getSurahByNumber(n) ?? SURAHS[0])} />;
     }
     return <PageItem pageNum={item} onOpen={(n) => handleOpenReader(getSurahByNumber(n) ?? SURAHS[0])} />;
-  }, [activeMode, handlePlaySurah, handleOpenReader, playingSurahNumber, isLoadingAudio]);
+  }, [activeMode, handlePlaySurah, handleOpenReader, isCurrentSurah, isPlaying, isLoading]);
 
   const listData = useMemo(() => {
     if (activeMode === 'surah') return surahList;
@@ -495,6 +417,8 @@ export default function QuranScreen() {
   }, [activeMode]);
 
   const itemSeparator = useCallback(() => <View style={surahStyles.separator} />, []);
+
+  const hasMiniPlayer = currentSurah !== null;
 
   const listHeader = useMemo(() => (
     <View style={styles.listHeader}>
@@ -537,7 +461,10 @@ export default function QuranScreen() {
             </View>
           ) : null
         }
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          hasMiniPlayer && { paddingBottom: 140 },
+        ]}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
         initialNumToRender={12}
@@ -545,7 +472,7 @@ export default function QuranScreen() {
         windowSize={10}
       />
 
-      <AdBanner />
+      {hasMiniPlayer ? <QuranMiniPlayer /> : <AdBanner />}
 
       <Modal
         visible={showReciterPicker}

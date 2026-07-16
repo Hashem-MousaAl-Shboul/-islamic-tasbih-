@@ -345,4 +345,10 @@ export const ur: TranslationKeys = {
   hizbNumber: 'حزب',
   ayahs: 'آیات',
   goToReader: 'آیات پڑھیں',
+  repeatSurah: 'سورہ دہرائیں',
+  repeat: 'دہرائیں',
+  audioNetworkError: 'تلاوت لوڈ نہیں ہو سکی۔ اپنا انٹرنیٹ کنکشن چیک کریں۔',
+  noInternetConnection: 'انٹرنیٹ کنکشن نہیں ہے',
+  closePlayer: 'پلیئر بند کریں',
+  nowPlaying: 'چل رہا ہے',
 };

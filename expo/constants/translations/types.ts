@@ -343,4 +343,10 @@ export interface TranslationKeys {
   hizbNumber: string;
   ayahs: string;
   goToReader: string;
+  repeatSurah: string;
+  repeat: string;
+  audioNetworkError: string;
+  noInternetConnection: string;
+  closePlayer: string;
+  nowPlaying: string;
 }

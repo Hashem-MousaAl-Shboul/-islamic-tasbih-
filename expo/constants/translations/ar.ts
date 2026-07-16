@@ -345,4 +345,10 @@ export const ar: TranslationKeys = {
   hizbNumber: 'الحزب',
   ayahs: 'آيات',
   goToReader: 'اقرأ الآيات',
+  repeatSurah: 'تكرار السورة',
+  repeat: 'تكرار',
+  audioNetworkError: 'تعذر تحميل التلاوة، تأكد من اتصالك بالإنترنت',
+  noInternetConnection: 'لا يوجد اتصال بالإنترنت',
+  closePlayer: 'إغلاق المشغل',
+  nowPlaying: 'قيد التشغيل',
 };

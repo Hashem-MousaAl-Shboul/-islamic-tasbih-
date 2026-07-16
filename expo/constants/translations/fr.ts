@@ -345,4 +345,10 @@ export const fr: TranslationKeys = {
   hizbNumber: 'Hizb',
   ayahs: 'ayahs',
   goToReader: 'Lire les versets',
+  repeatSurah: 'Répéter la sourate',
+  repeat: 'Répéter',
+  audioNetworkError: 'Impossible de charger la récitation. Vérifiez votre connexion internet.',
+  noInternetConnection: 'Pas de connexion internet',
+  closePlayer: 'Fermer le lecteur',
+  nowPlaying: 'En lecture',
 };

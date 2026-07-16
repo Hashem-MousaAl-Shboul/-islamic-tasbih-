@@ -345,4 +345,10 @@ export const ms: TranslationKeys = {
   hizbNumber: 'Hizb',
   ayahs: 'ayat',
   goToReader: 'Baca Ayat',
+  repeatSurah: 'Ulangi Surah',
+  repeat: 'Ulangi',
+  audioNetworkError: 'Tidak dapat memuat tilawah. Semak sambungan internet anda.',
+  noInternetConnection: 'Tiada sambungan internet',
+  closePlayer: 'Tutup Pemain',
+  nowPlaying: 'Sedang Dimainkan',
 };
