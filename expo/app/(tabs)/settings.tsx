@@ -33,7 +33,6 @@ import {
   Sunset,
   Sun as SunIcon,
   TrendingUp,
-  BookOpen,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -314,11 +313,6 @@ export default function SettingsScreen() {
     router.push('/terms-of-use');
   }, [router]);
 
-  const handleOpenQuran = useCallback(() => {
-    console.log(SETTINGS_TAG, 'Opening Quran screen');
-    router.push('/quran');
-  }, [router]);
-
   return (
     <View style={styles.container} testID="settings-screen"
       accessibilityLabel="Settings Screen"
@@ -368,13 +362,6 @@ export default function SettingsScreen() {
             subtitle={t('totalDhikr') || 'إجمالي الذكر'}
             type="action"
             onPress={handleOpenStatistics}
-          />
-          <SettingsRow
-            icon={<BookOpen size={20} color={GOLD} />}
-            title={t('quran') || 'القرآن الكريم'}
-            subtitle={t('quranDescription') || 'اقرأ واستمع للقرآن الكريم'}
-            type="action"
-            onPress={handleOpenQuran}
             isLast
           />
         </View>

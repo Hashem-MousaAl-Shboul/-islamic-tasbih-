@@ -38,7 +38,6 @@ function RootLayoutNav() {
         <Stack.Screen name="statistics" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="privacy-policy" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="terms-of-use" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="quran" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="+not-found" options={{ title: 'غير موجود' }} />
       </Stack>
     </>

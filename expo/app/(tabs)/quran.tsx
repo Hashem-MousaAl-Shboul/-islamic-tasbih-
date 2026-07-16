@@ -3,15 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   FlatList,
   Platform,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import {
-  ArrowRight,
   Play,
   BookOpen,
   ChevronLeft,
@@ -22,6 +18,8 @@ import * as Haptics from 'expo-haptics';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { androidTextFix } from '@/utils/androidOptimizations';
 import AdBanner from '@/components/AdBanner';
+import UnifiedHeader from '@/components/UnifiedHeader';
+import { ThemedBackground } from '@/components/ThemedBackground';
 
 // TODO: Replace with real API data
 interface Surah {
@@ -223,15 +221,9 @@ function SurahItem({
 }
 
 export default function QuranScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { t } = useLanguageStore();
   const [activeMode, setActiveMode] = useState<QuranViewMode>('surah');
   const [playingSurahId, setPlayingSurahId] = useState<number | null>(null);
-
-  const handleBack = useCallback(() => {
-    router.back();
-  }, [router]);
 
   const handleContinueReading = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -267,22 +259,7 @@ export default function QuranScreen() {
 
   return (
     <View style={styles.container} testID="quran-screen" accessibilityLabel="Quran Screen">
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            onPress={handleBack}
-            style={styles.backButton}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            testID="quran-back-button"
-          >
-            <ArrowRight size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, androidTextFix]}>
-            {t('quranKareem') || 'القرآن الكريم'}
-          </Text>
-          <View style={styles.headerSpacer} />
-        </View>
-      </View>
+      <UnifiedHeader title={t('quranKareem') || 'القرآن الكريم'} testID="quran-header" />
 
       <FlatList
         data={MOCK_SURAHS}
@@ -295,10 +272,7 @@ export default function QuranScreen() {
             <ViewModeTabs activeMode={activeMode} onChange={setActiveMode} />
           </View>
         }
-        contentContainerStyle={[
-          styles.listContent,
-          { paddingBottom: insets.bottom + 80 },
-        ]}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
         initialNumToRender={12}
@@ -316,49 +290,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: DARK_BG,
   },
-  header: {
-    backgroundColor: DEEP_GREEN,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 18,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
-    writingDirection: 'rtl',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  headerSpacer: {
-    width: 40,
-  },
   listHeader: {
     paddingTop: 20,
     paddingHorizontal: 16,
   },
   listContent: {
     paddingHorizontal: 16,
+    paddingBottom: 100,
   },
 });
 
@@ -373,20 +311,20 @@ const lastReadStyles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 5,
-    overflow: 'hidden',
+    overflow: 'hidden' as const,
   },
   content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
   },
   textSection: {
     flex: 1,
-    alignItems: 'flex-start',
+    alignItems: 'flex-start' as const,
   },
   badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
     backgroundColor: 'rgba(27,31,46,0.08)',
     borderRadius: 10,
     paddingHorizontal: 10,
@@ -422,8 +360,8 @@ const lastReadStyles = StyleSheet.create({
     marginBottom: 14,
   },
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
     backgroundColor: 'rgba(27,31,46,0.85)',
     borderRadius: 14,
     paddingVertical: 10,
@@ -441,8 +379,8 @@ const illustrationStyles = StyleSheet.create({
   container: {
     width: 110,
     height: 110,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   bookCover: {
     width: 84,
@@ -451,8 +389,8 @@ const illustrationStyles = StyleSheet.create({
     borderRadius: 8,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -476,7 +414,7 @@ const illustrationStyles = StyleSheet.create({
     top: 4,
     bottom: 4,
     width: 14,
-    justifyContent: 'center',
+    justifyContent: 'center' as const,
   },
   page: {
     position: 'absolute',
@@ -497,8 +435,8 @@ const illustrationStyles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 1.5,
     borderColor: GOLD,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     gap: 2,
   },
   bismillah: {
@@ -511,21 +449,19 @@ const illustrationStyles = StyleSheet.create({
 
 const tabsStyles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
     marginBottom: 16,
     paddingHorizontal: 4,
   },
   tab: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: 'center' as const,
     paddingVertical: 10,
-    position: 'relative',
+    position: 'relative' as const,
   },
-  activeTab: {
-    // No background, just indicator below
-  },
+  activeTab: {},
   tabText: {
     fontSize: 14,
     fontWeight: '500' as const,
@@ -547,8 +483,8 @@ const tabsStyles = StyleSheet.create({
 
 const surahStyles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
     backgroundColor: CARD_BG,
     borderRadius: 18,
     paddingVertical: 14,
@@ -561,8 +497,8 @@ const surahStyles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: GOLD,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     marginRight: 14,
   },
   numberText: {
@@ -572,7 +508,7 @@ const surahStyles = StyleSheet.create({
   },
   textSection: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'center' as const,
   },
   arabicName: {
     fontSize: 17,
@@ -593,8 +529,8 @@ const surahStyles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     backgroundColor: GOLD,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     marginLeft: 12,
   },
   playButtonActive: {

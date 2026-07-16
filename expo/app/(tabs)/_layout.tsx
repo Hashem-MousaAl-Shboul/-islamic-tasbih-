@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { BookOpen, CircleDot, SlidersHorizontal } from "lucide-react-native";
+import { BookOpen, CircleDot, SlidersHorizontal, BookOpenCheck } from "lucide-react-native";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
 import { StyleSheet, Platform, View } from "react-native";
 import { Colors } from "@/constants/colors";
@@ -90,6 +90,15 @@ export default function TabLayout() {
             title: t("adhkar") || "الأذكار",
             tabBarIcon: ({ color, size }) => (
               <BookOpen size={size} color={color} strokeWidth={1.8} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="quran"
+          options={{
+            title: t("quranKareem") || "القرآن الكريم",
+            tabBarIcon: ({ color, size }) => (
+              <BookOpenCheck size={size} color={color} strokeWidth={1.8} />
             ),
           }}
         />
