@@ -297,6 +297,7 @@ export const ur: TranslationKeys = {
   openSettings: 'ترتیبات کھولیں',
   notificationsExpoGoTitle: 'پیش نظارہ میں اطلاعات دستیاب نہیں ہیں',
   notificationsExpoGoWarning: 'ایکسپو گو میں اینڈروئڈ پر اطلاعات کام نہیں کرتیں۔ اذکار کی یاد دہانی اصل ایپ بلڈ میں مکمل طور پر کام کرے گی۔',
+  oneHourAgo: 'ایک گھنٹہ پہلے',
   preview: 'پیش نظارہ',
   backgroundThemes: 'پس منظر کے تھیمز',
   accentColors: 'ایکسنٹ رنگ',

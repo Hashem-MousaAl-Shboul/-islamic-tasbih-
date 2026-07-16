@@ -297,6 +297,7 @@ export const ms: TranslationKeys = {
   openSettings: 'Buka Tetapan',
   notificationsExpoGoTitle: 'Pemberitahuan Tidak Tersedia di Pratonton',
   notificationsExpoGoWarning: 'Pemberitahuan tidak berfungsi di Expo Go pada Android. Peringatan adhkar akan berfungsi sepenuhnya dalam binaan aplikasi sebenar.',
+  oneHourAgo: '1 jam lalu',
   preview: 'Pratonton',
   backgroundThemes: 'Tema Latar Belakang',
   accentColors: 'Warna Aksen',

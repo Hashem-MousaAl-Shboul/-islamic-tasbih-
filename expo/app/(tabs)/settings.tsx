@@ -31,6 +31,7 @@ import {
   Bell,
   Sunrise,
   Sunset,
+  Sun as SunIcon,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -56,6 +57,29 @@ const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = "#8A9B91";
 const SETTINGS_TAG = "[SettingsScreen]";
 console.log(SETTINGS_TAG, "Settings module loaded");
+
+function NotificationPreviewCard() {
+  const { t } = useLanguageStore();
+  const appName = Constants.expoConfig?.name ?? 'تسبيح';
+
+  return (
+    <View style={notificationPreviewStyles.container}>
+      <View style={notificationPreviewStyles.headerRow}>
+        <View style={notificationPreviewStyles.iconCircle}>
+          <SunIcon size={22} color="#FFFFFF" strokeWidth={2} />
+        </View>
+        <View style={notificationPreviewStyles.appInfo}>
+          <Text style={[notificationPreviewStyles.appName, androidTextFix]}>{appName}</Text>
+          <Text style={[notificationPreviewStyles.timeText, androidTextFix]}>{t('oneHourAgo')}</Text>
+        </View>
+      </View>
+      <View style={notificationPreviewStyles.body}>
+        <Text style={[notificationPreviewStyles.title, androidTextFix]}>{t('morningAdhkar')}</Text>
+        <Text style={[notificationPreviewStyles.bodyText, androidTextFix]}>{t('morningReminderBody')}</Text>
+      </View>
+    </View>
+  );
+}
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -331,6 +355,7 @@ export default function SettingsScreen() {
 
         <Text style={[styles.sectionTitle, androidTextFix]}>{t('notifications')}</Text>
         <View style={styles.card}>
+          <NotificationPreviewCard />
           {isExpoGoEnvironment ? (
             <View style={styles.expoGoWarning}>
               <Bell size={20} color={GOLD} />
@@ -477,6 +502,82 @@ export default function SettingsScreen() {
     </View>
   );
 }
+
+const notificationPreviewStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
+  },
+  headerRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#E8A317',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
+    shadowColor: '#E8A317',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  appInfo: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  appName: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#1B4332',
+    marginBottom: 2,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  timeText: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    color: '#8A9B91',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  body: {
+    gap: 6,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: '#1B4332',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    lineHeight: 24,
+  },
+  bodyText: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    color: '#4A5D53',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    lineHeight: 22,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {

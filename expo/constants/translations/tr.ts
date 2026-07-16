@@ -297,6 +297,7 @@ export const tr: TranslationKeys = {
   openSettings: 'Ayarları Aç',
   notificationsExpoGoTitle: 'Önizlemede Bildirimler Kullanılamıyor',
   notificationsExpoGoWarning: 'Bildirimler Android\'de Expo Go\'da çalışmaz. Adhkar hatırlatmaları gerçek uygulama derlemesinde tam olarak çalışacaktır.',
+  oneHourAgo: '1 saat önce',
   preview: 'Önizleme',
   backgroundThemes: 'Arka Plan Temaları',
   accentColors: 'Vurgu Renkleri',

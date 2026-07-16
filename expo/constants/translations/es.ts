@@ -297,6 +297,7 @@ export const es: TranslationKeys = {
   openSettings: 'Abrir configuración',
   notificationsExpoGoTitle: 'Notificaciones no disponibles en vista previa',
   notificationsExpoGoWarning: 'Las notificaciones no funcionan en Expo Go en Android. Los recordatorios de adhkar funcionarán completamente en la compilación real de la aplicación.',
+  oneHourAgo: 'Hace 1 hora',
   preview: 'Vista previa',
   backgroundThemes: 'Fondos de pantalla',
   accentColors: 'Colores de acento',

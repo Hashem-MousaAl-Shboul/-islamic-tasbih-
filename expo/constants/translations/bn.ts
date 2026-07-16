@@ -297,6 +297,7 @@ export const bn: TranslationKeys = {
   openSettings: 'সেটিংস খুলুন',
   notificationsExpoGoTitle: 'পূর্বরূপে বিজ্ঞপ্তি অনুপলব্ধ',
   notificationsExpoGoWarning: 'এক্সপো গো-তে অ্যান্ড্রয়েডে বিজ্ঞপ্তি কাজ করে না। আজকার অনুস্মারকগুলি আসল অ্যাপ বিল্ডে সম্পূর্ণভাবে কাজ করবে।',
+  oneHourAgo: '১ ঘন্টা আগে',
   preview: 'পূর্বরূপ',
   backgroundThemes: 'পটভূমির থিম',
   accentColors: 'অ্যাকসেন্ট রঙ',

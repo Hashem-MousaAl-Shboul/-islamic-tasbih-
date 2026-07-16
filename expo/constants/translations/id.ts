@@ -297,6 +297,7 @@ export const id: TranslationKeys = {
   openSettings: 'Buka Pengaturan',
   notificationsExpoGoTitle: 'Notifikasi Tidak Tersedia di Pratinjau',
   notificationsExpoGoWarning: 'Notifikasi tidak berfungsi di Expo Go di Android. Pengingat adhkar akan berfungsi sepenuhnya di build aplikasi yang sebenarnya.',
+  oneHourAgo: '1 jam yang lalu',
   preview: 'Pratinjau',
   backgroundThemes: 'Tema Latar Belakang',
   accentColors: 'Warna Aksen',

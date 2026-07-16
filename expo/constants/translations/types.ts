@@ -295,6 +295,7 @@ export interface TranslationKeys {
   openSettings: string;
   notificationsExpoGoTitle: string;
   notificationsExpoGoWarning: string;
+  oneHourAgo: string;
   preview: string;
   backgroundThemes: string;
   accentColors: string;

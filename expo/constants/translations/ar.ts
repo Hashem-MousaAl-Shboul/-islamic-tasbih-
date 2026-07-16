@@ -297,6 +297,7 @@ export const ar: TranslationKeys = {
   openSettings: 'فتح الإعدادات',
   notificationsExpoGoTitle: 'الإشعارات غير متاحة في المعاينة',
   notificationsExpoGoWarning: 'الإشعارات لا تعمل في Expo Go على Android. ستعمل تذكيرات الأذكار بشكل كامل في البناء الحقيقي للتطبيق.',
+  oneHourAgo: 'منذ ساعة',
   preview: 'معاينة',
   backgroundThemes: 'خلفيات الشاشة',
   accentColors: 'ألوان التمييز',
