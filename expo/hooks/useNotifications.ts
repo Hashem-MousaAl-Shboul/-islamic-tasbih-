@@ -1,5 +1,4 @@
 import { useEffect, useCallback, useRef } from 'react';
-import * as Notifications from 'expo-notifications';
 import { Platform, Linking, Alert } from 'react-native';
 import Constants from 'expo-constants';
 
@@ -10,6 +9,16 @@ const NOTIF_TAG = '[Notifications]';
 
 const MORNING_REMINDER_ID = 'morning-adhkar-reminder';
 const EVENING_REMINDER_ID = 'evening-adhkar-reminder';
+
+let notificationsModule: typeof import('./notificationsNative') | null = null;
+
+function loadNotificationsModule() {
+  if (notificationsModule !== null) return notificationsModule;
+  if (isExpoGo()) return null;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  notificationsModule = require('./notificationsNative') as typeof import('./notificationsNative');
+  return notificationsModule;
+}
 
 /**
  * Detects whether the app is running inside Expo Go.
@@ -24,30 +33,16 @@ export function isExpoGo(): boolean {
   );
 }
 
-// Only register the notification handler outside Expo Go to avoid the
-// "Android Push notifications removed from Expo Go" runtime error.
-if (!isExpoGo()) {
-  Notifications.setNotificationHandler({
-    handleNotification: () =>
-      Promise.resolve({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-        shouldShowBanner: true,
-        shouldShowList: true,
-      }),
-  });
-}
-
 async function ensureAndroidChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
-  if (isExpoGo()) return;
+  const mod = loadNotificationsModule();
+  if (!mod) return;
   try {
-    const existing = await Notifications.getNotificationChannelAsync('adhkar-reminders');
+    const existing = await mod.Notifications.getNotificationChannelAsync('adhkar-reminders');
     if (!existing) {
-      await Notifications.setNotificationChannelAsync('adhkar-reminders', {
+      await mod.Notifications.setNotificationChannelAsync('adhkar-reminders', {
         name: 'Adhkar Reminders',
-        importance: Notifications.AndroidImportance.HIGH,
+        importance: mod.Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#D4A853',
       });
@@ -60,11 +55,13 @@ async function ensureAndroidChannel(): Promise<void> {
 
 async function requestPermissions(): Promise<boolean> {
   if (isExpoGo()) return false;
+  const mod = loadNotificationsModule();
+  if (!mod) return false;
   try {
-    const current = await Notifications.getPermissionsAsync();
+    const current = await mod.Notifications.getPermissionsAsync();
     if (current.granted) return true;
 
-    const requested = await Notifications.requestPermissionsAsync({
+    const requested = await mod.Notifications.requestPermissionsAsync({
       ios: {
         allowAlert: true,
         allowBadge: false,
@@ -114,19 +111,19 @@ async function scheduleReminder(
   body: string,
 ): Promise<void> {
   if (isExpoGo()) return;
+  const mod = loadNotificationsModule();
+  if (!mod) return;
   try {
-    await Notifications.cancelScheduledNotificationAsync(id);
-
-    const triggerDate = getNextTrigger(hour, minute);
+    await mod.Notifications.cancelScheduledNotificationAsync(id);
 
     // DAILY trigger repeats correctly on both Android and iOS
-    const trigger: Notifications.NotificationTriggerInput = {
-      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+    const trigger: import('expo-notifications').NotificationTriggerInput = {
+      type: mod.Notifications.SchedulableTriggerInputTypes.DAILY,
       hour,
       minute,
     };
 
-    await Notifications.scheduleNotificationAsync({
+    await mod.Notifications.scheduleNotificationAsync({
       identifier: id,
       content: {
         title,
@@ -134,7 +131,7 @@ async function scheduleReminder(
         sound: 'default',
         ...(Platform.OS === 'android' && {
           channelId: 'adhkar-reminders',
-          priority: Notifications.AndroidNotificationPriority.HIGH,
+          priority: mod.Notifications.AndroidNotificationPriority.HIGH,
         }),
       },
       trigger,
@@ -147,8 +144,10 @@ async function scheduleReminder(
 
 async function cancelReminder(id: string): Promise<void> {
   if (isExpoGo()) return;
+  const mod = loadNotificationsModule();
+  if (!mod) return;
   try {
-    await Notifications.cancelScheduledNotificationAsync(id);
+    await mod.Notifications.cancelScheduledNotificationAsync(id);
     console.log(NOTIF_TAG, `Cancelled ${id}`);
   } catch (e) {
     console.log(NOTIF_TAG, `Error cancelling ${id}:`, e);
