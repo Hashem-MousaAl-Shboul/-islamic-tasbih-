@@ -40,7 +40,7 @@ import Constants from 'expo-constants';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { rateApp, shareApp, contactViaWhatsApp } from '@/utils/globalUtils';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications, sendTestNotification } from '@/hooks/useNotifications';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { ColorThemePicker } from '@/components/ColorThemePicker';
 import AdBanner from '@/components/AdBanner';
@@ -179,6 +179,22 @@ export default function SettingsScreen() {
       setNotificationsLoading(false);
     }
   }, [notificationsLoading, settings.notificationsEnabled, toggleNotifications]);
+
+  const handleSendTestNotification = useCallback(async () => {
+    if (isExpoGoEnvironment) {
+      Alert.alert(t('notificationsExpoGoTitle'), t('notificationsExpoGoWarning'));
+      return;
+    }
+    if (!settings.notificationsEnabled) {
+      Alert.alert(t('notificationsDisabledTitle'), t('notificationsDisabledMessage'));
+      return;
+    }
+    try {
+      await sendTestNotification();
+    } catch (e) {
+      console.log(SETTINGS_TAG, 'Test notification error:', e);
+    }
+  }, [isExpoGoEnvironment, settings.notificationsEnabled, t]);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
   const buildNumber = Platform.OS === 'ios'
@@ -392,6 +408,13 @@ export default function SettingsScreen() {
                 type="toggle"
                 value={settings.eveningReminderEnabled}
                 onToggle={() => toggleEveningReminder(!settings.eveningReminderEnabled)}
+              />
+              <SettingsRow
+                icon={<Bell size={20} color={GOLD} />}
+                title={t('sendTestNotification')}
+                subtitle={t('sendTestNotificationDescription')}
+                type="action"
+                onPress={handleSendTestNotification}
                 isLast
               />
             </>

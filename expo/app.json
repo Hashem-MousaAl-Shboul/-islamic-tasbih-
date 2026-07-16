@@ -47,6 +47,11 @@
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
+    "notification": {
+      "icon": "./assets/images/icon.png",
+      "color": "#D4A853",
+      "androidMode": "default"
+    },
     "plugins": [
       [
         "expo-router",

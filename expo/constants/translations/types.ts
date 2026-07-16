@@ -296,6 +296,10 @@ export interface TranslationKeys {
   notificationsExpoGoTitle: string;
   notificationsExpoGoWarning: string;
   oneHourAgo: string;
+  sendTestNotification: string;
+  sendTestNotificationDescription: string;
+  notificationsDisabledTitle: string;
+  notificationsDisabledMessage: string;
   preview: string;
   backgroundThemes: string;
   accentColors: string;

@@ -2,10 +2,12 @@ import { useEffect, useCallback, useRef } from 'react';
 import { Platform, Linking, Alert } from 'react-native';
 import Constants from 'expo-constants';
 
+import i18n from '@/constants/translations';
 import { useTasbihStore } from './useTasbihStore';
 import { useLanguageStore } from './useLanguageStore';
 
 const NOTIF_TAG = '[Notifications]';
+const ACCENT_COLOR = '#D4A853';
 
 const MORNING_REMINDER_ID = 'morning-adhkar-reminder';
 const EVENING_REMINDER_ID = 'evening-adhkar-reminder';
@@ -132,6 +134,8 @@ async function scheduleReminder(
         ...(Platform.OS === 'android' && {
           channelId: 'adhkar-reminders',
           priority: mod.Notifications.AndroidNotificationPriority.HIGH,
+          color: ACCENT_COLOR,
+          autoDismiss: true,
         }),
       },
       trigger,
@@ -139,6 +143,38 @@ async function scheduleReminder(
     console.log(NOTIF_TAG, `Scheduled ${id} for ${hour}:${minute}`);
   } catch (e) {
     console.log(NOTIF_TAG, `Error scheduling ${id}:`, e);
+  }
+}
+
+export async function sendTestNotification(): Promise<void> {
+  if (isExpoGo()) return;
+  const mod = loadNotificationsModule();
+  if (!mod) return;
+  try {
+    await ensureAndroidChannel();
+    await mod.Notifications.cancelScheduledNotificationAsync('test-adhkar-notification');
+    await mod.Notifications.scheduleNotificationAsync({
+      identifier: 'test-adhkar-notification',
+      content: {
+        title: i18n.t('morningAdhkar') as string,
+        body: i18n.t('morningReminderBody') as string,
+        sound: 'default',
+        ...(Platform.OS === 'android' && {
+          channelId: 'adhkar-reminders',
+          priority: mod.Notifications.AndroidNotificationPriority.HIGH,
+          color: ACCENT_COLOR,
+          autoDismiss: true,
+        }),
+      },
+      trigger: {
+        type: mod.Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 1,
+        repeats: false,
+      },
+    });
+    console.log(NOTIF_TAG, 'Test notification scheduled');
+  } catch (e) {
+    console.log(NOTIF_TAG, 'Error sending test notification:', e);
   }
 }
 
