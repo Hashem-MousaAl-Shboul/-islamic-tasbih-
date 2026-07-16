@@ -316,4 +316,14 @@ export interface TranslationKeys {
   customImage: string;
   chooseFromGallery: string;
   galleryPickerError: string;
+  quranKareem: string;
+  lastRead: string;
+  backToReading: string;
+  surah: string;
+  surahTab: string;
+  juzTab: string;
+  pageTab: string;
+  hizbTab: string;
+  playSurah: string;
+  quranDescription: string;
 }
