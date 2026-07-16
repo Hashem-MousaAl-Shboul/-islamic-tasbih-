@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { TasbihProvider } from '@/hooks/useTasbihStore';
 import { FavoritesProvider } from '@/hooks/useFavoritesStore';
 import { ReciterProvider } from '@/hooks/useReciterStore';
+import { QuranStoreProvider } from '@/hooks/useQuranStore';
 import { CreditsProvider } from '@/hooks/useCreditsStore';
 import { AdhkarCountsProvider } from '@/hooks/useAdhkarCountsStore';
 import { queryClient } from '@/utils/queryClient';
@@ -18,6 +19,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       <SafeAreaProvider>
         <LanguageProvider>
           <ReciterProvider>
+            <QuranStoreProvider>
             <TasbihProvider>
               <FavoritesProvider>
                 <ThemeProvider>
@@ -29,6 +31,7 @@ export function AppProviders({ children }: AppProvidersProps) {
                 </ThemeProvider>
               </FavoritesProvider>
             </TasbihProvider>
+            </QuranStoreProvider>
           </ReciterProvider>
         </LanguageProvider>
       </SafeAreaProvider>

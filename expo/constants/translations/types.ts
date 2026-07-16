@@ -326,4 +326,21 @@ export interface TranslationKeys {
   hizbTab: string;
   playSurah: string;
   quranDescription: string;
+  verses: string;
+  ayah: string;
+  ayahNumber: string;
+  loadingVerses: string;
+  errorLoadingVerses: string;
+  noVersesAvailable: string;
+  bismillah: string;
+  meccan: string;
+  medinan: string;
+  reciteSurah: string;
+  stopRecitation: string;
+  selectReciterTitle: string;
+  juzNumber: string;
+  page: string;
+  hizbNumber: string;
+  ayahs: string;
+  goToReader: string;
 }
