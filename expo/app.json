@@ -21,7 +21,8 @@
         "UIBackgroundModes": [
           "audio"
         ],
-        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
+        "NSPhotoLibraryUsageDescription": "This app lets you choose a custom background image from your photo library."
       }
     },
     "android": {
@@ -36,7 +37,9 @@
         "INTERNET",
         "com.google.android.gms.permission.AD_ID",
         "android.permission.POST_NOTIFICATIONS",
-        "android.permission.SCHEDULE_EXACT_ALARM"
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_EXTERNAL_STORAGE"
       ],
       "navigationBarColor": "#F7F4EE",
       "navigationBarStyle": "dark"

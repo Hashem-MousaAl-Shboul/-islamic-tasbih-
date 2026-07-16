@@ -16,6 +16,7 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCard from '@/components/TasbihCard';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
+import { ThemedBackground } from '@/components/ThemedBackground';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
@@ -265,7 +266,7 @@ export default function TasbihScreen() {
     : 0;
 
   return (
-    <View style={styles.container} testID="tasbih-screen">
+    <ThemedBackground testID="tasbih-screen">
       <UnifiedHeader title={t('tasbih') || 'التسبيح'} testID="tasbih-header" />
 
       <View style={styles.cardsSection}>
@@ -419,6 +420,7 @@ export default function TasbihScreen() {
       <View style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
         <AdBanner />
       </View>
+
       <Modal visible={showAddModal} animationType="slide" transparent onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -502,7 +504,7 @@ export default function TasbihScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ThemedBackground>
   );
 }
 

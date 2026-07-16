@@ -13,6 +13,7 @@ import AdBanner from '@/components/AdBanner';
 import { PolygonCounter } from '@/components/PolygonCounter';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 import UnifiedHeader from '@/components/UnifiedHeader';
+import { ThemedBackground } from '@/components/ThemedBackground';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -544,9 +545,7 @@ export default function AdhkarScreen() {
   }
 
   return (
-    <View style={styles.container} testID="adhkar-screen"
-      accessibilityLabel="Adhkar Screen"
-      accessibilityHint="Browse adhkar collections">
+    <ThemedBackground testID="adhkar-screen">
       <ErrorBoundary t={t}>
         <UnifiedHeader title={t('adhkar') || 'الأذكار'} testID="adhkar-header" />
         <AdhkarHeader selectedFilter={selectedFilter} onFilterChange={handleFilterChange} />
@@ -571,10 +570,10 @@ export default function AdhkarScreen() {
           />
         </View>
       </ErrorBoundary>
-      <View style={{ paddingBottom: Math.max(insets.bottom, 10), backgroundColor: '#F7F4EE' }}>
+      <View style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
   <AdBanner />
 </View>
-    </View>
+    </ThemedBackground>
   );
 }
 

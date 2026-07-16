@@ -295,4 +295,20 @@ export interface TranslationKeys {
   openSettings: string;
   notificationsExpoGoTitle: string;
   notificationsExpoGoWarning: string;
+  preview: string;
+  backgroundThemes: string;
+  accentColors: string;
+  defaultBackground: string;
+  warmGold: string;
+  calmBlue: string;
+  softGreen: string;
+  lightPurple: string;
+  freshTeal: string;
+  gentleRose: string;
+  warmSunset: string;
+  coolOcean: string;
+  deepNight: string;
+  customImage: string;
+  chooseFromGallery: string;
+  galleryPickerError: string;
 }

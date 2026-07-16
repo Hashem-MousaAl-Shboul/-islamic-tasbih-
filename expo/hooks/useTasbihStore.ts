@@ -18,9 +18,24 @@ export interface TasbihItem {
   deletedAt?: Date;
 }
 
+export type BackgroundThemeKey =
+  | 'default'
+  | 'gold'
+  | 'blue'
+  | 'green'
+  | 'purple'
+  | 'teal'
+  | 'rose'
+  | 'warm'
+  | 'cool'
+  | 'dark'
+  | 'custom';
+
 export interface TasbihSettings {
   theme: 'light' | 'dark';
   colorTheme: 'gold' | 'blue' | 'green' | 'purple' | 'teal' | 'rose';
+  backgroundTheme: BackgroundThemeKey;
+  customBackgroundImage: string | null;
   vibrationEnabled: boolean;
   soundEnabled: boolean;
   autoReset: boolean;
@@ -137,6 +152,8 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
 const DEFAULT_SETTINGS: TasbihSettings = {
   theme: 'dark',
   colorTheme: 'gold',
+  backgroundTheme: 'default',
+  customBackgroundImage: null,
   vibrationEnabled: true,
   soundEnabled: false,
   autoReset: false,
@@ -372,6 +389,8 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
         soundEnabled: true,
         theme: 'dark' as const,
         colorTheme: 'gold' as const,
+        backgroundTheme: 'default' as const,
+        customBackgroundImage: null,
         animationsEnabled: true,
         fontSize: 'medium' as const,
         reducedMotion: false

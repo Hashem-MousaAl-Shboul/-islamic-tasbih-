@@ -47,6 +47,7 @@ import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 import UnifiedHeader from '@/components/UnifiedHeader';
 
 import type { ColorThemeKey } from '@/theme/ThemeProvider';
+import type { BackgroundThemeKey } from '@/hooks/useTasbihStore';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -186,7 +187,13 @@ export default function SettingsScreen() {
 
   const handleSelectColorTheme = useCallback((themeKey: ColorThemeKey) => {
     updateSettings({ colorTheme: themeKey });
-    setShowColorPicker(false);
+  }, [updateSettings]);
+
+  const handleSelectBackground = useCallback((backgroundKey: BackgroundThemeKey, imageUri?: string | null) => {
+    updateSettings({
+      backgroundTheme: backgroundKey,
+      customBackgroundImage: backgroundKey === 'custom' ? imageUri ?? null : null,
+    });
   }, [updateSettings]);
 
   const handleRateApp = useCallback(async () => {
@@ -288,10 +295,8 @@ export default function SettingsScreen() {
             icon={<Palette size={20} color="#8B6BC4" />}
             title={t('colorTheme')}
             type="select"
-            value={t(settings.colorTheme || 'gold')}
-            onPress={() => {}}
-            disabled
-            badge={t('comingSoon')}
+            value={t(settings.backgroundTheme || 'default')}
+            onPress={() => setShowColorPicker(true)}
           />
           <SettingsRow
             icon={<Globe size={20} color="#3B7DD8" />}
@@ -463,6 +468,9 @@ export default function SettingsScreen() {
         onClose={() => setShowColorPicker(false)}
         currentTheme={(settings.colorTheme as ColorThemeKey) || 'gold'}
         onSelectTheme={handleSelectColorTheme}
+        currentBackground={(settings.backgroundTheme as BackgroundThemeKey) || 'default'}
+        customBackgroundImage={settings.customBackgroundImage}
+        onSelectBackground={handleSelectBackground}
       />
 
       <AdBanner />
