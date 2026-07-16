@@ -47,13 +47,13 @@ const BASE_PRESETS: Record<ReciterId, TTSOptions> = {
   husary: { language: 'ar-SA', pitch: 1.02, rate: 0.43 },
 };
 
-// Reciter server and path mapping for mp3quran.net
+// Reciter server mapping for mp3quran.net — verified paths from the mp3quran.net API v3
 const RECITER_SERVERS: Record<ReciterId, { server: string; path: string }> = {
-  sudais: { server: 'https://server8.mp3quran.net/sudais', path: 'sudais' },
-  shuraim: { server: 'https://server8.mp3quran.net/shur', path: 'shur' },
-  alafasy: { server: 'https://server8.mp3quran.net/alafasy', path: 'alafasy' },
-  maher: { server: 'https://server11.mp3quran.net/maher', path: 'maher' },
-  husary: { server: 'https://server6.mp3quran.net/husary', path: 'husary' },
+  sudais:  { server: 'https://server11.mp3quran.net/sds',   path: 'sds'   },
+  shuraim: { server: 'https://server7.mp3quran.net/shur',   path: 'shur'  },
+  alafasy: { server: 'https://server8.mp3quran.net/afs',    path: 'afs'   },
+  maher:   { server: 'https://server12.mp3quran.net/maher', path: 'maher' },
+  husary:  { server: 'https://server13.mp3quran.net/husr',  path: 'husr'  },
 };
 
 /**
@@ -64,6 +64,7 @@ function generateRecitationUrl(surahNumber: number, reciter: ReciterId): string 
   const config = RECITER_SERVERS[reciter];
   if (!config) return '';
   const padded = String(surahNumber).padStart(3, '0');
+  // Pattern: https://server{N}.mp3quran.net/{path}/{NNN}.mp3
   return `${config.server}/${padded}.mp3`;
 }
 

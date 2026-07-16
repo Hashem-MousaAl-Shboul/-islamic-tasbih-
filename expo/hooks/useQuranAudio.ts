@@ -148,8 +148,28 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       setDuration(0);
 
       const audioUrl = getQuranRecitationUrl(surah.number, reciterToUse);
+      console.log(`[QuranAudio] Playing surah ${surah.number} with reciter ${reciterToUse}: ${audioUrl}`);
       if (!audioUrl) {
         setError(t('errorLoadingVerses'));
+        setIsLoading(false);
+        setCurrentSurah(null);
+        return;
+      }
+
+      // Verify the URL is reachable before creating the player
+      try {
+        const headResponse = await fetch(audioUrl, { method: 'HEAD' });
+        if (!headResponse.ok) {
+          console.error(`[QuranAudio] Audio URL returned ${headResponse.status}: ${audioUrl}`);
+          setError(t('audioNetworkError'));
+          setIsLoading(false);
+          setCurrentSurah(null);
+          return;
+        }
+        console.log(`[QuranAudio] URL verified OK, content-length: ${headResponse.headers.get('content-length')}`);
+      } catch (fetchErr) {
+        console.error('[QuranAudio] URL verification failed:', fetchErr);
+        setError(t('audioNetworkError'));
         setIsLoading(false);
         setCurrentSurah(null);
         return;
@@ -160,8 +180,25 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       const newPlayer = createAudioPlayer({ uri: audioUrl });
       newPlayer.volume = 1.0;
 
-      statusListenerRef.current = newPlayer.addListener('playbackStatusUpdate', (status: any) => {
-        if (!status?.isLoaded) return;
+      const listener = newPlayer.addListener('playbackStatusUpdate', (status: any) => {
+        if (!status?.isLoaded) {
+          // Still loading — check for early errors
+          if (status?.error) {
+            console.error('[QuranAudio] Player load error:', status.error);
+            setError(t('audioNetworkError'));
+            setIsPlaying(false);
+            setIsLoading(false);
+            try { newPlayer.remove(); } catch {}
+            if (statusListenerRef.current === listener) {
+              try { statusListenerRef.current.remove(); } catch {}
+              statusListenerRef.current = null;
+            }
+            playerRef.current = null;
+          }
+          return;
+        }
+
+        // Loaded successfully
         if (status.error) {
           console.error('[QuranAudio] Player error:', status.error);
           setError(t('audioNetworkError'));
@@ -169,6 +206,10 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
           setIsLoading(false);
           return;
         }
+
+        // Clear loading state once we get a loaded status
+        setIsLoading(prev => prev ? false : prev);
+
         const nextIsPlaying = Boolean(status.playing);
         const nextPos = Number(status.currentTime ?? 0) * 1000;
         const nextDur = Number(status.duration ?? 0) * 1000;
@@ -181,7 +222,6 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
         if (status.didJustFinish) {
           if (repeatModeRef.current === 'surah') {
-            // Repeat the surah
             try {
               newPlayer.seekTo(0);
               newPlayer.play();
@@ -198,10 +238,15 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
         }
       });
 
+      statusListenerRef.current = listener;
       playerRef.current = newPlayer;
       newPlayer.play();
       setIsPlaying(true);
-      setIsLoading(false);
+      // isLoading is cleared when we receive the first isLoaded=true status,
+      // but add a 15s safety timeout in case status updates never fire
+      setTimeout(() => {
+        setIsLoading(prev => prev ? false : prev);
+      }, 15000);
 
       // Save last read
       void saveLastRead({
@@ -218,7 +263,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       setIsPlaying(false);
       setCurrentSurah(null);
     }
-  }, [currentReciter, setupAudio, cleanupPlayer, t, saveLastRead]);
+  }, [currentReciter, setupAudio, cleanupPlayer, t, saveLastRead, isPlaying]);
 
   const togglePlayPause = useCallback(async () => {
     if (!playerRef.current || !currentSurahRef.current) return;
