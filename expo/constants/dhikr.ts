@@ -470,7 +470,7 @@ export const ADHKAR_LIST = [
     title: "التسبيح قبل النوم",
     arabicText: "سُبْحَانَ اللَّهِ (33) ، الْحَمْدُ لِلَّهِ (33) ، اللَّهُ أَكْبَرُ (34).",
     category: "sleep",
-    repeatCount: 1,
+    repeatCount: 100,
   },
 
   // ═══════════════════════════════════════
@@ -508,7 +508,6 @@ export const ADHKAR_LIST = [
     id: "wakeup-5",
     title: "دعاء الصباح",
     arabicText: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ.",
-    translation: "O Allah, by You we enter the morning, by You we enter the evening, by You we live, and by You we die, and to You is the resurrection.",
     category: "wakeup",
     repeatCount: 1,
   },
