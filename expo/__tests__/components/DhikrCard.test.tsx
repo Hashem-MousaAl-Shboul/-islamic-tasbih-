@@ -6,7 +6,6 @@ import { Dhikr } from '@/types';
 const mockDhikr: Dhikr = {
   id: '1',
   arabicText: 'سبحان الله',
-  transliteration: 'Subhan Allah',
   translation: 'Glory be to Allah',
   count: 15,
   targetCount: 33,
