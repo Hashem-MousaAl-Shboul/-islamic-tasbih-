@@ -470,6 +470,7 @@ export const ADHKAR_LIST = [
     title: "التسبيح قبل النوم",
     arabicText: "سُبْحَانَ اللَّهِ (33) ، الْحَمْدُ لِلَّهِ (33) ، اللَّهُ أَكْبَرُ (34).",
     category: "sleep",
+    count:0,
     repeatCount: 100,
   },
 
