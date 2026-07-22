@@ -5,7 +5,6 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   {
     id: "1",
     arabicText: "سبحان الله",
-    translation: "Glory be to Allah",
     count: 0,
     targetCount: 33,
     color: DefaultDhikrColors["سبحان الله"],
