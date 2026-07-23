@@ -90,8 +90,6 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
   {
     id: '1',
     arabicText: 'سُبْحَانَ اللَّهِ',
-    transliteration: 'Subhan Allah',
-    translation: 'Glory be to Allah',
     count: 0,
     targetCount: 33,
     color: '#10B981',
