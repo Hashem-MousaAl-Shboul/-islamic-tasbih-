@@ -102,8 +102,6 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
   {
     id: '2',
     arabicText: 'الْحَمْدُ لِلَّهِ',
-    transliteration: 'Alhamdulillah',
-    translation: 'All praise is due to Allah',
     count: 0,
     targetCount: 33,
     color: '#3B82F6',
