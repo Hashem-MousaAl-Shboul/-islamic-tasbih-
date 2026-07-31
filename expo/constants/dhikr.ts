@@ -31,8 +31,6 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   {
     id: "4",
     arabicText: "لا إله إلا الله",
-    transliteration: "La ilaha illallah",
-    translation: "There is no god but Allah",
     count: 0,
     targetCount: 100,
     color: DefaultDhikrColors["لا إله إلا الله"],
