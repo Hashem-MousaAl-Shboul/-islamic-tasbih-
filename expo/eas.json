@@ -20,10 +20,12 @@
     "production": {
   "autoIncrement": true,
   "env": {
-    "KOTLIN_VERSION": "1.9.25"
+    "KOTLIN_VERSION": "1.9.20"
   },
   "android": {
     "buildType": "app-bundle"
+    "gradleCommand": ":app:bundleRelease",
+    "image": "latest"
     }
    }
   },
