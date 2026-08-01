@@ -30,7 +30,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1B4332"
       },
-      "versionCode": 1010,
+      "versionCode": 109,
       "package": "app.islamicdhikr.sabbah",
       "permissions": [
         "android.permission.VIBRATE",
@@ -75,7 +75,7 @@
         {
           "android": {
             "compileSdkVersion": 36,
-            "kotlinVersion": "1.9.25"
+            "kotlinVersion": "1.9.20"
           }
         }
       ],
