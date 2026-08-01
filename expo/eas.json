@@ -18,13 +18,14 @@
       }
     },
     "production": {
-      "autoIncrement": true,
-      "android": {
-        "buildType": "app-bundle",
-        "image": "latest",
-        "gradleCommand": ":app:bundleRelease"
-      }
+  "autoIncrement": true,
+  "env": {
+    "KOTLIN_VERSION": "1.9.25"
+  },
+  "android": {
+    "buildType": "app-bundle"
     }
+   }
   },
   "submit": {
     "production": {
