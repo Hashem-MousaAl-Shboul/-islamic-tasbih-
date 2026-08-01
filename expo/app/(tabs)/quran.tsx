@@ -463,7 +463,7 @@ export default function QuranScreen() {
         }
         contentContainerStyle={[
           styles.listContent,
-          hasMiniPlayer && { paddingBottom: 140 },
+          hasMiniPlayer && { paddingBottom: 180 },
         ]}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"

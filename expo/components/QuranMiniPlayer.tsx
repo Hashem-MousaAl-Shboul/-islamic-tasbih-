@@ -17,6 +17,7 @@ import {
   Repeat1,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useQuranAudio } from '@/hooks/useQuranAudio';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
@@ -48,6 +49,9 @@ export default function QuranMiniPlayer() {
     dismissError,
   } = useQuranAudio();
   const { t } = useLanguageStore();
+  const insets = useSafeAreaInsets();
+
+  const bottomInset = Math.max(insets.bottom, 0);
 
   const progressPercentage = useMemo(() => {
     return duration > 0 ? (position / duration) * 100 : 0;
@@ -86,7 +90,7 @@ export default function QuranMiniPlayer() {
   if (!currentSurah) return null;
 
   return (
-    <View style={styles.container} testID="quran-mini-player">
+    <View style={[styles.container, { paddingBottom: 14 + bottomInset + 8 }]} testID="quran-mini-player">
       {/* Progress bar at top edge */}
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: `${progressPercentage}%` }]} />
@@ -201,7 +205,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.2,
