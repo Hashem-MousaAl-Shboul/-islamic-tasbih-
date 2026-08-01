@@ -20,7 +20,7 @@
     "production": {
   "autoIncrement": true,
   "env": {
-    "KOTLIN_VERSION": "1.9.20"
+    "KOTLIN_VERSION": "1.9.25"
   },
   "android": {
     "buildType": "app-bundle"
