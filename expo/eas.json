@@ -19,9 +19,6 @@
     },
     "production": {
       "autoIncrement": true,
-      "env": {
-        "KOTLIN_VERSION": "2.1.20"
-      },
       "android": {
         "buildType": "app-bundle",
         "image": "latest",

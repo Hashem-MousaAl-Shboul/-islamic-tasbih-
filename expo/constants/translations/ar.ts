@@ -21,7 +21,7 @@ export const ar: TranslationKeys = {
   rateApp: 'تقييم التطبيق',
   privacy: 'سياسة الخصوصية',
   terms: 'شروط الاستخدام',
-  /*version: 'الإصدار',*/
+  version: 'الإصدار',
   customizeApp: 'خصص تطبيقك',
   appearance: 'المظهر',
   interaction: 'التفاعل',
