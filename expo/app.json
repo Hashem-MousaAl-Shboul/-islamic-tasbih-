@@ -37,7 +37,6 @@
         "INTERNET",
         "com.google.android.gms.permission.AD_ID",
         "android.permission.POST_NOTIFICATIONS",
-        "android.permission.SCHEDULE_EXACT_ALARM",
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
