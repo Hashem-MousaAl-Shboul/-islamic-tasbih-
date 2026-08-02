@@ -74,7 +74,7 @@
         {
           "android": {
             "compileSdkVersion": 36,
-            "kotlinVersion": "1.9.20"
+            "kotlinVersion": "2.1.20"
           }
         }
       ],
