@@ -5,8 +5,6 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   {
     id: "1",
     arabicText: "سبحان الله",
-    transliteration: "Subhan Allah",
-    translation: "Glory be to Allah",
     count: 0,
     targetCount: 33,
     color: DefaultDhikrColors["سبحان الله"],
@@ -15,8 +13,6 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   {
     id: "2",
     arabicText: "الحمد لله",
-    transliteration: "Alhamdulillah",
-    translation: "Praise be to Allah",
     count: 0,
     targetCount: 33,
     color: DefaultDhikrColors["الحمد لله"],
@@ -25,8 +21,6 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   {
     id: "3",
     arabicText: "الله أكبر",
-    transliteration: "Allahu Akbar",
-    translation: "Allah is the Greatest",
     count: 0,
     targetCount: 33,
     color: DefaultDhikrColors["الله أكبر"],
@@ -35,8 +29,6 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   {
     id: "4",
     arabicText: "لا إله إلا الله",
-    transliteration: "La Ilaha Illallah",
-    translation: "There is no god but Allah",
     count: 0,
     targetCount: 100,
     color: DefaultDhikrColors["لا إله إلا الله"],
@@ -45,8 +37,6 @@ export const DEFAULT_DHIKR_LIST: Dhikr[] = [
   {
     id: "5",
     arabicText: "أستغفر الله",
-    transliteration: "Astaghfirullah",
-    translation: "I seek forgiveness from Allah",
     count: 0,
     targetCount: 100,
     color: DefaultDhikrColors["أستغفر الله"],
