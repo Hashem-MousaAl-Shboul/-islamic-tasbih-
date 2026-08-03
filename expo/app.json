@@ -36,9 +36,7 @@
         "android.permission.VIBRATE",
         "INTERNET",
         "com.google.android.gms.permission.AD_ID",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_EXTERNAL_STORAGE"
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "navigationBarColor": "#F7F4EE",
       "navigationBarStyle": "dark"
