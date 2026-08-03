@@ -90,7 +90,6 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
   {
     id: '1',
     arabicText: 'سُبْحَانَ اللَّهِ',
-    transliteration: 'Subhan Allah',
     translation: 'Glory be to Allah',
     count: 0,
     targetCount: 33,
@@ -102,7 +101,6 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
   {
     id: '2',
     arabicText: 'الْحَمْدُ لِلَّهِ',
-    transliteration: 'Alhamdulillah',
     translation: 'Praise be to Allah',
     count: 0,
     targetCount: 33,
@@ -114,8 +112,6 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
   {
     id: '3',
     arabicText: 'اللَّهُ أَكْبَرُ',
-    transliteration: 'Allahu Akbar',
-    translation: 'Allah is the Greatest',
     count: 0,
     targetCount: 34,
     color: '#8B5CF6',
@@ -126,7 +122,6 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
   {
     id: '4',
     arabicText: 'لَا إِلَٰهَ إِلَّا اللَّهُ',
-    transliteration: 'La ilaha illa Allah',
     translation: 'There is no god but Allah',
     count: 0,
     targetCount: 100,
@@ -138,7 +133,6 @@ const DEFAULT_TASBIH_ITEMS: TasbihItem[] = [
   {
     id: '5',
     arabicText: 'أَسْتَغْفِرُ اللَّهَ',
-    transliteration: 'Astaghfirullah',
     translation: 'I seek forgiveness from Allah',
     count: 0,
     targetCount: 100,
