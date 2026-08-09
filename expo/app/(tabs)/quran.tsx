@@ -136,7 +136,7 @@ const LastReadCard = React.memo(function LastReadCard({
             <Text style={[lastReadStyles.buttonText, androidTextFix]}>
               {t('backToReading')}
             </Text>
-            <ChevronLeft size={16} color={GOLD_CARD_TEXT} />
+            <ChevronLeft size={16} color={IVORY} />
           </TouchableOpacity>
         </View>
         <QuranBookIllustration />
@@ -254,7 +254,7 @@ const JuzItem = React.memo(function JuzItem({
   onOpen,
 }: {
   juz: { number: number; startSurah: number; startAyah: number };
-  onOpen: (surahNumber: number) => void;
+  onOpen: (surahNumber: number, ayahNumber?: number) => void;
 }) {
   const { t } = useLanguageStore();
   const surah = getSurahByNumber(juz.startSurah);
@@ -262,7 +262,7 @@ const JuzItem = React.memo(function JuzItem({
   return (
     <TouchableOpacity
       style={surahStyles.container}
-      onPress={() => onOpen(juz.startSurah)}
+      onPress={() => onOpen(juz.startSurah, juz.startAyah)}
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
@@ -285,7 +285,7 @@ const HizbItem = React.memo(function HizbItem({
   onOpen,
 }: {
   hizb: { number: number; startSurah: number; startAyah: number };
-  onOpen: (surahNumber: number) => void;
+  onOpen: (surahNumber: number, ayahNumber?: number) => void;
 }) {
   const { t } = useLanguageStore();
   const surah = getSurahByNumber(hizb.startSurah);
@@ -293,7 +293,7 @@ const HizbItem = React.memo(function HizbItem({
   return (
     <TouchableOpacity
       style={surahStyles.container}
-      onPress={() => onOpen(hizb.startSurah)}
+      onPress={() => onOpen(hizb.startSurah, hizb.startAyah)}
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
@@ -313,16 +313,16 @@ const HizbItem = React.memo(function HizbItem({
 
 const PageItem = React.memo(function PageItem({
   pageNum,
-  onOpen,
+  onOpenPage,
 }: {
   pageNum: number;
-  onOpen: (surahNumber: number) => void;
+  onOpenPage: (page: number) => void;
 }) {
   const { t } = useLanguageStore();
   return (
     <TouchableOpacity
       style={surahStyles.container}
-      onPress={() => onOpen(1)}
+      onPress={() => onOpenPage(pageNum)}
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
@@ -378,15 +378,22 @@ export default function QuranScreen() {
     void playSurah(surah);
   }, [playSurah, triggerHaptic]);
 
-  const handleOpenReader = useCallback((surah: SurahMeta) => {
+  const handleOpenReader = useCallback((surah: SurahMeta, ayahNumber?: number) => {
     triggerHaptic();
-    router.push(`/quran-reader?surah=${surah.number}`);
+    const ayahParam = ayahNumber ? `&ayah=${ayahNumber}` : '';
+    router.push(`/quran-reader?surah=${surah.number}${ayahParam}`);
+  }, [router, triggerHaptic]);
+
+  const handleOpenPageReader = useCallback((page: number) => {
+    triggerHaptic();
+    router.push(`/quran-reader?page=${page}`);
   }, [router, triggerHaptic]);
 
   const handleContinueReading = useCallback(() => {
     triggerHaptic();
     const surahNum = lastRead?.surahNumber ?? 1;
-    router.push(`/quran-reader?surah=${surahNum}`);
+    const ayahNum = lastRead?.ayahNumber ? `&ayah=${lastRead.ayahNumber}` : '';
+    router.push(`/quran-reader?surah=${surahNum}${ayahNum}`);
   }, [router, lastRead, triggerHaptic]);
 
   const handleReciterSelect = useCallback(async (reciter: ReciterId) => {
@@ -401,9 +408,9 @@ export default function QuranScreen() {
     return Array.from({ length: TOTAL_PAGES }, (_, i) => i + 1);
   }, [activeMode, surahList]);
 
-  const handleOpenSurahByNumber = useCallback((num: number) => {
-    const surah = getSurahByNumber(num) ?? SURAHS[0];
-    handleOpenReader(surah);
+  const handleOpenSurahByNumber = useCallback((surahNum: number, ayahNum?: number) => {
+    const surah = getSurahByNumber(surahNum) ?? SURAHS[0];
+    handleOpenReader(surah, ayahNum);
   }, [handleOpenReader]);
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<any>) => {
@@ -427,8 +434,8 @@ export default function QuranScreen() {
     if (activeMode === 'hizb') {
       return <HizbItem hizb={item} onOpen={handleOpenSurahByNumber} />;
     }
-    return <PageItem pageNum={item} onOpen={handleOpenSurahByNumber} />;
-  }, [activeMode, handlePlaySurah, handleOpenReader, handleOpenSurahByNumber, isCurrentSurah, isPlaying, isLoading]);
+    return <PageItem pageNum={item} onOpenPage={handleOpenPageReader} />;
+  }, [activeMode, handlePlaySurah, handleOpenReader, handleOpenSurahByNumber, handleOpenPageReader, isCurrentSurah, isPlaying, isLoading]);
 
   const keyExtractor = useCallback((item: any) => {
     if (activeMode === 'surah') return `surah-${item.number}`;
