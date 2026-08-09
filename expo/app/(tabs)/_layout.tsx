@@ -12,7 +12,7 @@ const TAB_TAG = '[TabLayout]';
 
 export default function TabLayout() {
   const { t } = useLanguageStore();
-  const [isBarVisible, setIsBarVisible] = useState<boolean>(false,);
+  const [isBarVisible, setIsBarVisible] = useState<boolean>(true);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   const screenOptions = useMemo(() => ({
