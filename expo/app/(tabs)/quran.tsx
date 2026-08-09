@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
+  ListRenderItemInfo,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -27,14 +28,21 @@ import { useReciterStore } from '@/hooks/useReciterStore';
 import { useQuranStore, type LastReadPosition } from '@/hooks/useQuranStore';
 import { useQuranAudio } from '@/hooks/useQuranAudio';
 import { RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
-import { SURAHS, JUZ_STARTS, HIZB_STARTS, TOTAL_PAGES, getSurahByNumber, getSurahTypeLabel, type SurahMeta } from '@/utils/quranData';
+import {
+  SURAHS,
+  JUZ_STARTS,
+  HIZB_STARTS,
+  TOTAL_PAGES,
+  getSurahByNumber,
+  type SurahMeta,
+} from '@/utils/quranData';
 import { androidTextFix } from '@/utils/androidOptimizations';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
 import QuranMiniPlayer from '@/components/QuranMiniPlayer';
 
+// Colors & Design System
 const GOLD = '#D4A853';
-const DEEP_GREEN = '#1B4332';
 const DARK_BG = '#1B1F2E';
 const CARD_BG = '#232838';
 const GOLD_CARD_BG = '#F5D088';
@@ -53,11 +61,12 @@ interface ApiSurah {
   revelationType: string;
 }
 
+// API Fetching
 async function fetchAllSurahs(): Promise<SurahMeta[]> {
   const response = await fetch('https://api.alquran.cloud/v1/surah');
   if (!response.ok) throw new Error(`API error: ${response.status}`);
   const json = await response.json();
-  const surahs: SurahMeta[] = (json.data as ApiSurah[]).map(s => ({
+  return (json.data as ApiSurah[]).map((s) => ({
     number: s.number,
     name: s.name,
     englishName: s.englishName,
@@ -65,10 +74,10 @@ async function fetchAllSurahs(): Promise<SurahMeta[]> {
     revelationType: s.revelationType === 'Medinan' ? 'Medinan' : 'Meccan',
     numberOfAyahs: s.numberOfAyahs,
   }));
-  return surahs;
 }
 
-function QuranBookIllustration() {
+// Sub-components
+const QuranBookIllustration = React.memo(function QuranBookIllustration() {
   return (
     <View style={illustrationStyles.container}>
       <View style={illustrationStyles.bookCover}>
@@ -86,9 +95,9 @@ function QuranBookIllustration() {
       </View>
     </View>
   );
-}
+});
 
-function LastReadCard({
+const LastReadCard = React.memo(function LastReadCard({
   lastRead,
   onContinue,
 }: {
@@ -134,9 +143,9 @@ function LastReadCard({
       </View>
     </View>
   );
-}
+});
 
-function ViewModeTabs({
+const ViewModeTabs = React.memo(function ViewModeTabs({
   activeMode,
   onChange,
 }: {
@@ -176,15 +185,15 @@ function ViewModeTabs({
             >
               {mode.label}
             </Text>
-            {isActive ? <View style={tabsStyles.activeIndicator} /> : null}
+            {isActive && <View style={tabsStyles.activeIndicator} />}
           </TouchableOpacity>
         );
       })}
     </View>
   );
-}
+});
 
-function SurahItem({
+const SurahItem = React.memo(function SurahItem({
   surah,
   onPlay,
   onOpenReader,
@@ -238,9 +247,9 @@ function SurahItem({
       </TouchableOpacity>
     </TouchableOpacity>
   );
-}
+});
 
-function JuzItem({
+const JuzItem = React.memo(function JuzItem({
   juz,
   onOpen,
 }: {
@@ -269,9 +278,9 @@ function JuzItem({
       </View>
     </TouchableOpacity>
   );
-}
+});
 
-function HizbItem({
+const HizbItem = React.memo(function HizbItem({
   hizb,
   onOpen,
 }: {
@@ -300,9 +309,15 @@ function HizbItem({
       </View>
     </TouchableOpacity>
   );
-}
+});
 
-function PageItem({ pageNum, onOpen }: { pageNum: number; onOpen: (surahNumber: number) => void }) {
+const PageItem = React.memo(function PageItem({
+  pageNum,
+  onOpen,
+}: {
+  pageNum: number;
+  onOpen: (surahNumber: number) => void;
+}) {
   const { t } = useLanguageStore();
   return (
     <TouchableOpacity
@@ -323,8 +338,9 @@ function PageItem({ pageNum, onOpen }: { pageNum: number; onOpen: (surahNumber: 
       </View>
     </TouchableOpacity>
   );
-}
+});
 
+// Main Screen Component
 export default function QuranScreen() {
   const { t } = useLanguageStore();
   const router = useRouter();
@@ -351,34 +367,46 @@ export default function QuranScreen() {
 
   const surahList = useMemo(() => surahs ?? SURAHS, [surahs]);
 
-  const handlePlaySurah = useCallback((surah: SurahMeta) => {
+  const triggerHaptic = useCallback(() => {
     if (Platform.OS !== 'web') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
+  }, []);
+
+  const handlePlaySurah = useCallback((surah: SurahMeta) => {
+    triggerHaptic();
     void playSurah(surah);
-  }, [playSurah]);
+  }, [playSurah, triggerHaptic]);
 
   const handleOpenReader = useCallback((surah: SurahMeta) => {
-    if (Platform.OS !== 'web') {
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    }
+    triggerHaptic();
     router.push(`/quran-reader?surah=${surah.number}`);
-  }, [router]);
+  }, [router, triggerHaptic]);
 
   const handleContinueReading = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    }
+    triggerHaptic();
     const surahNum = lastRead?.surahNumber ?? 1;
     router.push(`/quran-reader?surah=${surahNum}`);
-  }, [router, lastRead]);
+  }, [router, lastRead, triggerHaptic]);
 
   const handleReciterSelect = useCallback(async (reciter: ReciterId) => {
     setShowReciterPicker(false);
     await changeReciter(reciter);
   }, [changeReciter]);
 
-  const renderItem = useCallback(({ item, index }: { item: any; index: number }) => {
+  const listData = useMemo(() => {
+    if (activeMode === 'surah') return surahList;
+    if (activeMode === 'juz') return JUZ_STARTS;
+    if (activeMode === 'hizb') return HIZB_STARTS;
+    return Array.from({ length: TOTAL_PAGES }, (_, i) => i + 1);
+  }, [activeMode, surahList]);
+
+  const handleOpenSurahByNumber = useCallback((num: number) => {
+    const surah = getSurahByNumber(num) ?? SURAHS[0];
+    handleOpenReader(surah);
+  }, [handleOpenReader]);
+
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<any>) => {
     if (activeMode === 'surah') {
       const surah = item as SurahMeta;
       const isThisPlaying = isCurrentSurah(surah.number) && isPlaying;
@@ -394,20 +422,13 @@ export default function QuranScreen() {
       );
     }
     if (activeMode === 'juz') {
-      return <JuzItem juz={item} onOpen={(n) => handleOpenReader(getSurahByNumber(n) ?? SURAHS[0])} />;
+      return <JuzItem juz={item} onOpen={handleOpenSurahByNumber} />;
     }
     if (activeMode === 'hizb') {
-      return <HizbItem hizb={item} onOpen={(n) => handleOpenReader(getSurahByNumber(n) ?? SURAHS[0])} />;
+      return <HizbItem hizb={item} onOpen={handleOpenSurahByNumber} />;
     }
-    return <PageItem pageNum={item} onOpen={(n) => handleOpenReader(getSurahByNumber(n) ?? SURAHS[0])} />;
-  }, [activeMode, handlePlaySurah, handleOpenReader, isCurrentSurah, isPlaying, isLoading]);
-
-  const listData = useMemo(() => {
-    if (activeMode === 'surah') return surahList;
-    if (activeMode === 'juz') return JUZ_STARTS;
-    if (activeMode === 'hizb') return HIZB_STARTS;
-    return Array.from({ length: TOTAL_PAGES }, (_, i) => i + 1);
-  }, [activeMode, surahList]);
+    return <PageItem pageNum={item} onOpen={handleOpenSurahByNumber} />;
+  }, [activeMode, handlePlaySurah, handleOpenReader, handleOpenSurahByNumber, isCurrentSurah, isPlaying, isLoading]);
 
   const keyExtractor = useCallback((item: any) => {
     if (activeMode === 'surah') return `surah-${item.number}`;
@@ -488,7 +509,7 @@ export default function QuranScreen() {
                 <Text style={[styles.modalClose, androidTextFix]}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               {(Object.keys(RECITER_NAMES) as ReciterId[]).map((id) => (
                 <TouchableOpacity
                   key={id}
@@ -507,9 +528,9 @@ export default function QuranScreen() {
                   >
                     {RECITER_NAMES[id]}
                   </Text>
-                  {currentReciter === id ? (
+                  {currentReciter === id && (
                     <Text style={styles.checkMark}>✓</Text>
-                  ) : null}
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -520,6 +541,7 @@ export default function QuranScreen() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -534,9 +556,9 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   reciterBar: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(212,168,83,0.1)',
     borderRadius: 12,
     paddingVertical: 10,
@@ -548,12 +570,12 @@ const styles = StyleSheet.create({
   },
   reciterBarText: {
     fontSize: 13,
-    fontWeight: '600' as const,
+    fontWeight: '600',
     color: GOLD,
   },
   loadingContainer: {
     paddingVertical: 40,
-    alignItems: 'center' as const,
+    alignItems: 'center',
   },
   loadingText: {
     color: TEXT_MUTED,
@@ -568,8 +590,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 24,
   },
   modalContent: {
@@ -583,9 +605,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212,168,83,0.15)',
   },
   modalHeader: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    alignItems: 'center' as const,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
@@ -593,18 +615,18 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 17,
-    fontWeight: '700' as const,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   modalClose: {
     fontSize: 14,
     color: GOLD,
-    fontWeight: '600' as const,
+    fontWeight: '600',
   },
   reciterOption: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -620,12 +642,12 @@ const styles = StyleSheet.create({
   },
   reciterOptionTextActive: {
     color: GOLD,
-    fontWeight: '700' as const,
+    fontWeight: '700',
   },
   checkMark: {
     color: GOLD,
     fontSize: 18,
-    fontWeight: '700' as const,
+    fontWeight: '700',
   },
 });
 
@@ -640,20 +662,20 @@ const lastReadStyles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 5,
-    overflow: 'hidden' as const,
+    overflow: 'hidden',
   },
   content: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   textSection: {
     flex: 1,
-    alignItems: 'flex-start' as const,
+    alignItems: 'flex-start',
   },
   badge: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(27,31,46,0.08)',
     borderRadius: 10,
     paddingHorizontal: 10,
@@ -663,19 +685,19 @@ const lastReadStyles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '600' as const,
+    fontWeight: '600',
     color: GOLD_CARD_TEXT,
   },
   surahLabel: {
     fontSize: 13,
-    fontWeight: '500' as const,
+    fontWeight: '500',
     color: GOLD_CARD_TEXT,
     opacity: 0.7,
     marginBottom: 2,
   },
   surahName: {
     fontSize: 24,
-    fontWeight: '700' as const,
+    fontWeight: '700',
     color: GOLD_CARD_TEXT,
     writingDirection: 'rtl',
     textAlign: 'left',
@@ -683,14 +705,14 @@ const lastReadStyles = StyleSheet.create({
   },
   surahNameTransliteration: {
     fontSize: 14,
-    fontWeight: '500' as const,
+    fontWeight: '500',
     color: GOLD_CARD_TEXT,
     opacity: 0.8,
     marginBottom: 14,
   },
   button: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(27,31,46,0.85)',
     borderRadius: 14,
     paddingVertical: 10,
@@ -699,7 +721,7 @@ const lastReadStyles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 13,
-    fontWeight: '600' as const,
+    fontWeight: '600',
     color: IVORY,
   },
 });
@@ -708,8 +730,8 @@ const illustrationStyles = StyleSheet.create({
   container: {
     width: 110,
     height: 110,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bookCover: {
     width: 84,
@@ -718,8 +740,8 @@ const illustrationStyles = StyleSheet.create({
     borderRadius: 8,
     borderTopRightRadius: 4,
     borderBottomRightRadius: 4,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -743,7 +765,7 @@ const illustrationStyles = StyleSheet.create({
     top: 4,
     bottom: 4,
     width: 14,
-    justifyContent: 'center' as const,
+    justifyContent: 'center',
   },
   page: {
     position: 'absolute',
@@ -764,13 +786,13 @@ const illustrationStyles = StyleSheet.create({
     borderRadius: 28,
     borderWidth: 1.5,
     borderColor: GOLD,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 2,
   },
   bismillah: {
     fontSize: 10,
-    fontWeight: '600' as const,
+    fontWeight: '600',
     color: GOLD,
     writingDirection: 'rtl',
   },
@@ -778,27 +800,27 @@ const illustrationStyles = StyleSheet.create({
 
 const tabsStyles = StyleSheet.create({
   container: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
     paddingHorizontal: 4,
   },
   tab: {
     flex: 1,
-    alignItems: 'center' as const,
+    alignItems: 'center',
     paddingVertical: 10,
-    position: 'relative' as const,
+    position: 'relative',
   },
   activeTab: {},
   tabText: {
     fontSize: 14,
-    fontWeight: '500' as const,
+    fontWeight: '500',
     color: TEXT_MUTED,
   },
   activeTabText: {
     color: GOLD,
-    fontWeight: '700' as const,
+    fontWeight: '700',
   },
   activeIndicator: {
     position: 'absolute',
@@ -812,8 +834,8 @@ const tabsStyles = StyleSheet.create({
 
 const surahStyles = StyleSheet.create({
   container: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: CARD_BG,
     borderRadius: 18,
     paddingVertical: 14,
@@ -826,35 +848,35 @@ const surahStyles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: GOLD,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 14,
   },
   numberText: {
     fontSize: 14,
-    fontWeight: '700' as const,
+    fontWeight: '700',
     color: GOLD,
   },
   textSection: {
     flex: 1,
-    justifyContent: 'center' as const,
+    justifyContent: 'center',
   },
   arabicName: {
     fontSize: 17,
-    fontWeight: '700' as const,
+    fontWeight: '700',
     color: '#FFFFFF',
     writingDirection: 'rtl',
     textAlign: 'left',
     marginBottom: 4,
   },
   metaRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
   transliterationName: {
     fontSize: 13,
-    fontWeight: '500' as const,
+    fontWeight: '500',
     color: TEXT_MUTED,
     textAlign: 'left',
   },
@@ -864,7 +886,7 @@ const surahStyles = StyleSheet.create({
   },
   ayahCount: {
     fontSize: 12,
-    fontWeight: '400' as const,
+    fontWeight: '400',
     color: TEXT_MUTED,
   },
   playButton: {
@@ -872,8 +894,8 @@ const surahStyles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     backgroundColor: GOLD,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginLeft: 12,
   },
   playButtonActive: {
