@@ -1,69 +1,70 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, View, Platform } from 'react-native';
-import mobileAds, {
-  BannerAd,
-  BannerAdSize,
-  TestIds,
-} from 'react-native-google-mobile-ads';
+import React, { useState, useEffect, memo } from 'react';
+import { View, StyleSheet, Platform, Dimensions } from 'react-native';
 
 const AD_UNIT_ID = 'ca-app-pub-4282819777610118/9248009059';
 
-let initializationPromise: Promise<boolean> | null = null;
+let BannerAdComponent: React.ComponentType<any> | null = null;
+let BannerAdSizeValue: string | null = null;
+let TestIdsValue: { BANNER?: string } | null = null;
+let mobileAdsInit: { initialize: () => Promise<any> } | null = null;
 
-function initializeAds(): Promise<boolean> {
-  if (Platform.OS === 'web') return Promise.resolve(false);
-
-  if (!initializationPromise) {
-    initializationPromise = mobileAds()
-      .initialize()
-      .then(() => {
-        console.log('[AdBanner] Mobile Ads SDK initialized');
-        return true;
-      })
-      .catch((error: unknown) => {
-        console.warn('[AdBanner] Failed to initialize Mobile Ads SDK:', error);
-        initializationPromise = null;
-        return false;
-      });
-  }
-
-  return initializationPromise;
+try {
+  const adsModule = require('react-native-google-mobile-ads');
+  BannerAdComponent = adsModule.BannerAd;
+  // Fallback to FULL_BANNER if ANCHORED_ADAPTIVE_BANNER is missing
+  BannerAdSizeValue = adsModule.BannerAdSize?.ANCHORED_ADAPTIVE_BANNER || adsModule.BannerAdSize?.FULL_BANNER;
+  TestIdsValue = adsModule.TestIds;
+  mobileAdsInit = adsModule.default;
+  console.log('[AdBanner] react-native-google-mobile-ads loaded successfully');
+} catch (e) {
+  console.log('[AdBanner] react-native-google-mobile-ads not available, ads will not be shown');
 }
 
-export default function AdBanner() {
-  const [isReady, setIsReady] = useState(false);
-  const [adLoaded, setAdLoaded] = useState(false);
-  const [adFailed, setAdFailed] = useState(false);
+let adsInitialized = false;
+
+function initializeAds() {
+  if (adsInitialized || !mobileAdsInit || Platform.OS === 'web') return;
+  try {
+    mobileAdsInit.initialize().then(() => {
+      console.log('[AdBanner] Mobile Ads SDK initialized');
+      adsInitialized = true;
+    }).catch((err: any) => {
+      console.log('[AdBanner] Failed to initialize Mobile Ads SDK:', err);
+    });
+  } catch (e) {
+    console.log('[AdBanner] Error initializing ads:', e);
+  }
+}
+
+const AdBanner = memo(function AdBanner() {
+  const [adLoaded, setAdLoaded] = useState<boolean>(false);
+  const [adError, setAdError] = useState<boolean>(false);
 
   useEffect(() => {
-    let isMounted = true;
-
-    initializeAds().then((initialized) => {
-      if (isMounted) {
-        setIsReady(initialized);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-    };
+    initializeAds();
   }, []);
 
-  // عدم عرض المكون نهائياً على الويب أو عند حدوث خطأ أو عدم الجاهزية
-  if (Platform.OS === 'web' || !isReady || adFailed) {
+  if (Platform.OS === 'web' || !BannerAdComponent || !BannerAdSizeValue) {
     return null;
   }
 
-  // استخدام TestIds.BANNER الآمن لبيئة التطوير
-  const unitId = __DEV__
-    ? TestIds.BANNER
+  // Hide the banner layout completely if it explicitly fails to load
+  if (adError) {
+    return null;
+  }
+
+  const unitId = __DEV__ && TestIdsValue?.BANNER
+    ? TestIdsValue.BANNER
     : AD_UNIT_ID;
 
+  const NativeAd = BannerAdComponent;
+
   return (
-    <View style={[styles.container, !adLoaded && styles.hidden]} testID="ad-banner">
-      <BannerAd
+    // Instead of setting height to 0, use opacity to preserve layout boundaries while loading
+    <View style={[styles.container, !adLoaded && styles.invisible]} testID="ad-banner">
+      <NativeAd
         unitId={unitId}
-        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        size={BannerAdSizeValue}
         requestOptions={{
           requestNonPersonalizedAdsOnly: true,
         }}
@@ -71,27 +72,27 @@ export default function AdBanner() {
           console.log('[AdBanner] Ad loaded successfully');
           setAdLoaded(true);
         }}
-        onAdFailedToLoad={(error) => {
-          console.warn('[AdBanner] Ad failed to load:', error);
-          setAdFailed(true);
+        onAdFailedToLoad={(error: any) => {
+          console.log('[AdBanner] Ad failed to load:', error);
+          setAdError(true);
         }}
       />
     </View>
   );
-}
+});
+
+export default AdBanner;
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
     alignItems: 'center',
     backgroundColor: '#F7F4EE',
-    minHeight: 58,
-    width: '100%',
+    minHeight: 80, 
     justifyContent: 'center',
+    paddingVertical: 4,
   },
-  hidden: {
-    minHeight: 0,
-    height: 0,
+  invisible: {
     opacity: 0,
-    overflow: 'hidden',
   },
 });
