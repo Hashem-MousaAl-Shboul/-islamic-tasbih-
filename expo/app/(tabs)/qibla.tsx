@@ -24,6 +24,9 @@ import {
   AlertCircle,
   Gauge,
   Palette,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
 } from 'lucide-react-native';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useQibla, type CompassAccuracy } from '@/hooks/useQibla';
@@ -435,53 +438,121 @@ const AnimatedDial = memo(function AnimatedDial({
 AnimatedDial.displayName = 'AnimatedDial';
 
 // ════════════════════════════════════════════════════════════════
-//  ACCURACY INDICATOR
+//  ACCURACY INDICATOR — visual sensor quality bar + magnetic field
 // ════════════════════════════════════════════════════════════════
 interface AccuracyIndicatorProps {
   accuracy: CompassAccuracy;
+  magneticField: number | null;
   isDark: boolean;
 }
 
-const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, isDark }: AccuracyIndicatorProps) {
+const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, magneticField, isDark }: AccuracyIndicatorProps) {
   const { t } = useLanguageStore();
 
   const config = useMemo(() => {
     switch (accuracy) {
       case 'high':
-        return { color: '#4CAF50', label: t('accuracyHigh'), dots: 3 };
+        return { color: '#4CAF50', bgColor: 'rgba(76,175,80,0.12)', label: t('accuracyHigh'), dots: 3, icon: CheckCircle2 };
       case 'medium':
-        return { color: '#FFC107', label: t('accuracyMedium'), dots: 2 };
+        return { color: '#FFC107', bgColor: 'rgba(255,193,7,0.12)', label: t('accuracyMedium'), dots: 2, icon: Gauge };
       case 'low':
-        return { color: '#FF6B6B', label: t('accuracyLow'), dots: 1 };
+        return { color: '#FF6B6B', bgColor: 'rgba(255,107,107,0.12)', label: t('accuracyLow'), dots: 1, icon: AlertTriangle };
       default:
-        return { color: '#888', label: '—', dots: 0 };
+        return { color: '#888', bgColor: 'rgba(136,136,136,0.12)', label: t('accuracyUnavailable'), dots: 0, icon: XCircle };
     }
   }, [accuracy, t]);
 
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
+  const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
+  const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
+  const Icon = config.icon;
+
+  // Magnetic field display (typical Earth field: 25–65 µT).
+  const magText = useMemo(() => {
+    if (magneticField == null) return '—';
+    return `${magneticField.toFixed(0)} µT`;
+  }, [magneticField]);
 
   return (
-    <View style={styles.accuracyRow}>
-      <Gauge size={16} color={mutedColor} strokeWidth={1.8} />
-      <Text style={[styles.accuracyLabel, { color: mutedColor }]}>{t('compassAccuracy')}:</Text>
-      <View style={styles.accuracyDots}>
+    <View style={[styles.accuracyCard, { backgroundColor: config.bgColor, borderColor: config.color }]}>
+      <View style={styles.accuracyHeader}>
+        <View style={styles.accuracyHeaderLeft}>
+          <Icon size={18} color={config.color} strokeWidth={2.2} />
+          <Text style={[styles.accuracyTitle, { color: isDark ? TEXT_LIGHT : TEXT_DARK }]}>
+            {t('sensorStatus')}
+          </Text>
+        </View>
+        <Text style={[styles.accuracyValueBadge, { color: config.color }]}>{config.label}</Text>
+      </View>
+
+      {/* Segmented bar — 3 segments showing quality level */}
+      <View style={styles.accuracyBar}>
         {[1, 2, 3].map((i) => (
           <View
             key={i}
             style={[
-              styles.accuracyDot,
+              styles.accuracyBarSegment,
               {
-                backgroundColor: i <= config.dots ? config.color : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(27,67,50,0.12)'),
+                backgroundColor: i <= config.dots
+                  ? config.color
+                  : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(27,67,50,0.08)'),
               },
             ]}
           />
         ))}
       </View>
-      <Text style={[styles.accuracyValue, { color: config.color }]}>{config.label}</Text>
+
+      {/* Magnetic field reading */}
+      <View style={styles.accuracyMagRow}>
+        <Gauge size={12} color={mutedColor} strokeWidth={2} />
+        <Text style={[styles.accuracyMagLabel, { color: mutedColor }]}>
+          {t('magneticFieldStrength')}:
+        </Text>
+        <Text style={[styles.accuracyMagValue, { color: config.color }]}>{magText}</Text>
+      </View>
     </View>
   );
 });
 AccuracyIndicator.displayName = 'AccuracyIndicator';
+
+// ════════════════════════════════════════════════════════════════
+//  CALIBRATION CARD — detailed step-by-step calibration guide
+// ════════════════════════════════════════════════════════════════
+interface CalibrationCardProps {
+  isDark: boolean;
+}
+
+const CalibrationCard = memo(function CalibrationCard({ isDark }: CalibrationCardProps) {
+  const { t } = useLanguageStore();
+  const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
+  const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
+  const textColor = isDark ? TEXT_LIGHT : TEXT_DARK;
+  const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
+
+  const steps = useMemo(() => [
+    { num: 1, text: t('calibrateStep1') },
+    { num: 2, text: t('calibrateStep2') },
+    { num: 3, text: t('calibrateStep3') },
+  ], [t]);
+
+  return (
+    <View style={[styles.calibrationCard, { backgroundColor: cardColor, borderColor: '#FFC107' }]}>
+      <View style={styles.calibrationCardHeader}>
+        <AlertTriangle size={18} color="#FFC107" strokeWidth={2.2} />
+        <Text style={styles.calibrationCardTitle}>{t('calibrateCompassTitle')}</Text>
+      </View>
+      {steps.map((step) => (
+        <View key={step.num} style={styles.calibrationStepRow}>
+          <View style={styles.calibrationStepNum}>
+            <Text style={styles.calibrationStepNumText}>{step.num}</Text>
+          </View>
+          <Text style={[styles.calibrationStepText, { color: mutedColor }]}>{step.text}</Text>
+        </View>
+      ))}
+    </View>
+  );
+});
+CalibrationCard.displayName = 'CalibrationCard';
 
 // ════════════════════════════════════════════════════════════════
 //  MINI MAP — simplified visual showing user → Kaaba direction
@@ -782,6 +853,7 @@ export default function QiblaScreen() {
     distanceToKaaba,
     heading,
     accuracy,
+    magneticField,
     isAligned,
     isLoadingLocation,
     error,
@@ -878,8 +950,8 @@ export default function QiblaScreen() {
                 theme={compassTheme}
               />
 
-              {/* Accuracy indicator */}
-              <AccuracyIndicator accuracy={accuracy} isDark={isDark} />
+              {/* Accuracy indicator — visual sensor quality card */}
+              <AccuracyIndicator accuracy={accuracy} magneticField={magneticField} isDark={isDark} />
 
               {/* Bearing & distance info */}
               <View style={[styles.infoRow, { backgroundColor: cardColor, borderColor }]}>
@@ -990,12 +1062,9 @@ export default function QiblaScreen() {
               </View>
             ) : null}
 
-            {/* Calibration hint when accuracy is low */}
-            {accuracy === 'low' && showCompass ? (
-              <View style={[styles.calibrationHint, { backgroundColor: isDark ? 'rgba(255,193,7,0.08)' : 'rgba(255,193,7,0.06)' }]}>
-                <AlertCircle size={16} color="#FFC107" strokeWidth={2} />
-                <Text style={styles.calibrationHintText}>{t('calibrateCompassInstruction')}</Text>
-              </View>
+            {/* Calibration guide — shown when accuracy is low or medium */}
+            {(accuracy === 'low' || accuracy === 'medium') && showCompass ? (
+              <CalibrationCard isDark={isDark} />
             ) : null}
           </View>
         )}
@@ -1103,28 +1172,103 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800' as const,
   },
-  // ── Accuracy ──
-  accuracyRow: {
+  // ── Accuracy card (rebuilt) ──
+  accuracyCard: {
+    borderRadius: 14,
+    borderWidth: 1.5,
+    padding: 14,
+    width: '100%',
+  },
+  accuracyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  accuracyHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  accuracyLabel: {
-    fontSize: 13,
+  accuracyTitle: {
+    fontSize: 14,
+    fontWeight: '600' as const,
     ...androidTextFix,
   },
-  accuracyDots: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  accuracyDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  accuracyValue: {
+  accuracyValueBadge: {
     fontSize: 13,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
+    ...androidTextFix,
+  },
+  accuracyBar: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 10,
+  },
+  accuracyBarSegment: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+  },
+  accuracyMagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  accuracyMagLabel: {
+    fontSize: 11,
+    ...androidTextFix,
+  },
+  accuracyMagValue: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    ...androidTextFix,
+  },
+  // ── Calibration card (new) ──
+  calibrationCard: {
+    borderRadius: 14,
+    borderWidth: 1.5,
+    padding: 16,
+    marginBottom: 16,
+  },
+  calibrationCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  calibrationCardTitle: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: '#FFC107',
+    ...androidTextFix,
+  },
+  calibrationStepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 12,
+  },
+  calibrationStepNum: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,193,7,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  calibrationStepNumText: {
+    fontSize: 12,
+    fontWeight: '800' as const,
+    color: '#FFC107',
+    ...androidTextFix,
+  },
+  calibrationStepText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 20,
+    paddingTop: 2,
     ...androidTextFix,
   },
   // ── Info row ──
@@ -1351,22 +1495,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     ...androidTextFix,
   },
-  // ── Calibration hint ──
-  calibrationHint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  calibrationHintText: {
-    flex: 1,
-    fontSize: 12,
-    color: '#FFC107',
-    lineHeight: 18,
-    ...androidTextFix,
-  },
+  // ── Calibration hint (removed — replaced by CalibrationCard component) ──
   // ── Error state ──
   errorContainer: {
     alignItems: 'center',

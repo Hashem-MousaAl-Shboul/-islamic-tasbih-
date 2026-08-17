@@ -359,9 +359,16 @@ export interface TranslationKeys {
   accuracyLow: string;
   accuracyMedium: string;
   accuracyHigh: string;
+  accuracyUnavailable: string;
   calibrateCompass: string;
   calibrateCompassInstruction: string;
+  calibrateCompassTitle: string;
+  calibrateStep1: string;
+  calibrateStep2: string;
+  calibrateStep3: string;
+  magneticFieldStrength: string;
   recalibrate: string;
+  sensorStatus: string;
   locationNeeded: string;
   locationPermissionDenied: string;
   compassUnavailable: string;

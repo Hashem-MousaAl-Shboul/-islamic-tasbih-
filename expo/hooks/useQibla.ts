@@ -36,6 +36,8 @@ export interface QiblaState {
   heading: number | null;
   /** Estimated accuracy of the compass reading. */
   accuracy: CompassAccuracy;
+  /** Raw magnetic field magnitude in µT (microtesla), or null if unknown. */
+  magneticField: number | null;
   /** True when the phone is aligned with the Qibla direction. */
   isAligned: boolean;
   /** True while fetching the user's location. */
@@ -99,6 +101,7 @@ export function useQibla(): QiblaState & QiblaActions {
   const [distanceToKaaba, setDistanceToKaaba] = useState<number | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState<CompassAccuracy>('unavailable');
+  const [magneticField, setMagneticField] = useState<number | null>(null);
   const [isAligned, setIsAligned] = useState<boolean>(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -219,6 +222,7 @@ export function useQibla(): QiblaState & QiblaActions {
         headingRef.current = rawHeading;
         setHeading(rawHeading);
         setAccuracy(newAccuracy);
+        setMagneticField(magnitude);
 
         // Check alignment with Qibla using hysteresis to prevent flapping.
         const bearing = qiblaBearingRef.current;
@@ -259,6 +263,7 @@ export function useQibla(): QiblaState & QiblaActions {
     distanceToKaaba,
     heading,
     accuracy,
+    magneticField,
     isAligned,
     isLoadingLocation,
     error,
