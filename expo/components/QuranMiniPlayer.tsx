@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -50,6 +50,12 @@ export default function QuranMiniPlayer() {
   } = useQuranAudio();
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
+  const errorRef = useRef<string | null>(null);
+  const tRef = useRef(t);
+
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   const bottomInset = Math.max(insets.bottom, 0);
 
@@ -78,14 +84,18 @@ export default function QuranMiniPlayer() {
     await stop();
   }, [stop]);
 
-  // Show error alert when there's an audio error
+  // Show error alert when there's an audio error — use refs to avoid re-render loops
   React.useEffect(() => {
-    if (error) {
-      Alert.alert(t('error'), error, [
-        { text: t('ok'), onPress: dismissError },
+    if (error && error !== errorRef.current) {
+      errorRef.current = error;
+      Alert.alert(tRef.current('error'), error, [
+        { text: tRef.current('ok'), onPress: () => {
+          errorRef.current = null;
+          dismissError();
+        } },
       ]);
     }
-  }, [error, t, dismissError]);
+  }, [error, dismissError]);
 
   if (!currentSurah) return null;
 

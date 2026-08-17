@@ -1,9 +1,36 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { Play, Pause, Square, Volume2, RotateCcw } from 'lucide-react-native';
 import { getQuranRecitationUrl, getAvailableReciters, type ReciterId, RECITER_NAMES } from '@/utils/ttsService';
 import { stopAudio as stopYasAI } from '@/utils/yasAI';
+
+// Dynamic expo-audio loading — avoids crash if native module is unavailable
+type AudioPlayer = {
+  play: () => void;
+  pause: () => void;
+  seekTo: (seconds: number) => Promise<void>;
+  remove: () => void;
+  volume: number;
+  currentTime: number;
+  duration: number;
+  addListener: (event: string, cb: (status: any) => void) => { remove: () => void };
+};
+
+let audioMod: any = null;
+let audioLoadFailed = false;
+
+async function getAudioModule(): Promise<any | null> {
+  if (audioMod) return audioMod;
+  if (audioLoadFailed) return null;
+  try {
+    audioMod = await import('expo-audio');
+    return audioMod;
+  } catch (e) {
+    console.log('[QuranAudioPlayer] expo-audio not available:', e);
+    audioLoadFailed = true;
+    return null;
+  }
+}
 
 interface QuranAudioPlayerProps {
   surahNumber: number;
@@ -50,7 +77,9 @@ export default function QuranAudioPlayer({
   const setupAudio = async () => {
     try {
       if (Platform.OS !== 'web') {
-        await setAudioModeAsync({
+        const mod = await getAudioModule();
+        if (!mod) return;
+        await mod.setAudioModeAsync({
           playsInSilentMode: true,
           shouldPlayInBackground: true,
           interruptionMode: 'duckOthers',
@@ -85,7 +114,12 @@ export default function QuranAudioPlayer({
 
       await setupAudio();
 
-      const newPlayer = createAudioPlayer({ uri: audioUrl });
+      const mod = await getAudioModule();
+      if (!mod) {
+        throw new Error('Audio module not available');
+      }
+
+      const newPlayer = mod.createAudioPlayer({ uri: audioUrl }) as AudioPlayer;
       newPlayer.volume = 1.0;
 
       statusListenerRef.current = newPlayer.addListener('playbackStatusUpdate', (status: any) => {

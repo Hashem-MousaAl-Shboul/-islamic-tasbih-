@@ -68,10 +68,10 @@ export default function RootLayout() {
   }, [hideSplash]);
 
   return (
-    <AppProviders>
-      <ErrorBoundary>
+    <ErrorBoundary>
+      <AppProviders>
         <RootLayoutNav />
-      </ErrorBoundary>
-    </AppProviders>
+      </AppProviders>
+    </ErrorBoundary>
   );
 }

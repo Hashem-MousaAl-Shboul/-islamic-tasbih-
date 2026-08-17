@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Platform, Alert } from 'react-native';
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import createContextHook from '@nkzw/create-context-hook';
 
@@ -10,6 +9,34 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useQuranStore } from '@/hooks/useQuranStore';
 import { getSurahByNumber, type SurahMeta } from '@/utils/quranData';
 import { stopAudio as stopYasAI } from '@/utils/yasAI';
+
+// Dynamic expo-audio loading — avoids crash if native module is unavailable on Android
+type AudioPlayer = {
+  play: () => void;
+  pause: () => void;
+  seekTo: (seconds: number) => Promise<void>;
+  remove: () => void;
+  volume: number;
+  currentTime: number;
+  duration: number;
+  addListener: (event: string, cb: (status: any) => void) => { remove: () => void };
+};
+
+let audioMod: any = null;
+let audioLoadFailed = false;
+
+async function getAudioModule(): Promise<any | null> {
+  if (audioMod) return audioMod;
+  if (audioLoadFailed) return null;
+  try {
+    audioMod = await import('expo-audio');
+    return audioMod;
+  } catch (e) {
+    console.log('[QuranAudio] expo-audio not available:', e);
+    audioLoadFailed = true;
+    return null;
+  }
+}
 
 export type RepeatMode = 'none' | 'surah';
 
@@ -87,7 +114,9 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   const setupAudio = useCallback(async () => {
     try {
       if (Platform.OS !== 'web') {
-        await setAudioModeAsync({
+        const mod = await getAudioModule();
+        if (!mod) return;
+        await mod.setAudioModeAsync({
           playsInSilentMode: true,
           shouldPlayInBackground: true,
           interruptionMode: 'duckOthers',
@@ -156,33 +185,41 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
         return;
       }
 
-      // Verify the URL is reachable before creating the player
+      // Verify the URL is reachable — use GET with Range header as fallback
+      // (some servers don't support HEAD and return 405)
       try {
-        const headResponse = await fetch(audioUrl, { method: 'HEAD' });
-        if (!headResponse.ok) {
+        const headResponse = await fetch(audioUrl, { 
+          method: 'HEAD',
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!headResponse.ok && headResponse.status !== 405) {
           console.error(`[QuranAudio] Audio URL returned ${headResponse.status}: ${audioUrl}`);
           setError(t('audioNetworkError'));
           setIsLoading(false);
           setCurrentSurah(null);
           return;
         }
-        console.log(`[QuranAudio] URL verified OK, content-length: ${headResponse.headers.get('content-length')}`);
+        console.log(`[QuranAudio] URL verified OK (status ${headResponse.status})`);
       } catch (fetchErr) {
         console.error('[QuranAudio] URL verification failed:', fetchErr);
+        // Don't block playback on verification failure — the player itself will handle errors
+      }
+
+      await setupAudio();
+
+      const mod = await getAudioModule();
+      if (!mod) {
         setError(t('audioNetworkError'));
         setIsLoading(false);
         setCurrentSurah(null);
         return;
       }
 
-      await setupAudio();
-
-      const newPlayer = createAudioPlayer({ uri: audioUrl });
+      const newPlayer = mod.createAudioPlayer({ uri: audioUrl }) as AudioPlayer;
       newPlayer.volume = 1.0;
 
       const listener = newPlayer.addListener('playbackStatusUpdate', (status: any) => {
         if (!status?.isLoaded) {
-          // Still loading — check for early errors
           if (status?.error) {
             console.error('[QuranAudio] Player load error:', status.error);
             setError(t('audioNetworkError'));
@@ -198,7 +235,6 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
           return;
         }
 
-        // Loaded successfully
         if (status.error) {
           console.error('[QuranAudio] Player error:', status.error);
           setError(t('audioNetworkError'));
@@ -207,7 +243,6 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
           return;
         }
 
-        // Clear loading state once we get a loaded status
         setIsLoading(prev => prev ? false : prev);
 
         const nextIsPlaying = Boolean(status.playing);
@@ -242,13 +277,10 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       playerRef.current = newPlayer;
       newPlayer.play();
       setIsPlaying(true);
-      // isLoading is cleared when we receive the first isLoaded=true status,
-      // but add a 15s safety timeout in case status updates never fire
       setTimeout(() => {
         setIsLoading(prev => prev ? false : prev);
       }, 15000);
 
-      // Save last read
       void saveLastRead({
         surahNumber: surah.number,
         surahName: surah.name,
