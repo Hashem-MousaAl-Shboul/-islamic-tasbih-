@@ -85,7 +85,7 @@ export default function QuranMiniPlayer() {
   }, [stop]);
 
   // Show error alert when there's an audio error — use refs to avoid re-render loops
-  React.useEffect(() => {
+  useEffect(() => {
     if (error && error !== errorRef.current) {
       errorRef.current = error;
       Alert.alert(tRef.current('error'), error, [

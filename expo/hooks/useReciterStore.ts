@@ -6,7 +6,7 @@ import { ttsService, ReciterId, RECITER_NAMES } from '@/utils/ttsService';
 const RECITER_STORAGE_KEY = 'selected_reciter';
 
 export const [ReciterProvider, useReciterStore] = createContextHook(() => {
-  const [currentReciter, setCurrentReciter] = useState<ReciterId>('sudais');
+  const [currentReciter, setCurrentReciter] = useState<ReciterId>('alafasy');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -21,15 +21,15 @@ export const [ReciterProvider, useReciterStore] = createContextHook(() => {
           setCurrentReciter(savedReciter as ReciterId);
           setTimeout(() => ttsService.setReciter(savedReciter as ReciterId), 0);
         } else {
-          setCurrentReciter('sudais');
-          setTimeout(() => ttsService.setReciter('sudais'), 0);
+          setCurrentReciter('alafasy');
+          setTimeout(() => ttsService.setReciter('alafasy'), 0);
         }
         
         setIsLoading(false);
       } catch (error) {
         console.error('[ReciterStore] Error loading saved reciter:', error);
         if (mounted) {
-          setCurrentReciter('sudais');
+          setCurrentReciter('alafasy');
           setIsLoading(false);
         }
       }

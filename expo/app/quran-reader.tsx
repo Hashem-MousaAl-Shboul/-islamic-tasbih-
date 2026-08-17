@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
+  Dimensions,
+  LayoutChangeEvent,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -29,7 +31,7 @@ import { useReciterStore } from '@/hooks/useReciterStore';
 import { useQuranStore } from '@/hooks/useQuranStore';
 import { useQuranAudio } from '@/hooks/useQuranAudio';
 import { RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
-import { SURAHS, getSurahByNumber, getSurahTypeLabel } from '@/utils/quranData';
+import { getSurahByNumber, getSurahTypeLabel } from '@/utils/quranData';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { androidTextFix } from '@/utils/androidOptimizations';
 
@@ -49,6 +51,8 @@ interface Verse {
 }
 
 interface SurahApiResponse {
+  code: number;
+  status: string;
   data: Array<{
     ayahs: Array<{
       numberInSurah: number;
@@ -77,7 +81,7 @@ async function fetchSurahVerses(surahNumber: number): Promise<Verse[]> {
 }
 
 export default function QuranReaderScreen() {
-  const params = useLocalSearchParams<{ surah?: string }>();
+  const params = useLocalSearchParams<{ surah?: string; ayah?: string; page?: string }>();
   const router = useRouter();
   const { t } = useLanguageStore();
   const { currentReciter, changeReciter } = useReciterStore();
@@ -96,11 +100,15 @@ export default function QuranReaderScreen() {
     toggleRepeat,
     isCurrentSurah,
   } = useQuranAudio();
+  const insets = useSafeAreaInsets();
 
-  const surahNumber = parseInt(params.surah ?? '1', 10);
+  const surahNumber = Math.min(Math.max(parseInt(params.surah ?? '1', 10) || 1, 1), 114);
+  const ayahNumber = params.ayah ? parseInt(params.ayah, 10) : undefined;
   const surahMeta = useMemo(() => getSurahByNumber(surahNumber), [surahNumber]);
 
   const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
+  const [progressBarWidth, setProgressBarWidth] = useState<number>(Dimensions.get('window').width - 40);
+  const flatListRef = useRef<FlatList<Verse>>(null);
 
   const { data: verses, isLoading, isError, refetch } = useQuery<Verse[]>({
     queryKey: ['quran-verses', surahNumber],
@@ -110,17 +118,35 @@ export default function QuranReaderScreen() {
     retry: 2,
   });
 
+  // Save last read position when surah changes
   useEffect(() => {
     if (surahMeta) {
       void saveLastRead({
         surahNumber,
         surahName: surahMeta.name,
         surahEnglishName: surahMeta.englishName,
-        ayahNumber: 1,
+        ayahNumber: ayahNumber ?? 1,
         timestamp: Date.now(),
       });
     }
-  }, [surahNumber, surahMeta, saveLastRead]);
+  }, [surahNumber, surahMeta, ayahNumber, saveLastRead]);
+
+  // Scroll to specific ayah when verses are loaded
+  useEffect(() => {
+    if (ayahNumber && verses && verses.length > 0 && flatListRef.current) {
+      const ayahIndex = verses.findIndex(v => v.numberInSurah === ayahNumber);
+      if (ayahIndex >= 0) {
+        const timer = setTimeout(() => {
+          flatListRef.current?.scrollToIndex({
+            index: ayahIndex,
+            animated: true,
+            viewPosition: 0.3,
+          });
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [ayahNumber, verses]);
 
   const isThisSurahPlaying = isCurrentSurah(surahNumber);
 
@@ -154,10 +180,8 @@ export default function QuranReaderScreen() {
   const handleReciterSelect = useCallback(async (reciter: ReciterId) => {
     setShowReciterPicker(false);
     await changeReciter(reciter);
-    if (isThisSurahPlaying || isPlaying) {
-      if (surahMeta) {
-        await playSurah(surahMeta, reciter);
-      }
+    if ((isThisSurahPlaying || isPlaying) && surahMeta) {
+      await playSurah(surahMeta, reciter);
     }
   }, [changeReciter, isThisSurahPlaying, isPlaying, surahMeta, playSurah]);
 
@@ -172,6 +196,10 @@ export default function QuranReaderScreen() {
   const handleSeek = useCallback((millis: number) => {
     void seekTo(millis);
   }, [seekTo]);
+
+  const handleProgressBarLayout = useCallback((e: LayoutChangeEvent) => {
+    setProgressBarWidth(e.nativeEvent.layout.width);
+  }, []);
 
   const formatTime = useCallback((millis: number): string => {
     const totalSeconds = Math.floor(millis / 1000);
@@ -266,20 +294,28 @@ export default function QuranReaderScreen() {
       <ReaderHeader title={surahMeta?.name ?? t('quranKareem')} onBack={handleBack} />
 
       <FlatList
+        ref={flatListRef}
         data={verses}
         renderItem={renderVerse}
         keyExtractor={keyExtractor}
         ListHeaderComponent={headerComponent}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: 200 + insets.bottom },
+        ]}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
         initialNumToRender={8}
         maxToRenderPerBatch={10}
         windowSize={8}
+        onScrollToIndexFailed={(info) => {
+          console.log('[QuranReader] scrollToIndex failed:', info);
+          flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+        }}
       />
 
       {/* Audio Player Bar */}
-      <View style={styles.audioBar}>
+      <View style={[styles.audioBar, { paddingBottom: 16 + insets.bottom }]}>
         <View style={styles.audioBarTop}>
           <TouchableOpacity
             style={styles.reciterButton}
@@ -300,11 +336,13 @@ export default function QuranReaderScreen() {
             <TouchableOpacity
               style={styles.progressBar}
               activeOpacity={1}
+              onLayout={handleProgressBarLayout}
               onPress={(e) => {
                 const { locationX } = e.nativeEvent;
-                const barWidth = 300;
-                const pct = locationX / barWidth;
-                void handleSeek(pct * duration);
+                if (progressBarWidth > 0 && duration > 0) {
+                  const pct = Math.max(0, Math.min(1, locationX / progressBarWidth));
+                  void handleSeek(pct * duration);
+                }
               }}
             >
               <View style={[styles.progressFill, { width: `${progressPercentage}%` }]} />
@@ -389,7 +427,7 @@ export default function QuranReaderScreen() {
                 <Text style={[styles.modalClose, androidTextFix]}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               {(Object.keys(RECITER_NAMES) as ReciterId[]).map((id) => (
                 <TouchableOpacity
                   key={id}
@@ -519,7 +557,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 20,
-    paddingBottom: 200,
   },
   centerContent: {
     flex: 1,
@@ -641,7 +678,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 32,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.15,
