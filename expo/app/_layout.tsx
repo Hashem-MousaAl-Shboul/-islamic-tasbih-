@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/theme/ThemeProvider';
 import { AppProviders } from '@/components/AppProviders';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useImmersiveMode } from '@/hooks/useImmersiveMode';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -46,6 +47,8 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  useImmersiveMode();
+
   const hideSplash = useCallback(async () => {
     try {
       await SplashScreen.hideAsync();

@@ -43,8 +43,9 @@
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
-      "navigationBarColor": "#F7F4EE",
-      "navigationBarStyle": "dark"
+      "navigationBarColor": "#000000",
+      "navigationBarStyle": "dark",
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -82,6 +83,16 @@
         }
       ],
       "./plugins/withKotlinMetadataCompat",
+      [
+        "expo-navigation-bar",
+        {
+          "backgroundColor": "#000000",
+          "behavior": "overlay-swipe",
+          "visibility": "hidden",
+          "barStyle": "light",
+          "position": "absolute"
+        }
+      ],
       [
         "expo-notifications",
         {
