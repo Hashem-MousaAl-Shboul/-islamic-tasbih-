@@ -37,6 +37,7 @@ import {
   KAABA_LONGITUDE,
 } from '@/utils/qiblaUtils';
 import { androidTextFix } from '@/utils/androidOptimizations';
+import { createShadow, pointerEventsNone } from '@/utils/shadowUtils';
 
 // ── Design tokens ──────────────────────────────────────────────
 const GOLD = '#D4A853';
@@ -329,7 +330,7 @@ const AnimatedDial = memo(function AnimatedDial({
   const dialSize = (center + radius + 20) * 2;
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, pointerEventsNone]}>
       <Animated.View
         style={{
           flex: 1,
@@ -1056,15 +1057,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-      },
-      android: { elevation: 8 },
-    }),
+    ...createShadow({ offsetY: 4, opacity: 0.15, blur: 12, elevation: 8 }),
   },
   compassFace: {
     alignItems: 'center',
@@ -1091,15 +1084,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: { elevation: 4 },
-    }),
+    ...createShadow({ offsetY: 2, opacity: 0.2, blur: 4, elevation: 4 }),
   },
   centerKaabaText: {
     fontSize: 18,
@@ -1234,15 +1219,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 6,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      },
-      android: { elevation: 4 },
-    }),
+    ...createShadow({ offsetY: 2, opacity: 0.2, blur: 4, elevation: 4 }),
   },
   recalibrateText: {
     fontSize: 13,

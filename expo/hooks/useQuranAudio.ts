@@ -26,6 +26,7 @@ let audioMod: any = null;
 let audioLoadFailed = false;
 
 async function getAudioModule(): Promise<any | null> {
+  if (Platform.OS === 'web') return null;
   if (audioMod) return audioMod;
   if (audioLoadFailed) return null;
   try {
@@ -141,6 +142,9 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
           shouldRouteThroughEarpiece: false,
           allowsRecording: false,
         });
+      } else {
+        // Web: expo-audio native modules unavailable — no setup needed.
+        console.log('[QuranAudio] Web platform — skipping native audio setup');
       }
     } catch (error) {
       console.error('[QuranAudio] Audio setup error:', error);
@@ -217,15 +221,21 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
       // Non-blocking URL verification — don't delay playback if the HEAD fails.
       // The player itself will report errors via the status listener if the URL is bad.
-      void fetch(audioUrl, { method: 'HEAD', signal: AbortSignal.timeout(8000) })
+      // Use AbortController instead of AbortSignal.timeout (not supported in Hermes).
+      const headController = new AbortController();
+      const headTimeout = setTimeout(() => headController.abort(), 8000);
+      void fetch(audioUrl, { method: 'HEAD', signal: headController.signal })
         .then((res) => {
           if (!res.ok && res.status !== 405) {
             console.log(`[QuranAudio] HEAD returned ${res.status} (non-fatal, will try playback anyway)`);
           }
         })
         .catch((e) => {
-          console.log('[QuranAudio] HEAD verification failed (non-fatal):', e?.message ?? e);
-        });
+          if (e?.name !== 'AbortError') {
+            console.log('[QuranAudio] HEAD verification failed (non-fatal):', e?.message ?? e);
+          }
+        })
+        .finally(() => clearTimeout(headTimeout));
 
       await setupAudio();
 

@@ -35,6 +35,7 @@ import { RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
 import { getSurahByNumber, getSurahTypeLabel, TOTAL_PAGES } from '@/utils/quranData';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { androidTextFix } from '@/utils/androidOptimizations';
+import { createShadow } from '@/utils/shadowUtils';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -457,7 +458,10 @@ export default function QuranReaderScreen() {
         windowSize={8}
         onScrollToIndexFailed={(info) => {
           console.log('[QuranReader] scrollToIndex failed:', info);
-          flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+          // Retry after a short delay to allow item measurement
+          setTimeout(() => {
+            flatListRef.current?.scrollToIndex({ index: info.index, animated: true, viewPosition: 0.3 });
+          }, 100);
         }}
       />
 
@@ -641,11 +645,7 @@ const readerHeaderStyles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    ...createShadow({ offsetY: 2, opacity: 0.08, blur: 4, elevation: 3 }),
   },
   content: {
     flexDirection: 'row' as const,
@@ -833,11 +833,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 10,
+    ...createShadow({ offsetY: -2, opacity: 0.15, blur: 8, elevation: 10 }),
   },
   audioBarTop: {
     flexDirection: 'row' as const,

@@ -22,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuranAudio } from '@/hooks/useQuranAudio';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { androidTextFix } from '@/utils/androidOptimizations';
+import { createShadow } from '@/utils/shadowUtils';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
@@ -215,11 +216,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingHorizontal: 16,
     paddingTop: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 10,
+    ...createShadow({ offsetY: -2, opacity: 0.2, blur: 8, elevation: 10 }),
   },
   progressTrack: {
     height: 3,

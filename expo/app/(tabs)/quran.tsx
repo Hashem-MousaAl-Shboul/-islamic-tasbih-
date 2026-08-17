@@ -37,6 +37,7 @@ import {
   type SurahMeta,
 } from '@/utils/quranData';
 import { androidTextFix } from '@/utils/androidOptimizations';
+import { createShadow } from '@/utils/shadowUtils';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
 import QuranMiniPlayer from '@/components/QuranMiniPlayer';
@@ -664,11 +665,7 @@ const lastReadStyles = StyleSheet.create({
     borderRadius: 22,
     padding: 18,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 5,
+    ...createShadow({ offsetY: 4, opacity: 0.12, blur: 12, elevation: 5 }),
     overflow: 'hidden',
   },
   content: {
@@ -749,11 +746,7 @@ const illustrationStyles = StyleSheet.create({
     borderBottomRightRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    ...createShadow({ offsetY: 4, opacity: 0.15, blur: 8, elevation: 4 }),
     transform: [{ perspective: 600 }, { rotateY: '-12deg' }],
   },
   bookSpine: {

@@ -21,6 +21,7 @@ import {
   type ArrowColorId,
 } from '@/constants/compassThemes';
 import { androidTextFix } from '@/utils/androidOptimizations';
+import { createShadow } from '@/utils/shadowUtils';
 
 // ── Design tokens ──────────────────────────────────────────────
 const GOLD = '#D4A853';
@@ -371,15 +372,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 20,
     maxHeight: '85%',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 16,
-      },
-      android: { elevation: 16 },
-    }),
+    ...createShadow({ offsetY: -4, opacity: 0.2, blur: 16, elevation: 16 }),
   },
   modalHeader: {
     flexDirection: 'row',
