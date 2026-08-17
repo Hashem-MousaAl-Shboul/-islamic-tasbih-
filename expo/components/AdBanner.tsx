@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo, useRef } from 'react';
-import { View, StyleSheet, Platform, Dimensions } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 
 const AD_UNIT_ID = 'ca-app-pub-4282819777610118/9248009059';
 // Always use a test ID in development even if TestIds fails to load — never send real ad requests in dev
@@ -8,7 +8,7 @@ const DEV_FALLBACK_TEST_ID = 'ca-app-pub-3940256099942544/6300978111';
 let BannerAdComponent: React.ComponentType<any> | null = null;
 let BannerAdSizeValue: string | null = null;
 let TestIdsValue: { BANNER?: string } | null = null;
-let mobileAdsInit: { initialize: () => Promise<any> } | null = null;
+let mobileAdsInit: (() => { initialize: () => Promise<unknown> }) | null = null;
 let adsInitialized = false;
 let initPromise: Promise<boolean> | null = null;
 
@@ -40,7 +40,7 @@ function ensureAdsInitialized(): Promise<boolean> {
 
   initPromise = new Promise<boolean>((resolve) => {
     try {
-      mobileAdsInit!
+      mobileAdsInit!()
         .initialize()
         .then(() => {
           console.log('[AdBanner] Mobile Ads SDK initialized');
@@ -66,7 +66,7 @@ const AdBanner = memo(function AdBanner() {
   const [isReady, setIsReady] = useState<boolean>(adsInitialized);
   const [adLoaded, setAdLoaded] = useState<boolean>(false);
   const [adError, setAdError] = useState<boolean>(false);
-  const [retryNonce, setRetryNonce] = useState<number>(0);
+  const [retryCount, setRetryCount] = useState<number>(0);
   const mountedRef = useRef<boolean>(true);
 
   useEffect(() => {
@@ -92,20 +92,26 @@ const AdBanner = memo(function AdBanner() {
 
   // Reset error when the component is re-mounted / retry is triggered
   useEffect(() => {
-    if (retryNonce > 0) {
+    if (retryCount > 0) {
       setAdError(false);
       setAdLoaded(false);
     }
-  }, [retryNonce]);
+  }, [retryCount]);
 
-  // Retry mechanism: after an error, attempt reload once network recovers
+  // Retry mechanism: after an error, attempt reload ONCE after 15s (max 1 retry)
   useEffect(() => {
-    if (!adError) return;
+    if (!adError || retryCount >= 1) return;
+
     const timer = setTimeout(() => {
-      if (mountedRef.current) setRetryNonce((n) => n + 1);
+      if (mountedRef.current) {
+        setAdError(false);
+        setAdLoaded(false);
+        setRetryCount((count) => count + 1);
+      }
     }, 15000);
+
     return () => clearTimeout(timer);
-  }, [adError]);
+  }, [adError, retryCount]);
 
   if (Platform.OS === 'web' || !BannerAdComponent || !BannerAdSizeValue) {
     return null;
@@ -131,7 +137,7 @@ const AdBanner = memo(function AdBanner() {
   return (
     <View style={[styles.container, !adLoaded && styles.invisible]} testID="ad-banner">
       <BannerAd
-        key={retryNonce}
+        key={retryCount}
         unitId={unitId}
         size={BannerAdSizeValue}
         requestOptions={{
