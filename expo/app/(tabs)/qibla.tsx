@@ -10,7 +10,9 @@ import {
   Linking,
   useWindowDimensions,
   Easing,
+  Animated,
 } from 'react-native';
+import { Line, Text as SvgText, G, Path, Circle, Svg, Polygon } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -74,6 +76,17 @@ interface PrayerTimeEntry {
 // ── Kaaba coordinates ──────────────────────────────────────────
 const KAABA_COORDS = { latitude: KAABA_LATITUDE, longitude: KAABA_LONGITUDE };
 
+// Cardinal direction labels (module-level — never changes, avoids re-creation on each render).
+const CARDINALS = [
+  { label: 'N', angle: 0 },
+  { label: 'E', angle: 90 },
+  { label: 'S', angle: 180 },
+  { label: 'W', angle: 270 },
+] as const;
+
+// Degree marks for compass dial (module-level constant).
+const DEGREE_MARKS = [30, 60, 120, 150, 210, 240, 300, 330] as const;
+
 // ════════════════════════════════════════════════════════════════
 //  COMPASS COMPONENT — SVG-based Islamic compass with rotating dial
 // ════════════════════════════════════════════════════════════════
@@ -107,72 +120,63 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
 
   // Tick marks every 15°, labels at cardinal/intercardinal points.
   // Shape varies by dial style: 'line' | 'diamond' | 'star'
-  const ticks: React.ReactElement[] = [];
-  for (let angle = 0; angle < 360; angle += 15) {
-    const isMajor = angle % 90 === 0;
-    const isMedium = angle % 30 === 0;
-    const tickLength = isMajor ? 14 : isMedium ? 10 : 6;
-    const tickWidth = isMajor ? 2.5 : isMedium ? 1.5 : 1;
-    const tickColor = isMajor
-      ? (isAligned ? arrowColor.color : textColor)
-      : isMedium
-        ? mutedColor
-        : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(27,67,50,0.15)');
+  // Memoized so ticks are only rebuilt when inputs actually change.
+  const ticks = useMemo((): React.ReactElement[] => {
+    const result: React.ReactElement[] = [];
+    for (let angle = 0; angle < 360; angle += 15) {
+      const isMajor = angle % 90 === 0;
+      const isMedium = angle % 30 === 0;
+      const tickLength = isMajor ? 14 : isMedium ? 10 : 6;
+      const tickWidth = isMajor ? 2.5 : isMedium ? 1.5 : 1;
+      const tickColor = isMajor
+        ? (isAligned ? arrowColor.color : textColor)
+        : isMedium
+          ? mutedColor
+          : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(27,67,50,0.15)');
 
-    const rad = (angle * Math.PI) / 180;
-    const x1 = center + (innerRadius - tickLength) * Math.sin(rad);
-    const y1 = center - (innerRadius - tickLength) * Math.cos(rad);
-    const x2 = center + innerRadius * Math.sin(rad);
-    const y2 = center - innerRadius * Math.cos(rad);
+      const rad = (angle * Math.PI) / 180;
+      const x1 = center + (innerRadius - tickLength) * Math.sin(rad);
+      const y1 = center - (innerRadius - tickLength) * Math.cos(rad);
+      const x2 = center + innerRadius * Math.sin(rad);
+      const y2 = center - innerRadius * Math.cos(rad);
 
-    // For diamond/star shapes, draw a small rotated diamond at the tick position
-    if (dialStyle.tickShape === 'diamond' && isMajor) {
-      const mx = (x1 + x2) / 2;
-      const my = (y1 + y2) / 2;
-      const dSize = 5;
-      ticks.push(
-        <React.Fragment key={`tick-${angle}`}>
-          {/* @ts-ignore */}
-          <G x={mx} y={my} rotation={angle}>
-            {/* @ts-ignore */}
-            <Path d={`M 0 ${-dSize} L ${dSize} 0 L 0 ${dSize} L ${-dSize} 0 Z`} fill={tickColor} />
-          </G>
-        </React.Fragment>
-      );
-    } else if (dialStyle.tickShape === 'star' && isMajor) {
-      const mx = (x1 + x2) / 2;
-      const my = (y1 + y2) / 2;
-      const sSize = 6;
-      // Simple 4-point star
-      ticks.push(
-        <React.Fragment key={`tick-${angle}`}>
-          {/* @ts-ignore */}
-          <G x={mx} y={my} rotation={angle}>
-            {/* @ts-ignore */}
-            <Path
-              d={`M 0 ${-sSize} L ${sSize * 0.3} ${-sSize * 0.3} L ${sSize} 0 L ${sSize * 0.3} ${sSize * 0.3} L 0 ${sSize} L ${-sSize * 0.3} ${sSize * 0.3} L ${-sSize} 0 L ${-sSize * 0.3} ${-sSize * 0.3} Z`}
-              fill={tickColor}
-            />
-          </G>
-        </React.Fragment>
-      );
-    } else {
-      ticks.push(
-        <React.Fragment key={`tick-${angle}`}>
-          {/* @ts-ignore — React Native SVG Line props */}
-          <Line x1={x1} y1={y1} x2={x2} y2={y2} stroke={tickColor} strokeWidth={tickWidth} strokeLinecap="round" />
-        </React.Fragment>
-      );
+      // For diamond/star shapes, draw a small rotated diamond at the tick position
+      if (dialStyle.tickShape === 'diamond' && isMajor) {
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        const dSize = 5;
+        result.push(
+          <React.Fragment key={`tick-${angle}`}>
+            <G x={mx} y={my} rotation={angle}>
+              <Path d={`M 0 ${-dSize} L ${dSize} 0 L 0 ${dSize} L ${-dSize} 0 Z`} fill={tickColor} />
+            </G>
+          </React.Fragment>
+        );
+      } else if (dialStyle.tickShape === 'star' && isMajor) {
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        const sSize = 6;
+        // Simple 4-point star
+        result.push(
+          <React.Fragment key={`tick-${angle}`}>
+            <G x={mx} y={my} rotation={angle}>
+              <Path
+                d={`M 0 ${-sSize} L ${sSize * 0.3} ${-sSize * 0.3} L ${sSize} 0 L ${sSize * 0.3} ${sSize * 0.3} L 0 ${sSize} L ${-sSize * 0.3} ${sSize * 0.3} L ${-sSize} 0 L ${-sSize * 0.3} ${-sSize * 0.3} Z`}
+                fill={tickColor}
+              />
+            </G>
+          </React.Fragment>
+        );
+      } else {
+        result.push(
+          <React.Fragment key={`tick-${angle}`}>
+            <Line x1={x1} y1={y1} x2={x2} y2={y2} stroke={tickColor} strokeWidth={tickWidth} strokeLinecap="round" />
+          </React.Fragment>
+        );
+      }
     }
-  }
-
-  // Cardinal direction labels.
-  const cardinals = [
-    { label: 'N', angle: 0 },
-    { label: 'E', angle: 90 },
-    { label: 'S', angle: 180 },
-    { label: 'W', angle: 270 },
-  ];
+    return result;
+  }, [dialStyle.tickShape, isAligned, arrowColor.color, textColor, mutedColor, isDark, center, innerRadius]);
 
   return (
     <View style={[styles.compassContainer, { width: size, height: size }]}>
@@ -235,7 +239,6 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
             center={center - 8}
             radius={innerRadius - 8}
             ticks={ticks}
-            cardinals={cardinals}
             qiblaArrowAngle={qiblaArrowAngle}
             isAligned={isAligned}
             textColor={textColor}
@@ -282,15 +285,12 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
 Compass.displayName = 'Compass';
 
 // ── Animated dial wrapper ──────────────────────────────────────
-import { Animated } from 'react-native';
-import { Line, Text as SvgText, G, Path, Circle, Svg, Polygon } from 'react-native-svg';
 
 interface AnimatedDialProps {
   rotation: number;
   center: number;
   radius: number;
   ticks: React.ReactElement[];
-  cardinals: { label: string; angle: number }[];
   qiblaArrowAngle: number;
   isAligned: boolean;
   textColor: string;
@@ -306,7 +306,6 @@ const AnimatedDial = memo(function AnimatedDial({
   center,
   radius,
   ticks,
-  cardinals,
   qiblaArrowAngle,
   isAligned,
   textColor,
@@ -352,7 +351,7 @@ const AnimatedDial = memo(function AnimatedDial({
             {ticks}
 
             {/* Cardinal labels */}
-            {cardinals.map(({ label, angle }) => {
+            {CARDINALS.map(({ label, angle }) => {
               const rad = (angle * Math.PI) / 180;
               const labelRadius = radius - 28;
               const x = labelRadius * Math.sin(rad);
@@ -363,7 +362,7 @@ const AnimatedDial = memo(function AnimatedDial({
                   x={x}
                   y={y}
                   fontSize={label === 'N' ? 18 : 14}
-                  fontWeight={label === 'N' ? '800' : '600'}
+                  fontWeight={label === 'N' ? 800 : 600}
                   fill={label === 'N' ? (isAligned ? arrowColor : '#E63946') : mutedColor}
                   textAnchor="middle"
                   alignmentBaseline="central"
@@ -378,25 +377,19 @@ const AnimatedDial = memo(function AnimatedDial({
               {/* Decorative pattern background for arabesque/geometric/floral */}
               {dialStyle.pattern === 'arabesque' && (
                 <G opacity={0.3}>
-                  {/* @ts-ignore */}
                   <Circle cx={0} cy={0} r={radius * 0.5} fill="none" stroke={arrowDimColor} strokeWidth={0.5} strokeDasharray="2 3" />
-                  {/* @ts-ignore */}
                   <Circle cx={0} cy={0} r={radius * 0.35} fill="none" stroke={arrowDimColor} strokeWidth={0.5} strokeDasharray="1 2" />
                 </G>
               )}
               {dialStyle.pattern === 'geometric' && (
                 <G opacity={0.25}>
-                  {/* @ts-ignore */}
                   <Polygon points={`0,${-radius * 0.6} ${radius * 0.4},0 0,${radius * 0.6} ${-radius * 0.4},0`} fill="none" stroke={arrowDimColor} strokeWidth={0.8} />
-                  {/* @ts-ignore */}
                   <Polygon points={`0,${-radius * 0.4} ${radius * 0.28},0 0,${radius * 0.4} ${-radius * 0.28},0`} fill="none" stroke={arrowDimColor} strokeWidth={0.6} />
                 </G>
               )}
               {dialStyle.pattern === 'floral' && (
                 <G opacity={0.2}>
-                  {/* @ts-ignore */}
                   <Circle cx={0} cy={-radius * 0.45} r={radius * 0.08} fill="none" stroke={arrowDimColor} strokeWidth={0.6} />
-                  {/* @ts-ignore */}
                   <Circle cx={0} cy={-radius * 0.25} r={radius * 0.06} fill="none" stroke={arrowDimColor} strokeWidth={0.5} />
                 </G>
               )}
@@ -413,7 +406,7 @@ const AnimatedDial = memo(function AnimatedDial({
             </G>
 
             {/* Degree marks every 30° */}
-            {[30, 60, 120, 150, 210, 240, 300, 330].map((angle) => {
+            {DEGREE_MARKS.map((angle) => {
               const rad = (angle * Math.PI) / 180;
               const labelRadius = radius - 28;
               const x = labelRadius * Math.sin(rad);
@@ -424,7 +417,7 @@ const AnimatedDial = memo(function AnimatedDial({
                   x={x}
                   y={y}
                   fontSize={9}
-                  fontWeight="400"
+                  fontWeight={400}
                   fill={mutedColor}
                   textAnchor="middle"
                   alignmentBaseline="central"
@@ -623,33 +616,38 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
           return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
         };
 
-        // Determine next prayer
+        // Determine next prayer by comparing 24h times from the API directly
+        // (avoids fragile string-based AM/PM parsing that breaks with translations).
         const now = new Date();
-        const entries: PrayerTimeEntry[] = [
-          { key: 'Fajr', label: t('fajr'), time: timings.Fajr },
-          { key: 'Sunrise', label: t('sunrise'), time: timings.Sunrise },
-          { key: 'Dhuhr', label: t('dhuhr'), time: timings.Dhuhr },
-          { key: 'Asr', label: t('asr'), time: timings.Asr },
-          { key: 'Maghrib', label: t('maghrib'), time: timings.Maghrib },
-          { key: 'Isha', label: t('isha'), time: timings.Isha },
-        ].map((e) => ({ ...e, time: formatTime(e.time) }));
+        const prayerKeys = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const;
+        const rawEntries = prayerKeys.map((key) => ({
+          key,
+          label: t(key.toLowerCase() as 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha'),
+          rawTime: timings[key],
+        }));
 
-        // Find next prayer by comparing times
         let nextFound = false;
-        for (const entry of entries) {
-          if (entry.key === 'Sunrise') continue;
-          const [h, m] = entry.time.match(/(\d+):(\d+)/)?.slice(1).map(Number) ?? [0, 0];
-          const isPM = entry.time.includes(t('pm'));
-          const hour24 = isPM && h !== 12 ? h + 12 : !isPM && h === 12 ? 0 : h;
+        const entries: PrayerTimeEntry[] = rawEntries.map((e) => {
+          const clean = e.rawTime.split(' ')[0];
+          const [h24, m] = clean.split(':').map(Number);
           const prayerDate = new Date();
-          prayerDate.setHours(hour24, m, 0, 0);
-          if (prayerDate > now && !nextFound) {
-            entry.isNext = true;
-            nextFound = true;
-          }
-        }
+          prayerDate.setHours(h24, m, 0, 0);
+
+          const isNext = !nextFound && e.key !== 'Sunrise' && prayerDate > now;
+          if (isNext) nextFound = true;
+
+          return {
+            key: e.key,
+            label: e.label,
+            time: formatTime(e.rawTime),
+            isNext,
+          };
+        });
         if (!nextFound && entries.length > 0) {
-          entries[0].isNext = true;
+          // All prayers passed today; next is Fajr tomorrow.
+          const fajrEntry = entries.find((e) => e.key === 'Fajr');
+          if (fajrEntry) fajrEntry.isNext = true;
+          else entries[0].isNext = true;
         }
 
         setPrayerTimes(entries);
