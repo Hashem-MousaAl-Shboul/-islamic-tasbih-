@@ -1,6 +1,3 @@
-هذا الكود بعد جمع الإصلاحات في نسخة واحدة:
-
-```tsx
 import React, { useMemo, useRef, useEffect, memo } from 'react';
 import {
   StyleSheet,
