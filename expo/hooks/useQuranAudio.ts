@@ -71,6 +71,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   const currentSurahRef = useRef<SurahMeta | null>(null);
   const isSeekingRef = useRef<boolean>(false);
   const isPlayingRef = useRef<boolean>(false);
+  const isLoadingRef = useRef<boolean>(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tRef = useRef(t);
 
@@ -87,6 +88,10 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+  }, [isLoading]);
 
   // Load saved repeat mode
   useEffect(() => {
@@ -160,6 +165,12 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   const playSurah = useCallback(async (surah: SurahMeta, reciter?: ReciterId) => {
     const reciterToUse = reciter ?? currentReciter;
 
+    // Prevent double-play race condition: if already loading a different surah, ignore
+    if (isLoadingRef.current && currentSurahRef.current?.number !== surah.number) {
+      console.log('[QuranAudio] Already loading another surah, ignoring play request');
+      return;
+    }
+
     try {
       if (Platform.OS !== 'web') {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -188,6 +199,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       // Cleanup existing player
       cleanupPlayer();
 
+      isLoadingRef.current = true;
       setIsLoading(true);
       setCurrentSurah(surah);
       setPosition(0);
@@ -197,6 +209,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       console.log(`[QuranAudio] Playing surah ${surah.number} with reciter ${reciterToUse}: ${audioUrl}`);
       if (!audioUrl) {
         setError(tRef.current('errorLoadingVerses'));
+        isLoadingRef.current = false;
         setIsLoading(false);
         setCurrentSurah(null);
         return;
@@ -219,6 +232,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       const mod = await getAudioModule();
       if (!mod) {
         setError(tRef.current('audioNetworkError'));
+        isLoadingRef.current = false;
         setIsLoading(false);
         setCurrentSurah(null);
         return;
@@ -233,6 +247,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
             console.error('[QuranAudio] Player load error:', status.error);
             setError(tRef.current('audioNetworkError'));
             setIsPlaying(false);
+            isLoadingRef.current = false;
             setIsLoading(false);
             try { newPlayer.remove(); } catch {}
             if (statusListenerRef.current === listener) {
@@ -248,10 +263,12 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
           console.error('[QuranAudio] Player error:', status.error);
           setError(tRef.current('audioNetworkError'));
           setIsPlaying(false);
+          isLoadingRef.current = false;
           setIsLoading(false);
           return;
         }
 
+        isLoadingRef.current = false;
         setIsLoading(prev => prev ? false : prev);
         if (loadingTimeoutRef.current) {
           clearTimeout(loadingTimeoutRef.current);
@@ -294,6 +311,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       // Safety timeout: clear loading state after 15s if no status update arrived
       loadingTimeoutRef.current = setTimeout(() => {
         loadingTimeoutRef.current = null;
+        isLoadingRef.current = false;
         setIsLoading(prev => prev ? false : prev);
       }, 15000);
 
@@ -307,6 +325,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
     } catch (error) {
       console.error('[QuranAudio] Play surah error:', error);
       setError(tRef.current('audioNetworkError'));
+      isLoadingRef.current = false;
       setIsLoading(false);
       setIsPlaying(false);
       setCurrentSurah(null);
@@ -348,6 +367,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   const stopAndClear = useCallback(async () => {
     try {
       cleanupPlayer();
+      isLoadingRef.current = false;
       setIsPlaying(false);
       setIsLoading(false);
       setPosition(0);

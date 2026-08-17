@@ -11,6 +11,7 @@ import {
   ScrollView,
   Dimensions,
   LayoutChangeEvent,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -31,7 +32,7 @@ import { useReciterStore } from '@/hooks/useReciterStore';
 import { useQuranStore } from '@/hooks/useQuranStore';
 import { useQuranAudio } from '@/hooks/useQuranAudio';
 import { RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
-import { getSurahByNumber, getSurahTypeLabel } from '@/utils/quranData';
+import { getSurahByNumber, getSurahTypeLabel, TOTAL_PAGES } from '@/utils/quranData';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { androidTextFix } from '@/utils/androidOptimizations';
 
@@ -48,6 +49,8 @@ interface Verse {
   arabicText: string;
   translation: string;
   numberInSurah: number;
+  surahNumber: number;
+  surahName: string;
 }
 
 interface SurahApiResponse {
@@ -61,7 +64,25 @@ interface SurahApiResponse {
   }>;
 }
 
-async function fetchSurahVerses(surahNumber: number): Promise<Verse[]> {
+interface PageApiResponse {
+  code: number;
+  status: string;
+  data: {
+    ayahs: Array<{
+      number: number;
+      numberInSurah: number;
+      text: string;
+      surah: { number: number; name: string; englishName: string };
+    }>;
+  };
+}
+
+/** Strip BOM (U+FEFF) and trim whitespace from API-returned Arabic text */
+function cleanArabicText(text: string): string {
+  return text.replace(/^\uFEFF/, '').trim();
+}
+
+async function fetchSurahVerses(surahNumber: number): Promise<{ verses: Verse[]; surahName: string }> {
   const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,en.sahih`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`API error: ${response.status}`);
@@ -69,15 +90,62 @@ async function fetchSurahVerses(surahNumber: number): Promise<Verse[]> {
 
   const arabicData = json.data?.[0]?.ayahs ?? [];
   const translationData = json.data?.[1]?.ayahs ?? [];
+  const surahName = getSurahByNumber(surahNumber)?.name ?? `سورة ${surahNumber}`;
 
   const verses: Verse[] = arabicData.map((ayah, index) => ({
     number: ayah.numberInSurah,
     numberInSurah: ayah.numberInSurah,
-    arabicText: ayah.text,
+    arabicText: cleanArabicText(ayah.text),
     translation: translationData[index]?.text ?? '',
+    surahNumber,
+    surahName,
   }));
 
-  return verses;
+  return { verses, surahName };
+}
+
+async function fetchPageVerses(pageNumber: number): Promise<{ verses: Verse[]; surahName: string }> {
+  const url = `https://api.alquran.cloud/v1/page/${pageNumber}/editions/quran-uthmani,en.sahih`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  const json: PageApiResponse = await response.json();
+
+  const arabicAyahs = json.data?.ayahs ?? [];
+  const verses: Verse[] = arabicAyahs.map((ayah, index) => ({
+    number: ayah.numberInSurah,
+    numberInSurah: ayah.numberInSurah,
+    arabicText: cleanArabicText(ayah.text),
+    translation: '', // Page endpoint with editions returns both but structure differs
+    surahNumber: ayah.surah?.number ?? 0,
+    surahName: ayah.surah?.name ?? '',
+  }));
+
+  // Fetch translations for the page separately
+  try {
+    const transUrl = `https://api.alquran.cloud/v1/page/${pageNumber}/en.sahih`;
+    const transRes = await fetch(transUrl);
+    if (transRes.ok) {
+      const transJson = await transRes.json();
+      const transAyahs = transJson?.data?.ayahs ?? [];
+      transAyahs.forEach((ayah: { text: string }, i: number) => {
+        if (verses[i]) verses[i].translation = ayah.text ?? '';
+      });
+    }
+  } catch {
+    // Translation is optional — don't fail the whole page
+  }
+
+  const firstName = verses[0]?.surahName ?? `صفحة ${pageNumber}`;
+  return { verses, surahName: firstName };
+}
+
+/** Whether a surah should show Bismillah as a header before the first ayah.
+ *  Surah 1 (Al-Fatiha): Bismillah IS the first ayah — don't show as header.
+ *  Surah 9 (At-Tawba): No Bismillah at all.
+ *  All others: Show Bismillah header. */
+function shouldShowBismillah(surahNumber: number, isPageMode: boolean): boolean {
+  if (isPageMode) return false;
+  return surahNumber !== 1 && surahNumber !== 9;
 }
 
 export default function QuranReaderScreen() {
@@ -93,15 +161,19 @@ export default function QuranReaderScreen() {
     position,
     duration,
     repeatMode,
+    error: audioError,
     playSurah,
     togglePlayPause,
     stop,
     seekTo,
     toggleRepeat,
     isCurrentSurah,
+    dismissError,
   } = useQuranAudio();
   const insets = useSafeAreaInsets();
 
+  const pageNumber = params.page ? parseInt(params.page, 10) : undefined;
+  const isPageMode = pageNumber !== undefined && !isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= TOTAL_PAGES;
   const surahNumber = Math.min(Math.max(parseInt(params.surah ?? '1', 10) || 1, 1), 114);
   const ayahNumber = params.ayah ? parseInt(params.ayah, 10) : undefined;
   const surahMeta = useMemo(() => getSurahByNumber(surahNumber), [surahNumber]);
@@ -110,17 +182,28 @@ export default function QuranReaderScreen() {
   const [progressBarWidth, setProgressBarWidth] = useState<number>(Dimensions.get('window').width - 40);
   const flatListRef = useRef<FlatList<Verse>>(null);
 
-  const { data: verses, isLoading, isError, refetch } = useQuery<Verse[]>({
-    queryKey: ['quran-verses', surahNumber],
-    queryFn: () => fetchSurahVerses(surahNumber),
+  const { data: surahData, isLoading, isError, refetch } = useQuery<{
+    verses: Verse[];
+    surahName: string;
+  }>({
+    queryKey: isPageMode
+      ? ['quran-page', pageNumber]
+      : ['quran-verses', surahNumber],
+    queryFn: () =>
+      isPageMode
+        ? fetchPageVerses(pageNumber!)
+        : fetchSurahVerses(surahNumber),
     staleTime: Infinity,
     gcTime: 30 * 60 * 1000,
     retry: 2,
   });
 
+  const verses = surahData?.verses ?? null;
+  const displaySurahName = surahData?.surahName ?? surahMeta?.name ?? t('quranKareem');
+
   // Save last read position when surah changes
   useEffect(() => {
-    if (surahMeta) {
+    if (!isPageMode && surahMeta) {
       void saveLastRead({
         surahNumber,
         surahName: surahMeta.name,
@@ -129,7 +212,23 @@ export default function QuranReaderScreen() {
         timestamp: Date.now(),
       });
     }
-  }, [surahNumber, surahMeta, ayahNumber, saveLastRead]);
+  }, [surahNumber, surahMeta, ayahNumber, saveLastRead, isPageMode]);
+
+  // Show audio error alert
+  const audioErrorRef = useRef<string | null>(null);
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
+  useEffect(() => {
+    if (audioError && audioError !== audioErrorRef.current) {
+      audioErrorRef.current = audioError;
+      Alert.alert(tRef.current('error'), audioError, [
+        { text: tRef.current('ok'), onPress: () => {
+          audioErrorRef.current = null;
+          dismissError();
+        } },
+      ]);
+    }
+  }, [audioError, dismissError]);
 
   // Scroll to specific ayah when verses are loaded
   useEffect(() => {
@@ -148,18 +247,26 @@ export default function QuranReaderScreen() {
     }
   }, [ayahNumber, verses]);
 
-  const isThisSurahPlaying = isCurrentSurah(surahNumber);
+  const isThisSurahPlaying = isPageMode
+    ? (verses?.[0] ? isCurrentSurah(verses[0].surahNumber) : false)
+    : isCurrentSurah(surahNumber);
 
   const handlePlayPause = useCallback(async () => {
     if (Platform.OS !== 'web') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-    if (!isThisSurahPlaying && surahMeta) {
+    if (isPageMode) {
+      // In page mode, play the first surah on the page
+      const firstSurahMeta = verses?.[0] ? getSurahByNumber(verses[0].surahNumber) : null;
+      if (firstSurahMeta) {
+        await playSurah(firstSurahMeta);
+      }
+    } else if (!isThisSurahPlaying && surahMeta) {
       await playSurah(surahMeta);
     } else {
       await togglePlayPause();
     }
-  }, [isThisSurahPlaying, surahMeta, playSurah, togglePlayPause]);
+  }, [isPageMode, isThisSurahPlaying, surahMeta, playSurah, togglePlayPause, verses]);
 
   const handleStop = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -172,18 +279,28 @@ export default function QuranReaderScreen() {
     if (Platform.OS !== 'web') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-    if (surahMeta) {
+    if (isPageMode) {
+      const firstSurahMeta = verses?.[0] ? getSurahByNumber(verses[0].surahNumber) : null;
+      if (firstSurahMeta) {
+        await playSurah(firstSurahMeta);
+      }
+    } else if (surahMeta) {
       await playSurah(surahMeta);
     }
-  }, [surahMeta, playSurah]);
+  }, [isPageMode, surahMeta, playSurah, verses]);
 
   const handleReciterSelect = useCallback(async (reciter: ReciterId) => {
     setShowReciterPicker(false);
     await changeReciter(reciter);
-    if ((isThisSurahPlaying || isPlaying) && surahMeta) {
+    if (isPageMode) {
+      const firstSurahMeta = verses?.[0] ? getSurahByNumber(verses[0].surahNumber) : null;
+      if (firstSurahMeta && (isPlaying || isThisSurahPlaying)) {
+        await playSurah(firstSurahMeta, reciter);
+      }
+    } else if ((isThisSurahPlaying || isPlaying) && surahMeta) {
       await playSurah(surahMeta, reciter);
     }
-  }, [changeReciter, isThisSurahPlaying, isPlaying, surahMeta, playSurah]);
+  }, [changeReciter, isThisSurahPlaying, isPlaying, surahMeta, playSurah, isPageMode, verses]);
 
   const handleBack = useCallback(() => {
     if (router.canGoBack()) {
@@ -218,6 +335,11 @@ export default function QuranReaderScreen() {
         <View style={styles.ayahBadge}>
           <Text style={[styles.ayahBadgeText, androidTextFix]}>{item.numberInSurah}</Text>
         </View>
+        {isPageMode && item.surahName ? (
+          <Text style={[styles.verseSurahName, androidTextFix]} numberOfLines={1}>
+            {item.surahName}
+          </Text>
+        ) : null}
         <Text style={[styles.verseIndex, androidTextFix]}>
           {index + 1} / {verses?.length ?? 0}
         </Text>
@@ -231,17 +353,42 @@ export default function QuranReaderScreen() {
         </Text>
       ) : null}
     </View>
-  ), [verses]);
+  ), [verses, isPageMode]);
 
-  const keyExtractor = useCallback((item: Verse) => `verse-${item.number}`, []);
+  const keyExtractor = useCallback((item: Verse, index: number) =>
+    isPageMode
+      ? `verse-${index}-${item.surahNumber}-${item.numberInSurah}`
+      : `verse-${item.number}`,
+  [isPageMode]);
 
   const headerComponent = useMemo(() => {
+    if (isPageMode) {
+      return (
+        <View style={styles.surahHeader}>
+          <View style={styles.surahMetaRow}>
+            <View style={styles.metaPill}>
+              <Text style={[styles.metaPillText, androidTextFix]}>
+                {t('page')} {pageNumber}
+              </Text>
+            </View>
+            <View style={styles.metaPill}>
+              <Text style={[styles.metaPillText, androidTextFix]}>
+                {pageNumber} / {TOTAL_PAGES}
+              </Text>
+            </View>
+          </View>
+        </View>
+      );
+    }
     if (!surahMeta) return null;
+    const showBismillah = shouldShowBismillah(surahNumber, false);
     return (
       <View style={styles.surahHeader}>
-        <Text style={[styles.bismillah, androidTextFix]}>
-          {t('bismillah')}
-        </Text>
+        {showBismillah && (
+          <Text style={[styles.bismillah, androidTextFix]}>
+            {t('bismillah')}
+          </Text>
+        )}
         <View style={styles.surahMetaRow}>
           <View style={styles.metaPill}>
             <Text style={[styles.metaPillText, androidTextFix]}>
@@ -261,12 +408,12 @@ export default function QuranReaderScreen() {
         </View>
       </View>
     );
-  }, [surahMeta, t]);
+  }, [surahMeta, t, isPageMode, pageNumber, surahNumber]);
 
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ReaderHeader title={surahMeta?.name ?? t('quranKareem')} onBack={handleBack} />
+        <ReaderHeader title={displaySurahName} onBack={handleBack} />
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color={GOLD} />
           <Text style={[styles.loadingText, androidTextFix]}>{t('loadingVerses')}</Text>
@@ -278,7 +425,7 @@ export default function QuranReaderScreen() {
   if (isError || !verses) {
     return (
       <View style={styles.container}>
-        <ReaderHeader title={surahMeta?.name ?? t('quranKareem')} onBack={handleBack} />
+        <ReaderHeader title={displaySurahName} onBack={handleBack} />
         <View style={styles.centerContent}>
           <Text style={[styles.errorText, androidTextFix]}>{t('errorLoadingVerses')}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
@@ -291,7 +438,7 @@ export default function QuranReaderScreen() {
 
   return (
     <View style={styles.container} testID="quran-reader-screen">
-      <ReaderHeader title={surahMeta?.name ?? t('quranKareem')} onBack={handleBack} />
+      <ReaderHeader title={displaySurahName} onBack={handleBack} />
 
       <FlatList
         ref={flatListRef}
@@ -327,7 +474,7 @@ export default function QuranReaderScreen() {
             </Text>
           </TouchableOpacity>
           <Text style={[styles.surahLabel, androidTextFix]} numberOfLines={1}>
-            {surahMeta?.name}
+            {isPageMode ? `${t('page')} ${pageNumber}` : surahMeta?.name}
           </Text>
         </View>
 
@@ -646,6 +793,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700' as const,
     color: GOLD,
+  },
+  verseSurahName: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: GOLD,
+    flex: 1,
+    textAlign: 'center',
+    writingDirection: 'rtl',
   },
   verseIndex: {
     fontSize: 12,
