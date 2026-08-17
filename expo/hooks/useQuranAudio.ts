@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { Audio, type AVPlaybackStatus } from 'expo-av';
+import { InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av/build/Audio.types';
 import createContextHook from '@nkzw/create-context-hook';
 
 import { getQuranRecitationUrl, type ReciterId } from '@/utils/ttsService';
@@ -9,35 +11,6 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useQuranStore } from '@/hooks/useQuranStore';
 import type { SurahMeta } from '@/utils/quranData';
 import { stopAudio as stopYasAI } from '@/utils/yasAI';
-
-// Dynamic expo-audio loading — avoids crash if native module is unavailable on Android
-type AudioPlayer = {
-  play: () => void;
-  pause: () => void;
-  seekTo: (seconds: number) => Promise<void>;
-  remove: () => void;
-  volume: number;
-  currentTime: number;
-  duration: number;
-  addListener: (event: string, cb: (status: any) => void) => { remove: () => void };
-};
-
-let audioMod: any = null;
-let audioLoadFailed = false;
-
-async function getAudioModule(): Promise<any | null> {
-  if (Platform.OS === 'web') return null;
-  if (audioMod) return audioMod;
-  if (audioLoadFailed) return null;
-  try {
-    audioMod = await import('expo-audio');
-    return audioMod;
-  } catch (e) {
-    console.log('[QuranAudio] expo-audio not available:', e);
-    audioLoadFailed = true;
-    return null;
-  }
-}
 
 export type RepeatMode = 'none' | 'surah';
 
@@ -66,8 +39,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('none');
   const [error, setError] = useState<string | null>(null);
 
-  const playerRef = useRef<AudioPlayer | null>(null);
-  const statusListenerRef = useRef<{ remove: () => void } | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
   const repeatModeRef = useRef<RepeatMode>('none');
   const currentSurahRef = useRef<SurahMeta | null>(null);
   const isSeekingRef = useRef<boolean>(false);
@@ -112,64 +84,115 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
     return () => { mounted = false; };
   }, []);
 
-  // Cleanup on unmount — clear player, listener, and timeout
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
         loadingTimeoutRef.current = null;
       }
-      if (statusListenerRef.current) {
-        try { statusListenerRef.current.remove(); } catch {}
-        statusListenerRef.current = null;
-      }
-      if (playerRef.current) {
-        try { playerRef.current.remove(); } catch {}
-        playerRef.current = null;
+      if (soundRef.current) {
+        void soundRef.current.unloadAsync().catch(() => {});
+        soundRef.current = null;
       }
     };
+  }, []);
+
+  const cleanupPlayer = useCallback(async () => {
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+      loadingTimeoutRef.current = null;
+    }
+    if (soundRef.current) {
+      try {
+        await soundRef.current.unloadAsync();
+      } catch {}
+      soundRef.current = null;
+    }
   }, []);
 
   const setupAudio = useCallback(async () => {
     try {
       if (Platform.OS !== 'web') {
-        const mod = await getAudioModule();
-        if (!mod) return;
-        await mod.setAudioModeAsync({
-          playsInSilentMode: true,
-          shouldPlayInBackground: true,
-          interruptionMode: 'duckOthers',
-          shouldRouteThroughEarpiece: false,
-          allowsRecording: false,
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: true,
+          interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
+          interruptionModeIOS: InterruptionModeIOS.DuckOthers,
+          playThroughEarpieceAndroid: false,
         });
-      } else {
-        // Web: expo-audio native modules unavailable — no setup needed.
-        console.log('[QuranAudio] Web platform — skipping native audio setup');
       }
     } catch (error) {
       console.error('[QuranAudio] Audio setup error:', error);
     }
   }, []);
 
-  const cleanupPlayer = useCallback(() => {
+  const handlePlaybackStatusUpdate = useCallback((status: AVPlaybackStatus) => {
+    if (!status.isLoaded) {
+      const err = (status as any)?.error;
+      if (err) {
+        console.error('[QuranAudio] Player error:', err);
+        setError(tRef.current('audioNetworkError'));
+        setIsPlaying(false);
+        isLoadingRef.current = false;
+        setIsLoading(false);
+        soundRef.current = null;
+      }
+      return;
+    }
+
+    if ((status as any).error) {
+      console.error('[QuranAudio] Player error:', (status as any).error);
+      setError(tRef.current('audioNetworkError'));
+      setIsPlaying(false);
+      isLoadingRef.current = false;
+      setIsLoading(false);
+      return;
+    }
+
+    isLoadingRef.current = false;
+    setIsLoading(prev => (prev ? false : prev));
     if (loadingTimeoutRef.current) {
       clearTimeout(loadingTimeoutRef.current);
       loadingTimeoutRef.current = null;
     }
-    if (statusListenerRef.current) {
-      try { statusListenerRef.current.remove(); } catch {}
-      statusListenerRef.current = null;
+
+    const nextIsPlaying = Boolean(status.isPlaying);
+    const nextPos = Number(status.positionMillis ?? 0);
+    const nextDur = Number(status.durationMillis ?? 0);
+
+    setIsPlaying(prev => (prev !== nextIsPlaying ? nextIsPlaying : prev));
+    if (!isSeekingRef.current) {
+      setPosition(prev => (Math.abs(prev - nextPos) > 200 ? nextPos : prev));
     }
-    if (playerRef.current) {
-      try { playerRef.current.remove(); } catch {}
-      playerRef.current = null;
+    setDuration(prev => (prev !== nextDur && nextDur > 0 ? nextDur : prev));
+
+    if (status.didJustFinish) {
+      if (repeatModeRef.current === 'surah') {
+        void (async () => {
+          try {
+            await soundRef.current?.setPositionAsync(0);
+            await soundRef.current?.playAsync();
+            setPosition(0);
+          } catch (e) {
+            console.error('[QuranAudio] Repeat error:', e);
+            setIsPlaying(false);
+            setPosition(0);
+          }
+        })();
+      } else {
+        setIsPlaying(false);
+        setPosition(0);
+      }
     }
   }, []);
 
   const playSurah = useCallback(async (surah: SurahMeta, reciter?: ReciterId) => {
     const reciterToUse = reciter ?? currentReciter;
 
-    // Prevent double-play race condition: if already loading a different surah, ignore
+    // Prevent double-play race condition
     if (isLoadingRef.current && currentSurahRef.current?.number !== surah.number) {
       console.log('[QuranAudio] Already loading another surah, ignoring play request');
       return;
@@ -182,16 +205,17 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
       setError(null);
 
-      // If same surah is already loaded, toggle pause/play (use ref to avoid stale closure)
-      if (currentSurahRef.current?.number === surah.number && playerRef.current) {
+      // If same surah is already loaded, toggle pause/play
+      if (currentSurahRef.current?.number === surah.number && soundRef.current) {
         if (isPlayingRef.current) {
-          playerRef.current.pause();
+          await soundRef.current.pauseAsync();
           setIsPlaying(false);
         } else {
-          if (playerRef.current.currentTime >= playerRef.current.duration && playerRef.current.duration > 0) {
-            await playerRef.current.seekTo(0);
+          const status = await soundRef.current.getStatusAsync();
+          if (status.isLoaded && status.durationMillis && status.positionMillis >= status.durationMillis && status.durationMillis > 0) {
+            await soundRef.current.setPositionAsync(0);
           }
-          playerRef.current.play();
+          await soundRef.current.playAsync();
           setIsPlaying(true);
         }
         return;
@@ -201,7 +225,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       try { await stopYasAI(); } catch {}
 
       // Cleanup existing player
-      cleanupPlayer();
+      await cleanupPlayer();
 
       isLoadingRef.current = true;
       setIsLoading(true);
@@ -219,110 +243,23 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
         return;
       }
 
-      // Non-blocking URL verification — don't delay playback if the HEAD fails.
-      // The player itself will report errors via the status listener if the URL is bad.
-      // Use AbortController instead of AbortSignal.timeout (not supported in Hermes).
-      const headController = new AbortController();
-      const headTimeout = setTimeout(() => headController.abort(), 8000);
-      void fetch(audioUrl, { method: 'HEAD', signal: headController.signal })
-        .then((res) => {
-          if (!res.ok && res.status !== 405) {
-            console.log(`[QuranAudio] HEAD returned ${res.status} (non-fatal, will try playback anyway)`);
-          }
-        })
-        .catch((e) => {
-          if (e?.name !== 'AbortError') {
-            console.log('[QuranAudio] HEAD verification failed (non-fatal):', e?.message ?? e);
-          }
-        })
-        .finally(() => clearTimeout(headTimeout));
-
       await setupAudio();
 
-      const mod = await getAudioModule();
-      if (!mod) {
-        setError(tRef.current('audioNetworkError'));
-        isLoadingRef.current = false;
-        setIsLoading(false);
-        setCurrentSurah(null);
-        return;
-      }
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: audioUrl },
+        { shouldPlay: true, isLooping: false, volume: 1.0 },
+        handlePlaybackStatusUpdate,
+        false // do not download first for remote mp3
+      );
 
-      const newPlayer = mod.createAudioPlayer({ uri: audioUrl }) as AudioPlayer;
-      newPlayer.volume = 1.0;
-
-      const listener = newPlayer.addListener('playbackStatusUpdate', (status: any) => {
-        if (!status?.isLoaded) {
-          if (status?.error) {
-            console.error('[QuranAudio] Player load error:', status.error);
-            setError(tRef.current('audioNetworkError'));
-            setIsPlaying(false);
-            isLoadingRef.current = false;
-            setIsLoading(false);
-            try { newPlayer.remove(); } catch {}
-            if (statusListenerRef.current === listener) {
-              try { statusListenerRef.current.remove(); } catch {}
-              statusListenerRef.current = null;
-            }
-            playerRef.current = null;
-          }
-          return;
-        }
-
-        if (status.error) {
-          console.error('[QuranAudio] Player error:', status.error);
-          setError(tRef.current('audioNetworkError'));
-          setIsPlaying(false);
-          isLoadingRef.current = false;
-          setIsLoading(false);
-          return;
-        }
-
-        isLoadingRef.current = false;
-        setIsLoading(prev => prev ? false : prev);
-        if (loadingTimeoutRef.current) {
-          clearTimeout(loadingTimeoutRef.current);
-          loadingTimeoutRef.current = null;
-        }
-
-        const nextIsPlaying = Boolean(status.playing);
-        const nextPos = Number(status.currentTime ?? 0) * 1000;
-        const nextDur = Number(status.duration ?? 0) * 1000;
-
-        setIsPlaying(prev => (prev !== nextIsPlaying ? nextIsPlaying : prev));
-        if (!isSeekingRef.current) {
-          setPosition(prev => (Math.abs(prev - nextPos) > 200 ? nextPos : prev));
-        }
-        setDuration(prev => (prev !== nextDur && nextDur > 0 ? nextDur : prev));
-
-        if (status.didJustFinish) {
-          if (repeatModeRef.current === 'surah') {
-            try {
-              newPlayer.seekTo(0);
-              newPlayer.play();
-              setPosition(0);
-            } catch (e) {
-              console.error('[QuranAudio] Repeat error:', e);
-              setIsPlaying(false);
-              setPosition(0);
-            }
-          } else {
-            setIsPlaying(false);
-            setPosition(0);
-          }
-        }
-      });
-
-      statusListenerRef.current = listener;
-      playerRef.current = newPlayer;
-      newPlayer.play();
+      soundRef.current = sound;
       setIsPlaying(true);
 
       // Safety timeout: clear loading state after 15s if no status update arrived
       loadingTimeoutRef.current = setTimeout(() => {
         loadingTimeoutRef.current = null;
         isLoadingRef.current = false;
-        setIsLoading(prev => prev ? false : prev);
+        setIsLoading(prev => (prev ? false : prev));
       }, 15000);
 
       void saveLastRead({
@@ -340,20 +277,21 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       setIsPlaying(false);
       setCurrentSurah(null);
     }
-  }, [currentReciter, setupAudio, cleanupPlayer, saveLastRead]);
+  }, [currentReciter, setupAudio, cleanupPlayer, saveLastRead, handlePlaybackStatusUpdate]);
 
   const togglePlayPause = useCallback(async () => {
-    if (!playerRef.current || !currentSurahRef.current) return;
+    if (!soundRef.current || !currentSurahRef.current) return;
     try {
       if (isPlayingRef.current) {
-        playerRef.current.pause();
+        await soundRef.current.pauseAsync();
         setIsPlaying(false);
       } else {
-        if (playerRef.current.currentTime >= playerRef.current.duration && playerRef.current.duration > 0) {
-          await playerRef.current.seekTo(0);
+        const status = await soundRef.current.getStatusAsync();
+        if (status.isLoaded && status.durationMillis && status.positionMillis >= status.durationMillis && status.durationMillis > 0) {
+          await soundRef.current.setPositionAsync(0);
           setPosition(0);
         }
-        playerRef.current.play();
+        await soundRef.current.playAsync();
         setIsPlaying(true);
       }
     } catch (error) {
@@ -363,9 +301,9 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
   const stop = useCallback(async () => {
     try {
-      if (playerRef.current) {
-        playerRef.current.pause();
-        await playerRef.current.seekTo(0);
+      if (soundRef.current) {
+        await soundRef.current.stopAsync();
+        await soundRef.current.setPositionAsync(0);
       }
       setIsPlaying(false);
       setPosition(0);
@@ -376,7 +314,7 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
   const stopAndClear = useCallback(async () => {
     try {
-      cleanupPlayer();
+      await cleanupPlayer();
       isLoadingRef.current = false;
       setIsPlaying(false);
       setIsLoading(false);
@@ -390,10 +328,10 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   }, [cleanupPlayer]);
 
   const seekTo = useCallback(async (millis: number) => {
-    if (!playerRef.current) return;
+    if (!soundRef.current) return;
     try {
       isSeekingRef.current = true;
-      await playerRef.current.seekTo(millis / 1000);
+      await soundRef.current.setPositionAsync(millis);
       setPosition(millis);
       isSeekingRef.current = false;
     } catch (error) {
