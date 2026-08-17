@@ -10,6 +10,7 @@ import { QuranStoreProvider } from '@/hooks/useQuranStore';
 import { QuranAudioProvider } from '@/hooks/useQuranAudio';
 import { CreditsProvider } from '@/hooks/useCreditsStore';
 import { AdhkarCountsProvider } from '@/hooks/useAdhkarCountsStore';
+import { CompassStyleProvider } from '@/hooks/useCompassStyleStore';
 import { queryClient } from '@/utils/queryClient';
 
 interface AppProvidersProps { children: ReactNode }
@@ -27,7 +28,9 @@ export function AppProviders({ children }: AppProvidersProps) {
                     <ThemeProvider>
                       <CreditsProvider>
                         <AdhkarCountsProvider>
-                          {children}
+                          <CompassStyleProvider>
+                            {children}
+                          </CompassStyleProvider>
                         </AdhkarCountsProvider>
                       </CreditsProvider>
                     </ThemeProvider>

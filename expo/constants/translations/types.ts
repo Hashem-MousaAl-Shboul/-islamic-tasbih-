@@ -384,4 +384,23 @@ export interface TranslationKeys {
   nextPrayer: string;
   loadingPrayerTimes: string;
   prayerTimesError: string;
+  // ── Compass style customization ──
+  compassStyle: string;
+  compassAppearance: string;
+  dialStyle: string;
+  arrowColor: string;
+  compassThemeClassic: string;
+  compassThemeMosaic: string;
+  compassThemeOttoman: string;
+  compassThemeMoroccan: string;
+  compassThemeMinimal: string;
+  compassThemePersian: string;
+  arrowGold: string;
+  arrowEmerald: string;
+  arrowCrimson: string;
+  arrowTurquoise: string;
+  arrowSilver: string;
+  arrowIndigo: string;
+  selectCompassStyle: string;
+  compassStyleDescription: string;
 }

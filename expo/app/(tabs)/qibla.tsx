@@ -21,10 +21,14 @@ import {
   ChevronRight,
   AlertCircle,
   Gauge,
+  Palette,
 } from 'lucide-react-native';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useQibla, type CompassAccuracy } from '@/hooks/useQibla';
 import { useImmersiveMode } from '@/hooks/useImmersiveMode';
+import { useCompassStyleStore } from '@/hooks/useCompassStyleStore';
+import type { CompassTheme } from '@/constants/compassThemes';
+import CompassStylePicker from '@/components/CompassStylePicker';
 import UnifiedHeader from '@/components/UnifiedHeader';
 import { ThemedBackground } from '@/components/ThemedBackground';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -78,12 +82,14 @@ interface CompassProps {
   isAligned: boolean;
   size: number;
   isDark: boolean;
+  theme: CompassTheme;
 }
 
-const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, isDark }: CompassProps) {
+const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, isDark, theme }: CompassProps) {
+  const { dialStyle, arrowColor } = theme;
   const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
-  const borderColor = isAligned ? GOLD : (isDark ? DARK_BORDER : LIGHT_BORDER);
-  const textColor = isAligned ? GOLD : (isDark ? TEXT_LIGHT : TEXT_DARK);
+  const borderColor = isAligned ? arrowColor.color : (isDark ? DARK_BORDER : LIGHT_BORDER);
+  const textColor = isAligned ? arrowColor.color : (isDark ? TEXT_LIGHT : TEXT_DARK);
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
   const compassRingColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(27,67,50,0.08)';
 
@@ -98,7 +104,8 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
   const radius = size / 2 - 8;
   const innerRadius = radius - 4;
 
-  // Tick marks every 30°, labels at cardinal/intercardinal points.
+  // Tick marks every 15°, labels at cardinal/intercardinal points.
+  // Shape varies by dial style: 'line' | 'diamond' | 'star'
   const ticks: React.ReactElement[] = [];
   for (let angle = 0; angle < 360; angle += 15) {
     const isMajor = angle % 90 === 0;
@@ -106,7 +113,7 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
     const tickLength = isMajor ? 14 : isMedium ? 10 : 6;
     const tickWidth = isMajor ? 2.5 : isMedium ? 1.5 : 1;
     const tickColor = isMajor
-      ? (isAligned ? GOLD : textColor)
+      ? (isAligned ? arrowColor.color : textColor)
       : isMedium
         ? mutedColor
         : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(27,67,50,0.15)');
@@ -117,12 +124,45 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
     const x2 = center + innerRadius * Math.sin(rad);
     const y2 = center - innerRadius * Math.cos(rad);
 
-    ticks.push(
-      <React.Fragment key={`tick-${angle}`}>
-        {/* @ts-ignore — React Native SVG Line props */}
-        <Line x1={x1} y1={y1} x2={x2} y2={y2} stroke={tickColor} strokeWidth={tickWidth} strokeLinecap="round" />
-      </React.Fragment>
-    );
+    // For diamond/star shapes, draw a small rotated diamond at the tick position
+    if (dialStyle.tickShape === 'diamond' && isMajor) {
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      const dSize = 5;
+      ticks.push(
+        <React.Fragment key={`tick-${angle}`}>
+          {/* @ts-ignore */}
+          <G x={mx} y={my} rotation={angle}>
+            {/* @ts-ignore */}
+            <Path d={`M 0 ${-dSize} L ${dSize} 0 L 0 ${dSize} L ${-dSize} 0 Z`} fill={tickColor} />
+          </G>
+        </React.Fragment>
+      );
+    } else if (dialStyle.tickShape === 'star' && isMajor) {
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      const sSize = 6;
+      // Simple 4-point star
+      ticks.push(
+        <React.Fragment key={`tick-${angle}`}>
+          {/* @ts-ignore */}
+          <G x={mx} y={my} rotation={angle}>
+            {/* @ts-ignore */}
+            <Path
+              d={`M 0 ${-sSize} L ${sSize * 0.3} ${-sSize * 0.3} L ${sSize} 0 L ${sSize * 0.3} ${sSize * 0.3} L 0 ${sSize} L ${-sSize * 0.3} ${sSize * 0.3} L ${-sSize} 0 L ${-sSize * 0.3} ${-sSize * 0.3} Z`}
+              fill={tickColor}
+            />
+          </G>
+        </React.Fragment>
+      );
+    } else {
+      ticks.push(
+        <React.Fragment key={`tick-${angle}`}>
+          {/* @ts-ignore — React Native SVG Line props */}
+          <Line x1={x1} y1={y1} x2={x2} y2={y2} stroke={tickColor} strokeWidth={tickWidth} strokeLinecap="round" />
+        </React.Fragment>
+      );
+    }
   }
 
   // Cardinal direction labels.
@@ -142,13 +182,51 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
 
       {/* Outer ring */}
       <LinearGradient
-        colors={isAligned ? [GOLD, GOLD_DIM] : [cardColor, cardColor]}
+        colors={isAligned ? [arrowColor.color, arrowColor.dimColor] : [dialStyle.ringGradient[0], dialStyle.ringGradient[1]]}
         style={[styles.compassOuterRing, { width: size, height: size, borderRadius: size / 2, borderColor }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
         {/* Inner compass face */}
-        <View style={[styles.compassFace, { width: size - 16, height: size - 16, borderRadius: (size - 16) / 2, backgroundColor: isAligned ? 'rgba(212,168,83,0.08)' : cardColor }]}>
+        <View style={[styles.compassFace, { width: size - 16, height: size - 16, borderRadius: (size - 16) / 2, backgroundColor: isAligned ? `${arrowColor.color}14` : (isDark ? dialStyle.faceGradientDark[0] : dialStyle.faceGradientLight[0]) }]}>
+
+          {/* Decorative inner ring */}
+          {dialStyle.pattern !== 'none' && (
+            <View
+              style={[
+                styles.decorativeInnerRing,
+                {
+                  width: (size - 16) * 0.72,
+                  height: (size - 16) * 0.72,
+                  borderRadius: ((size - 16) * 0.72) / 2,
+                  borderColor: isDark ? dialStyle.patternColorDark : dialStyle.patternColorLight,
+                  borderStyle:
+                    dialStyle.innerRingStyle === 'dashed'
+                      ? 'dashed'
+                      : dialStyle.innerRingStyle === 'dotted'
+                        ? 'dotted'
+                        : 'solid',
+                  borderWidth: dialStyle.innerRingStyle === 'double' ? 2.5 : 1.5,
+                },
+              ]}
+            />
+          )}
+
+          {/* Decorative second ring for 'double' style */}
+          {dialStyle.innerRingStyle === 'double' && (
+            <View
+              style={[
+                styles.decorativeInnerRing,
+                {
+                  width: (size - 16) * 0.82,
+                  height: (size - 16) * 0.82,
+                  borderRadius: ((size - 16) * 0.82) / 2,
+                  borderColor: isDark ? dialStyle.patternColorDark : dialStyle.patternColorLight,
+                  borderWidth: 0.5,
+                },
+              ]}
+            />
+          )}
 
           {/* Rotating dial with ticks + cardinal labels + qibla arrow */}
           <AnimatedDial
@@ -161,21 +239,37 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
             isAligned={isAligned}
             textColor={textColor}
             mutedColor={mutedColor}
+            arrowColor={arrowColor.color}
+            arrowDimColor={arrowColor.dimColor}
+            arrowMarkerColor={arrowColor.markerColor}
+            dialStyle={dialStyle}
           />
 
           {/* Fixed North indicator at top */}
           <View style={styles.northIndicator}>
-            <View style={[styles.northTriangle, { borderTopColor: isAligned ? GOLD : '#E63946' }]} />
+            <View style={[styles.northTriangle, { borderTopColor: isAligned ? arrowColor.color : '#E63946' }]} />
           </View>
 
           {/* Center Kaaba icon */}
-          <View style={[styles.centerKaaba, { backgroundColor: isAligned ? GOLD : DEEP_GREEN_DARK }]}>
-            <Text style={styles.centerKaabaText}>🕋</Text>
-          </View>
+          {dialStyle.centerShape === 'circle' && (
+            <View style={[styles.centerKaaba, { backgroundColor: isAligned ? arrowColor.color : DEEP_GREEN_DARK }]}>
+              <Text style={styles.centerKaabaText}>🕋</Text>
+            </View>
+          )}
+          {dialStyle.centerShape === 'octagon' && (
+            <View style={[styles.centerKaabaOctagon, { backgroundColor: isAligned ? arrowColor.color : DEEP_GREEN_DARK }]}>
+              <Text style={styles.centerKaabaText}>🕋</Text>
+            </View>
+          )}
+          {dialStyle.centerShape === 'star' && (
+            <View style={[styles.centerKaaba, { backgroundColor: isAligned ? arrowColor.color : DEEP_GREEN_DARK, borderRadius: 4, transform: [{ rotate: '45deg' }] }]}>
+              <Text style={[styles.centerKaabaText, { transform: [{ rotate: '-45deg' }] }]}>🕋</Text>
+            </View>
+          )}
 
           {/* Aligned text */}
           {isAligned && (
-            <View style={styles.alignedBadge}>
+            <View style={[styles.alignedBadge, { backgroundColor: arrowColor.color }]}>
               <Text style={styles.alignedText}>✓</Text>
             </View>
           )}
@@ -188,7 +282,7 @@ Compass.displayName = 'Compass';
 
 // ── Animated dial wrapper ──────────────────────────────────────
 import { Animated } from 'react-native';
-import { Line, Text as SvgText, G, Path, Circle, Svg } from 'react-native-svg';
+import { Line, Text as SvgText, G, Path, Circle, Svg, Polygon } from 'react-native-svg';
 
 interface AnimatedDialProps {
   rotation: number;
@@ -200,6 +294,10 @@ interface AnimatedDialProps {
   isAligned: boolean;
   textColor: string;
   mutedColor: string;
+  arrowColor: string;
+  arrowDimColor: string;
+  arrowMarkerColor: string;
+  dialStyle: import('@/constants/compassThemes').DialStyleOption;
 }
 
 const AnimatedDial = memo(function AnimatedDial({
@@ -212,6 +310,10 @@ const AnimatedDial = memo(function AnimatedDial({
   isAligned,
   textColor,
   mutedColor,
+  arrowColor,
+  arrowDimColor,
+  arrowMarkerColor,
+  dialStyle,
 }: AnimatedDialProps) {
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -261,7 +363,7 @@ const AnimatedDial = memo(function AnimatedDial({
                   y={y}
                   fontSize={label === 'N' ? 18 : 14}
                   fontWeight={label === 'N' ? '800' : '600'}
-                  fill={label === 'N' ? (isAligned ? GOLD : '#E63946') : mutedColor}
+                  fill={label === 'N' ? (isAligned ? arrowColor : '#E63946') : mutedColor}
                   textAnchor="middle"
                   alignmentBaseline="central"
                 >
@@ -272,15 +374,41 @@ const AnimatedDial = memo(function AnimatedDial({
 
             {/* Qibla direction arrow — points from center outward at the Qibla bearing */}
             <G rotation={qiblaArrowAngle}>
+              {/* Decorative pattern background for arabesque/geometric/floral */}
+              {dialStyle.pattern === 'arabesque' && (
+                <G opacity={0.3}>
+                  {/* @ts-ignore */}
+                  <Circle cx={0} cy={0} r={radius * 0.5} fill="none" stroke={arrowDimColor} strokeWidth={0.5} strokeDasharray="2 3" />
+                  {/* @ts-ignore */}
+                  <Circle cx={0} cy={0} r={radius * 0.35} fill="none" stroke={arrowDimColor} strokeWidth={0.5} strokeDasharray="1 2" />
+                </G>
+              )}
+              {dialStyle.pattern === 'geometric' && (
+                <G opacity={0.25}>
+                  {/* @ts-ignore */}
+                  <Polygon points={`0,${-radius * 0.6} ${radius * 0.4},0 0,${radius * 0.6} ${-radius * 0.4},0`} fill="none" stroke={arrowDimColor} strokeWidth={0.8} />
+                  {/* @ts-ignore */}
+                  <Polygon points={`0,${-radius * 0.4} ${radius * 0.28},0 0,${radius * 0.4} ${-radius * 0.28},0`} fill="none" stroke={arrowDimColor} strokeWidth={0.6} />
+                </G>
+              )}
+              {dialStyle.pattern === 'floral' && (
+                <G opacity={0.2}>
+                  {/* @ts-ignore */}
+                  <Circle cx={0} cy={-radius * 0.45} r={radius * 0.08} fill="none" stroke={arrowDimColor} strokeWidth={0.6} />
+                  {/* @ts-ignore */}
+                  <Circle cx={0} cy={-radius * 0.25} r={radius * 0.06} fill="none" stroke={arrowDimColor} strokeWidth={0.5} />
+                </G>
+              )}
+
               {/* Arrow shaft */}
               <Path
                 d={`M 0 ${-radius * 0.85} L -12 ${-radius * 0.55} L -4 ${-radius * 0.55} L -4 ${-radius * 0.2} L 4 ${-radius * 0.2} L 4 ${-radius * 0.55} L 12 ${-radius * 0.55} Z`}
-                fill={isAligned ? GOLD : '#E63946'}
+                fill={isAligned ? arrowColor : arrowDimColor}
                 opacity={0.95}
               />
               {/* Small Kaaba marker at the tip */}
-              <Circle cx={0} cy={-radius * 0.85} r={6} fill={isAligned ? GOLD : DEEP_GREEN_DARK} />
-              <Circle cx={0} cy={-radius * 0.85} r={3} fill={isAligned ? '#FFFFFF' : GOLD} />
+              <Circle cx={0} cy={-radius * 0.85} r={6} fill={isAligned ? arrowColor : DEEP_GREEN_DARK} />
+              <Circle cx={0} cy={-radius * 0.85} r={3} fill={isAligned ? arrowMarkerColor : arrowColor} />
             </G>
 
             {/* Degree marks every 30° */}
@@ -662,9 +790,13 @@ export default function QiblaScreen() {
     refreshLocation,
   } = useQibla();
 
+  const { dialStyle, arrowColor } = useCompassStyleStore();
+  const compassTheme: CompassTheme = { dialStyle, arrowColor };
+
   useImmersiveMode();
 
   const [showInfo, setShowInfo] = useState<boolean>(false);
+  const [showStylePicker, setShowStylePicker] = useState<boolean>(false);
 
   // Compass size adapts to screen width.
   const compassSize = Math.min(window.width - 80, 320);
@@ -744,6 +876,7 @@ export default function QiblaScreen() {
                 isAligned={isAligned}
                 size={compassSize}
                 isDark={isDark}
+                theme={compassTheme}
               />
 
               {/* Accuracy indicator */}
@@ -786,17 +919,30 @@ export default function QiblaScreen() {
                 )}
               </View>
 
-              {/* Recalibrate button */}
-              <TouchableOpacity
-                style={[styles.recalibrateButton, { borderColor }]}
-                onPress={() => void refreshLocation()}
-                activeOpacity={0.7}
-              >
-                <RefreshCw size={16} color={GOLD} strokeWidth={2} />
-                <Text style={[styles.recalibrateText, { color: mutedColor }]}>
-                  {t('recalibrate')}
-                </Text>
-              </TouchableOpacity>
+              {/* Recalibrate + Style buttons */}
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[styles.recalibrateButton, { borderColor }]}
+                  onPress={() => void refreshLocation()}
+                  activeOpacity={0.7}
+                >
+                  <RefreshCw size={16} color={GOLD} strokeWidth={2} />
+                  <Text style={[styles.recalibrateText, { color: mutedColor }]}>
+                    {t('recalibrate')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.recalibrateButton, { borderColor }]}
+                  onPress={() => setShowStylePicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Palette size={16} color={arrowColor.color} strokeWidth={2} />
+                  <Text style={[styles.recalibrateText, { color: mutedColor }]}>
+                    {t('compassStyle')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Info card — virtue of facing Qibla */}
@@ -855,6 +1001,12 @@ export default function QiblaScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Compass style picker modal */}
+      <CompassStylePicker
+        visible={showStylePicker}
+        onClose={() => setShowStylePicker(false)}
+      />
     </ThemedBackground>
   );
 }
@@ -1060,9 +1212,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 1,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  // ── Decorative inner ring ──
+  decorativeInnerRing: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // ── Octagon center ──
+  centerKaabaOctagon: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: { elevation: 4 },
+    }),
   },
   recalibrateText: {
     fontSize: 13,
