@@ -48,7 +48,6 @@ const IVORY = '#F7F4EE';
 interface Verse {
   number: number;
   arabicText: string;
-  translation: string;
   numberInSurah: number;
   surahNumber: number;
   surahName: string;
@@ -57,12 +56,12 @@ interface Verse {
 interface SurahApiResponse {
   code: number;
   status: string;
-  data: Array<{
+  data: {
     ayahs: Array<{
       numberInSurah: number;
       text: string;
     }>;
-  }>;
+  };
 }
 
 interface PageApiResponse {
@@ -84,20 +83,18 @@ function cleanArabicText(text: string): string {
 }
 
 async function fetchSurahVerses(surahNumber: number): Promise<{ verses: Verse[]; surahName: string }> {
-  const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/editions/quran-uthmani,en.sahih`;
+  const url = `https://api.alquran.cloud/v1/surah/${surahNumber}/quran-uthmani`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`API error: ${response.status}`);
   const json: SurahApiResponse = await response.json();
 
-  const arabicData = json.data?.[0]?.ayahs ?? [];
-  const translationData = json.data?.[1]?.ayahs ?? [];
+  const arabicData = json.data?.ayahs ?? [];
   const surahName = getSurahByNumber(surahNumber)?.name ?? `سورة ${surahNumber}`;
 
-  const verses: Verse[] = arabicData.map((ayah, index) => ({
+  const verses: Verse[] = arabicData.map((ayah) => ({
     number: ayah.numberInSurah,
     numberInSurah: ayah.numberInSurah,
     arabicText: cleanArabicText(ayah.text),
-    translation: translationData[index]?.text ?? '',
     surahNumber,
     surahName,
   }));
@@ -106,35 +103,19 @@ async function fetchSurahVerses(surahNumber: number): Promise<{ verses: Verse[];
 }
 
 async function fetchPageVerses(pageNumber: number): Promise<{ verses: Verse[]; surahName: string }> {
-  const url = `https://api.alquran.cloud/v1/page/${pageNumber}/editions/quran-uthmani,en.sahih`;
+  const url = `https://api.alquran.cloud/v1/page/${pageNumber}/quran-uthmani`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`API error: ${response.status}`);
   const json: PageApiResponse = await response.json();
 
   const arabicAyahs = json.data?.ayahs ?? [];
-  const verses: Verse[] = arabicAyahs.map((ayah, index) => ({
+  const verses: Verse[] = arabicAyahs.map((ayah) => ({
     number: ayah.numberInSurah,
     numberInSurah: ayah.numberInSurah,
     arabicText: cleanArabicText(ayah.text),
-    translation: '', // Page endpoint with editions returns both but structure differs
     surahNumber: ayah.surah?.number ?? 0,
     surahName: ayah.surah?.name ?? '',
   }));
-
-  // Fetch translations for the page separately
-  try {
-    const transUrl = `https://api.alquran.cloud/v1/page/${pageNumber}/en.sahih`;
-    const transRes = await fetch(transUrl);
-    if (transRes.ok) {
-      const transJson = await transRes.json();
-      const transAyahs = transJson?.data?.ayahs ?? [];
-      transAyahs.forEach((ayah: { text: string }, i: number) => {
-        if (verses[i]) verses[i].translation = ayah.text ?? '';
-      });
-    }
-  } catch {
-    // Translation is optional — don't fail the whole page
-  }
 
   const firstName = verses[0]?.surahName ?? `صفحة ${pageNumber}`;
   return { verses, surahName: firstName };
@@ -348,11 +329,6 @@ export default function QuranReaderScreen() {
       <Text style={[styles.arabicText, androidTextFix]}>
         {item.arabicText}
       </Text>
-      {item.translation ? (
-        <Text style={[styles.translationText, androidTextFix]}>
-          {item.translation}
-        </Text>
-      ) : null}
     </View>
   ), [verses, isPageMode]);
 
@@ -393,7 +369,7 @@ export default function QuranReaderScreen() {
         <View style={styles.surahMetaRow}>
           <View style={styles.metaPill}>
             <Text style={[styles.metaPillText, androidTextFix]}>
-              {surahMeta.englishName}
+              {surahMeta.name}
             </Text>
           </View>
           <View style={styles.metaPill}>
@@ -815,13 +791,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     lineHeight: 42,
     marginBottom: 14,
-  },
-  translationText: {
-    fontSize: 15,
-    fontWeight: '400' as const,
-    color: TEXT_MUTED,
-    lineHeight: 24,
-    textAlign: 'left',
   },
   audioBar: {
     position: 'absolute' as const,
