@@ -63,6 +63,7 @@
         }
       ],
       "expo-localization",
+      "expo-location",
       "expo-mail-composer",
       [
         "react-native-google-mobile-ads",
