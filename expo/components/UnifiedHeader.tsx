@@ -63,11 +63,11 @@ UnifiedHeader.displayName = 'UnifiedHeader';
 const styles = StyleSheet.create({
   header: {
     backgroundColor: DEEP_GREEN,
-    paddingBottom: 18,
-    paddingHorizontal: 20,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     // Shadow for iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -84,22 +84,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '700' as const,
     color: '#FFFFFF',
     writingDirection: 'rtl',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     textAlign: 'center',
   },
   ornament: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 6,
     gap: 8,
   },
   ornamentLine: {
-    width: 32,
+    width: 28,
     height: 1,
     backgroundColor: GOLD,
     opacity: 0.6,

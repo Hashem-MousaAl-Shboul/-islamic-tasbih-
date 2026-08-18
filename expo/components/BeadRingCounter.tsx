@@ -22,7 +22,7 @@ const CREAM = '#F7F4EE';
 const BeadRingCounter = memo<BeadRingCounterProps>(({
   count,
   targetCount,
-  size = 280,
+  size = 260,
   beadColor = TEAL,
   activeColor = TEAL_LIGHT,
   spacerColor = GOLD,
@@ -199,10 +199,10 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   targetText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
     color: '#8A9B91',
-    marginTop: -2,
+    marginTop: -3,
   },
 });
 

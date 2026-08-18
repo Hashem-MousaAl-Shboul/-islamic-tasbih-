@@ -8,7 +8,7 @@ import { androidRipple } from '@/utils/androidOptimizations';
 const DEEP_GREEN = '#1B4332';
 const GOLD = '#D4A853';
 const BAR_RADIUS = 28;
-const ICON_SIZE = 24;
+const ICON_SIZE = 22;
 
 interface TabItemProps {
   route: any;
@@ -190,13 +190,13 @@ export default OptimizedTabBar;
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center' as const,
-    paddingTop: 6,
+    paddingTop: 4,
     paddingBottom: 2,
   },
   tabBar: {
     borderRadius: BAR_RADIUS,
-    paddingVertical: 14,
-    width: '86%' as any,
+    paddingVertical: 10,
+    width: '88%' as any,
     maxWidth: 360,
     ...Platform.select({
       ios: {
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   tabContent: {
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    gap: 6,
+    gap: 4,
   },
   activeDot: {
     width: 5,

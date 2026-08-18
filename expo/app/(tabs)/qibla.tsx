@@ -1090,8 +1090,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   mainContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: 14,
+    paddingTop: 12,
   },
   centerState: {
     flex: 1,
@@ -1107,8 +1107,8 @@ const styles = StyleSheet.create({
   // ── Compass ──
   compassSection: {
     alignItems: 'center',
-    gap: 20,
-    marginBottom: 24,
+    gap: 14,
+    marginBottom: 16,
   },
   compassContainer: {
     alignItems: 'center',
@@ -1146,15 +1146,15 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
   },
   centerKaaba: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     ...createShadow({ offsetY: 2, opacity: 0.2, blur: 4, elevation: 4 }),
   },
   centerKaabaText: {
-    fontSize: 18,
+    fontSize: 16,
   },
   alignedBadge: {
     position: 'absolute',
@@ -1174,41 +1174,41 @@ const styles = StyleSheet.create({
   },
   // ── Accuracy card (rebuilt) ──
   accuracyCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1.5,
-    padding: 14,
+    padding: 12,
     width: '100%',
   },
   accuracyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   accuracyHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   accuracyTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
     ...androidTextFix,
   },
   accuracyValueBadge: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700' as const,
     ...androidTextFix,
   },
   accuracyBar: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 10,
+    gap: 5,
+    marginBottom: 8,
   },
   accuracyBarSegment: {
     flex: 1,
-    height: 6,
-    borderRadius: 3,
+    height: 5,
+    borderRadius: 2.5,
   },
   accuracyMagRow: {
     flexDirection: 'row',
@@ -1226,19 +1226,19 @@ const styles = StyleSheet.create({
   },
   // ── Calibration card (new) ──
   calibrationCard: {
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1.5,
-    padding: 16,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 12,
   },
   calibrationCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 14,
+    gap: 8,
+    marginBottom: 10,
   },
   calibrationCardTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700' as const,
     color: '#FFC107',
     ...androidTextFix,
@@ -1246,38 +1246,38 @@ const styles = StyleSheet.create({
   calibrationStepRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
-    marginBottom: 12,
+    gap: 10,
+    marginBottom: 10,
   },
   calibrationStepNum: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: 'rgba(255,193,7,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
   calibrationStepNumText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800' as const,
     color: '#FFC107',
     ...androidTextFix,
   },
   calibrationStepText: {
     flex: 1,
-    fontSize: 13,
-    lineHeight: 20,
-    paddingTop: 2,
+    fontSize: 12,
+    lineHeight: 18,
+    paddingTop: 1,
     ...androidTextFix,
   },
   // ── Info row ──
   infoRow: {
     flexDirection: 'row',
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     width: '100%',
     alignItems: 'center',
   },
@@ -1295,57 +1295,57 @@ const styles = StyleSheet.create({
     ...androidTextFix,
   },
   infoValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700' as const,
     ...androidTextFix,
   },
   // ── Alignment ──
   alignmentStatus: {
     alignItems: 'center',
-    minHeight: 36,
+    minHeight: 28,
     justifyContent: 'center',
   },
   alignedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   alignedPulse: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: GOLD,
     alignItems: 'center',
     justifyContent: 'center',
   },
   alignedPulseText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800' as const,
   },
   alignedStatusText: {
     color: GOLD,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700' as const,
     ...androidTextFix,
   },
   alignHint: {
-    fontSize: 14,
+    fontSize: 13,
     ...androidTextFix,
   },
   // ── Recalibrate button ──
   recalibrateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 18,
     borderWidth: 1,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     justifyContent: 'center',
   },
   // ── Decorative inner ring ──
@@ -1356,8 +1356,8 @@ const styles = StyleSheet.create({
   },
   // ── Octagon center ──
   centerKaabaOctagon: {
-    width: 38,
-    height: 38,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 6,
@@ -1370,10 +1370,10 @@ const styles = StyleSheet.create({
   },
   // ── Info card ──
   infoCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 12,
   },
   infoCardHeader: {
     flexDirection: 'row',
@@ -1383,28 +1383,28 @@ const styles = StyleSheet.create({
   infoCardLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   infoCardTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600' as const,
     ...androidTextFix,
   },
   infoCardText: {
-    fontSize: 13,
-    lineHeight: 22,
-    marginTop: 12,
+    fontSize: 12,
+    lineHeight: 20,
+    marginTop: 10,
     ...androidTextFix,
   },
   // ── Mini map ──
   miniMapSection: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   miniMapContainer: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 8,
+    padding: 6,
     alignItems: 'center',
   },
   miniMapHeader: {
@@ -1423,24 +1423,24 @@ const styles = StyleSheet.create({
   },
   // ── Prayer times ──
   prayerSection: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   prayerCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    padding: 16,
+    padding: 12,
   },
   prayerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: 10,
   },
   prayerHeaderLeft: {
     gap: 2,
   },
   prayerTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700' as const,
     ...androidTextFix,
   },
@@ -1473,18 +1473,18 @@ const styles = StyleSheet.create({
   prayerItem: {
     flex: 1,
     minWidth: '30%',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1.5,
-    paddingVertical: 12,
+    paddingVertical: 10,
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   prayerItemLabel: {
     fontSize: 11,
     ...androidTextFix,
   },
   prayerItemTime: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700' as const,
     ...androidTextFix,
   },
@@ -1499,11 +1499,11 @@ const styles = StyleSheet.create({
   // ── Error state ──
   errorContainer: {
     alignItems: 'center',
-    padding: 32,
-    marginHorizontal: 16,
-    marginTop: 40,
-    borderRadius: 20,
-    gap: 16,
+    padding: 24,
+    marginHorizontal: 14,
+    marginTop: 32,
+    borderRadius: 18,
+    gap: 12,
   },
   errorIcon: {
     width: 72,

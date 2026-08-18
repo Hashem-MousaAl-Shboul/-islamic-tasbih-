@@ -617,10 +617,10 @@ function ReaderHeader({ title, onBack }: { title: string; onBack: () => void }) 
 const readerHeaderStyles = StyleSheet.create({
   header: {
     backgroundColor: DEEP_GREEN,
-    paddingBottom: 18,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingBottom: 12,
+    paddingHorizontal: 14,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     ...createShadow({ offsetY: 2, opacity: 0.08, blur: 4, elevation: 3 }),
   },
   content: {
