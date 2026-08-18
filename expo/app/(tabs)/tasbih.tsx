@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCard from '@/components/TasbihCard';
+import BeadRingCounter from '@/components/BeadRingCounter';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
 import { ThemedBackground } from '@/components/ThemedBackground';
@@ -30,47 +31,6 @@ const CARD_WHITE = '#FFFFFF';
 const TEXT_MUTED = '#8A9B91';
 const TASBIH_TAG = '[TasbihScreen]';
 
-
-const CircularProgress = memo(({ progress, color, size = 220 }: { progress: number; color: string; size?: number }) => {
-  const animatedProgress = useRef(new Animated.Value(progress)).current;
-
-  useEffect(() => {
-    Animated.timing(animatedProgress, {
-      toValue: progress,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-  }, [progress, animatedProgress]);
-
-  const strokeWidth = 6;
-
-  return (
-    <View style={{ width: size, height: size }}>
-      <View style={[styles.progressCircleBg, { width: size, height: size, borderRadius: size / 2 }]} />
-      <View style={[styles.progressArc, { width: size, height: size, borderRadius: size / 2, borderWidth: strokeWidth, borderColor: color + '30' }]} />
-      <Animated.View
-        style={[
-          styles.progressArcFill,
-          {
-            width: size, height: size, borderRadius: size / 2,
-            borderWidth: strokeWidth, borderColor: color,
-            borderTopColor: color,
-            borderRightColor: progress > 0.25 ? color : 'transparent',
-            borderBottomColor: progress > 0.5 ? color : 'transparent',
-            borderLeftColor: progress > 0.75 ? color : 'transparent',
-            transform: [{
-              rotate: animatedProgress.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['-90deg', '270deg'],
-              }),
-            }],
-          },
-        ]}
-      />
-    </View>
-  );
-});
-CircularProgress.displayName = 'CircularProgress';
 
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
@@ -335,28 +295,24 @@ export default function TasbihScreen() {
           </LinearGradient>
 
           <View style={styles.counterSection}>
-            <View style={styles.progressRingContainer}>
-              <CircularProgress progress={progressPercent / 100} color={selectedItem.color} />
-              <Animated.View style={[styles.counterButtonContainer, { transform: [{ scale: pulseAnim }] }]}>
-                <TouchableOpacity
-                  style={styles.mainCounterButton}
-                  onPress={handleIncrement}
-                  activeOpacity={0.85}
-                  testID="increment-button"
-                  accessibilityLabel="Increment counter"
-                >
-                  <Text style={styles.mainCounterButtonText}>
-                    {selectedItem.count.toLocaleString('ar-SA')}
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
-              {selectedItem.isCompleted && (
-                <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
-                  <Check size={14} color="#FFFFFF" />
-                  <Text style={[styles.completedText, androidTextFix]}>{t('completed')}</Text>
-                </View>
-              )}
-            </View>
+            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+              <BeadRingCounter
+                count={selectedItem.count}
+                targetCount={selectedItem.targetCount}
+                size={260}
+                beadColor="#1B5A6B"
+                activeColor="#2A8A9A"
+                onPress={handleIncrement}
+                testID="increment-button"
+              />
+            </Animated.View>
+
+            {selectedItem.isCompleted && (
+              <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
+                <Check size={14} color="#FFFFFF" />
+                <Text style={[styles.completedText, androidTextFix]}>{t('completed')}</Text>
+              </View>
+            )}
 
             <Text style={[styles.tapHint, androidTextFix]}>{t('tapToCount')}</Text>
 
@@ -538,44 +494,7 @@ const styles = StyleSheet.create({
   transliterationText: { fontSize: 12, fontWeight: '500' as const, color: DEEP_GREEN, opacity: 0.7, textAlign: 'center', marginTop: 2, lineHeight: 18, fontStyle: 'italic' },
   translationText: { fontSize: 11, fontWeight: '400' as const, color: TEXT_MUTED, textAlign: 'center', marginTop: 4, lineHeight: 18 },
   counterSection: { alignItems: 'center', marginBottom: 10 },
-  progressRingContainer: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center' },
-  progressCircleBg: { position: 'absolute', backgroundColor: CARD_WHITE, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 8 },
-  progressArc: { position: 'absolute' },
-  progressArcFill: { position: 'absolute', borderLeftColor: 'transparent', borderBottomColor: 'transparent' },
-  counterButtonContainer: { position: 'absolute', zIndex: 10 },
-  mainCounterButton: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: '#FAF4E8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: GOLD,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.12,
-        shadowRadius: 16,
-      },
-      android: {
-        elevation: 8,
-      },
-      web: {
-        boxShadow: '0px 6px 24px rgba(0,0,0,0.12)',
-      },
-    }),
-  },
-  mainCounterButtonText: {
-    fontSize: 50,
-    fontWeight: '800' as const,
-    color: DEEP_GREEN,
-    textAlign: 'center' as const,
-    includeFontPadding: false,
-    textAlignVertical: 'center' as const,
-  },
-  completedBadge: { position: 'absolute' as const, bottom: 10, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
+  completedBadge: { marginTop: -8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16, gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
   completedText: { fontSize: 12, fontWeight: '700' as const, color: '#FFFFFF' },
   tapHint: { fontSize: 12, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 8 },
   progressBarContainer: { width: '100%', maxWidth: 260, marginTop: 10 },
