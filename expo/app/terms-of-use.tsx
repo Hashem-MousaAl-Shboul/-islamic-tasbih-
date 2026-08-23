@@ -5,10 +5,11 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  I18nManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowRight, MessageCircle } from 'lucide-react-native';
+import { ArrowLeft, ArrowRight, MessageCircle } from 'lucide-react-native';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { contactViaWhatsApp } from '@/utils/globalUtils';
 
@@ -25,9 +26,16 @@ export default function TermsOfUseScreen() {
   const router = useRouter();
   const { t } = useLanguageStore();
 
+  const isRTL = I18nManager.isRTL;
+  const BackIcon = isRTL ? ArrowLeft : ArrowRight;
+
   return (
-    <View style={styles.container} testID="terms-of-use-screen" accessibilityLabel="Terms of Use Screen"
-      accessibilityHint="Read our terms of use">
+    <View
+      style={styles.container}
+      testID="terms-of-use-screen"
+      accessibilityLabel="Terms of Use Screen"
+      accessibilityHint="Read our terms of use"
+    >
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
           <View style={styles.headerSpacer} />
@@ -37,8 +45,10 @@ export default function TermsOfUseScreen() {
             style={styles.actionButton}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             testID="terms-back-button"
+            accessibilityRole="button"
+            accessibilityLabel={t('back') || 'Back'}
           >
-            <ArrowRight size={22} color="#fff" />
+            <BackIcon size={22} color="#fff" />
           </TouchableOpacity>
         </View>
         <View style={styles.headerOrnament}>
@@ -84,13 +94,14 @@ export default function TermsOfUseScreen() {
           <Text style={styles.bodyText}>{t('termsTerminationText')}</Text>
 
           <Text style={styles.sectionHeading}>{t('termsContactTitle')}</Text>
-          <Text style={styles.bodyText}>{t('termsContactText')}</Text>
 
           <TouchableOpacity
             style={styles.whatsappButton}
             onPress={contactViaWhatsApp}
             activeOpacity={0.7}
             testID="terms-whatsapp-button"
+            accessibilityRole="button"
+            accessibilityLabel="Contact via WhatsApp"
           >
             <MessageCircle size={20} color="#fff" />
             <Text style={styles.whatsappButtonText}>WhatsApp</Text>
@@ -167,10 +178,6 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_WHITE,
     borderRadius: 18,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
     elevation: 2,
   },
   lastUpdated: {
@@ -201,10 +208,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginTop: 18,
     gap: 10,
-    shadowColor: '#25D366',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
     elevation: 4,
   },
   whatsappButtonText: {
