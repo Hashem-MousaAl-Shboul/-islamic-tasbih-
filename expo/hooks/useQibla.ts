@@ -1,20 +1,44 @@
 /**
- * useQibla — combines device location, magnetometer (compass), and
- * Qibla bearing calculations to provide a real-time compass direction
- * toward the Kaaba in Makkah.
+ * useQibla
  *
- * - Requests foreground location permission and fetches current position.
- * - Subscribes to the magnetometer sensor for real-time heading.
- * - Computes compass heading from magnetometer X/Y readings.
- * - Estimates accuracy from magnetic field strength.
- * - Triggers haptic feedback when the phone is aligned with the Qibla.
+ * Qibla compass for Expo / React Native.
  *
- * No-op (returns null state) on platforms where sensors are unavailable.
+ * Uses:
+ * - expo-location for GPS
+ * - expo-location watchHeadingAsync for device heading
+ * - No expo-sensors
+ * - No Magnetometer
+ * - No Accelerometer
+ *
+ * Features:
+ * - Current location
+ * - Qibla bearing
+ * - Distance to Kaaba
+ * - Device heading
+ * - Compass accuracy
+ * - Circular heading smoothing
+ * - Qibla alignment detection
+ * - Haptic feedback
+ * - Android / iOS support
+ * - Safe lifecycle handling
  */
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Platform, AppState, type AppStateStatus } from 'react-native';
+
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+
+import {
+  AppState,
+  Platform,
+  type AppStateStatus,
+} from 'react-native';
+
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
+
 import {
   getQiblaBearing,
   getDistanceToKaaba,
@@ -23,251 +47,696 @@ import {
   type Coordinates,
 } from '@/utils/qiblaUtils';
 
-export type CompassAccuracy = 'low' | 'medium' | 'high' | 'unavailable';
+// ============================================================
+// TYPES
+// ============================================================
+
+export type CompassAccuracy =
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'unavailable';
 
 export interface QiblaState {
-  /** User's current coordinates, or null if unknown. */
+  /**
+   * Current user coordinates.
+   */
   location: Coordinates | null;
-  /** Bearing from user to Kaaba in degrees [0, 360). */
+
+  /**
+   * Qibla bearing from current location.
+   *
+   * 0   = North
+   * 90  = East
+   * 180 = South
+   * 270 = West
+   */
   qiblaBearing: number | null;
-  /** Great-circle distance to Kaaba in km. */
+
+  /**
+   * Distance to Kaaba in kilometers.
+   */
   distanceToKaaba: number | null;
-  /** Current compass heading of the device in degrees [0, 360). */
+
+  /**
+   * Current device heading.
+   *
+   * 0   = North
+   * 90  = East
+   * 180 = South
+   * 270 = West
+   */
   heading: number | null;
-  /** Estimated accuracy of the compass reading. */
+
+  /**
+   * Compass calibration accuracy.
+   */
   accuracy: CompassAccuracy;
-  /** Raw magnetic field magnitude in µT (microtesla), or null if unknown. */
+
+  /**
+   * Magnetic field.
+   *
+   * Not available in this implementation.
+   */
   magneticField: number | null;
-  /** True when the phone is aligned with the Qibla direction. */
+
+  /**
+   * Whether the device is currently
+   * aligned with Qibla.
+   */
   isAligned: boolean;
-  /** True while fetching the user's location. */
+
+  /**
+   * Whether location is loading.
+   */
   isLoadingLocation: boolean;
-  /** Error message for the user, or null. */
+
+  /**
+   * Error code.
+   */
   error: string | null;
-  /** Whether location permission was denied. */
+
+  /**
+   * Whether location permission was denied.
+   */
   permissionDenied: boolean;
 }
 
 export interface QiblaActions {
-  /** Re-request permission and re-fetch location. */
   refreshLocation: () => Promise<void>;
 }
 
-// Magnetometer sensor types — loaded dynamically to avoid crashes on platforms
-// where the native module is not available.
-interface MagnetometerSubscription { remove: () => void }
-interface MagnetometerReading { x: number; y: number; z: number }
-interface MagnetometerModule {
-  addListener: (cb: (r: MagnetometerReading) => void) => MagnetometerSubscription;
-  setUpdateInterval: (ms: number) => void;
+// ============================================================
+// CONSTANTS
+// ============================================================
+
+/**
+ * Prevent unnecessary repeated GPS requests.
+ */
+const LOCATION_REFRESH_COOLDOWN_MS =
+  60 * 1000;
+
+/**
+ * Heading smoothing.
+ *
+ * Higher = faster response.
+ * Lower = smoother movement.
+ */
+const HEADING_SMOOTHING_FACTOR = 0.22;
+
+/**
+ * User is considered aligned when
+ * heading difference is <= 5 degrees.
+ */
+const ALIGNED_THRESHOLD_DEG = 5;
+
+/**
+ * Hysteresis.
+ *
+ * Once aligned, the user must move
+ * beyond 9 degrees before alignment
+ * becomes false.
+ */
+const ALIGNED_HYSTERESIS_DEG = 9;
+
+/**
+ * Minimum time between haptic feedback.
+ */
+const HAPTIC_COOLDOWN_MS = 3000;
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+/**
+ * Convert Expo heading accuracy number
+ * into application accuracy.
+ *
+ * Expo:
+ *
+ * 3 = high
+ * 2 = medium
+ * 1 = low
+ * 0 = none
+ */
+function mapCompassAccuracy(
+  accuracy: number
+): CompassAccuracy {
+  switch (accuracy) {
+    case 3:
+      return 'high';
+
+    case 2:
+      return 'medium';
+
+    case 1:
+      return 'low';
+
+    default:
+      return 'unavailable';
+  }
 }
 
-let magnetometerMod: MagnetometerModule | null = null;
-let magnetLoadPromise: Promise<MagnetometerModule | null> | null = null;
+/**
+ * Circular angle smoothing.
+ *
+ * Correctly handles:
+ *
+ * 359° → 0°
+ *
+ * instead of rotating backwards
+ * through 180°.
+ */
+function smoothAngle(
+  current: number,
+  target: number,
+  factor: number
+): number {
+  const difference = angularDifference(
+    target,
+    current
+  );
 
-async function loadMagnetometer(): Promise<MagnetometerModule | null> {
-  if (magnetometerMod) return magnetometerMod;
-  if (magnetLoadPromise) return magnetLoadPromise;
-  magnetLoadPromise = (async () => {
-    try {
-      const mod = await import('expo-sensors');
-      const sensor = (mod as any).Magnetometer;
-      if (!sensor) {
-        console.log('[Qibla] Magnetometer sensor not found in expo-sensors');
-        return null;
-      }
-      magnetometerMod = {
-        addListener: sensor.addListener.bind(sensor),
-        setUpdateInterval: sensor.setUpdateInterval.bind(sensor),
-      };
-      return magnetometerMod;
-    } catch (e) {
-      console.log('[Qibla] expo-sensors not available:', e);
-      return null;
-    }
-  })();
-  return magnetLoadPromise;
+  return normalizeAngle(
+    current + difference * factor
+  );
 }
 
-const SENSOR_INTERVAL_MS = 100;
-const ALIGNED_THRESHOLD_DEG = 3;
-const ALIGNED_HYSTERESIS_DEG = 6;
-const LOW_ACCURACY_THRESHOLD = 25;
-const HIGH_ACCURACY_THRESHOLD = 15;
+// ============================================================
+// HOOK
+// ============================================================
 
 export function useQibla(): QiblaState & QiblaActions {
-  const [location, setLocation] = useState<Coordinates | null>(null);
-  const [qiblaBearing, setQiblaBearing] = useState<number | null>(null);
-  const [distanceToKaaba, setDistanceToKaaba] = useState<number | null>(null);
-  const [heading, setHeading] = useState<number | null>(null);
-  const [accuracy, setAccuracy] = useState<CompassAccuracy>('unavailable');
-  const [magneticField, setMagneticField] = useState<number | null>(null);
-  const [isAligned, setIsAligned] = useState<boolean>(false);
-  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [permissionDenied, setPermissionDenied] = useState<boolean>(false);
+  // ==========================================================
+  // STATE
+  // ==========================================================
 
-  const isAlignedRef = useRef<boolean>(false);
-  const headingRef = useRef<number | null>(null);
-  const qiblaBearingRef = useRef<number | null>(null);
-  const magnetSubRef = useRef<MagnetometerSubscription | null>(null);
+  const [location, setLocation] =
+    useState<Coordinates | null>(null);
 
-  const refreshLocation = useCallback(async () => {
-    setIsLoadingLocation(true);
-    setError(null);
-    setPermissionDenied(false);
+  const [qiblaBearing, setQiblaBearing] =
+    useState<number | null>(null);
 
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setPermissionDenied(true);
-        setError('permission');
-        setIsLoadingLocation(false);
+  const [distanceToKaaba, setDistanceToKaaba] =
+    useState<number | null>(null);
+
+  const [heading, setHeading] =
+    useState<number | null>(null);
+
+  const [accuracy, setAccuracy] =
+    useState<CompassAccuracy>('unavailable');
+
+  const [isAligned, setIsAligned] =
+    useState(false);
+
+  const [isLoadingLocation, setIsLoadingLocation] =
+    useState(true);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [permissionDenied, setPermissionDenied] =
+    useState(false);
+
+  // ==========================================================
+  // REFS
+  // ==========================================================
+
+  const qiblaBearingRef =
+    useRef<number | null>(null);
+
+  const smoothedHeadingRef =
+    useRef<number | null>(null);
+
+  const isAlignedRef =
+    useRef(false);
+
+  const lastHapticTimeRef =
+    useRef(0);
+
+  const lastLocationRefreshRef =
+    useRef(0);
+
+  const headingSubscriptionRef =
+    useRef<Location.LocationSubscription | null>(
+      null
+    );
+
+  // ==========================================================
+  // LOCATION
+  // ==========================================================
+
+  const refreshLocation =
+    useCallback(async () => {
+      const now = Date.now();
+
+      /**
+       * Prevent repeated GPS requests.
+       *
+       * The first request is always allowed
+       * because the ref initially contains 0.
+       */
+      if (
+        now -
+          lastLocationRefreshRef.current <
+        LOCATION_REFRESH_COOLDOWN_MS
+      ) {
         return;
       }
 
-      const pos = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      lastLocationRefreshRef.current =
+        now;
 
-      const coords: Coordinates = {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-      };
+      setIsLoadingLocation(true);
+      setError(null);
+      setPermissionDenied(false);
 
-      setLocation(coords);
-      const bearing = getQiblaBearing(coords);
-      const distance = getDistanceToKaaba(coords);
-      qiblaBearingRef.current = bearing;
-      setQiblaBearing(bearing);
-      setDistanceToKaaba(distance);
-    } catch (e) {
-      console.log('[Qibla] Location error:', e);
-      setError('location');
-    } finally {
-      setIsLoadingLocation(false);
-    }
-  }, []);
+      try {
+        // ------------------------------------------------------
+        // LOCATION PERMISSION
+        // ------------------------------------------------------
 
-  // Fetch location on mount and when app returns to foreground.
+        const {
+          status,
+        } =
+          await Location.requestForegroundPermissionsAsync();
+
+        if (status !== 'granted') {
+          setPermissionDenied(true);
+          setError('permission');
+
+          return;
+        }
+
+        // ------------------------------------------------------
+        // CURRENT LOCATION
+        // ------------------------------------------------------
+
+        const position =
+          await Location.getCurrentPositionAsync({
+            accuracy:
+              Location.Accuracy.Balanced,
+          });
+
+        const coords: Coordinates = {
+          latitude:
+            position.coords.latitude,
+
+          longitude:
+            position.coords.longitude,
+        };
+
+        // ------------------------------------------------------
+        // QIBLA
+        // ------------------------------------------------------
+
+        const bearing =
+          getQiblaBearing(coords);
+
+        const distance =
+          getDistanceToKaaba(coords);
+
+        // ------------------------------------------------------
+        // UPDATE QIBLA REF
+        // ------------------------------------------------------
+
+        qiblaBearingRef.current =
+          bearing;
+
+        // ------------------------------------------------------
+        // UPDATE STATE
+        // ------------------------------------------------------
+
+        setLocation(coords);
+
+        setQiblaBearing(
+          bearing
+        );
+
+        setDistanceToKaaba(
+          distance
+        );
+      } catch (e) {
+        console.log(
+          '[Qibla] Location error:',
+          e
+        );
+
+        setError('location');
+      } finally {
+        setIsLoadingLocation(false);
+      }
+    }, []);
+
+  // ==========================================================
+  // LOCATION LIFECYCLE
+  // ==========================================================
+
   useEffect(() => {
+    /**
+     * Web does not support the native
+     * compass functionality used here.
+     */
     if (Platform.OS === 'web') {
       setIsLoadingLocation(false);
       setAccuracy('unavailable');
+
       return;
     }
 
+    /**
+     * Allow initial request.
+     */
+    lastLocationRefreshRef.current = 0;
+
     void refreshLocation();
 
-    const handleAppState = (next: AppStateStatus) => {
-      if (next === 'active') {
+    // --------------------------------------------------------
+    // APP STATE
+    // --------------------------------------------------------
+
+    const handleAppStateChange = (
+      nextState: AppStateStatus
+    ) => {
+      if (
+        nextState === 'active'
+      ) {
         void refreshLocation();
       }
     };
-    const sub = AppState.addEventListener('change', handleAppState);
-    return () => sub.remove();
+
+    const subscription =
+      AppState.addEventListener(
+        'change',
+        handleAppStateChange
+      );
+
+    // --------------------------------------------------------
+    // CLEANUP
+    // --------------------------------------------------------
+
+    return () => {
+      subscription.remove();
+    };
   }, [refreshLocation]);
 
-  // Subscribe to magnetometer for compass heading.
+  // ==========================================================
+  // DEVICE HEADING
+  // ==========================================================
+
   useEffect(() => {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     let cancelled = false;
 
-    const setupMagnetometer = async () => {
-      const mod = await loadMagnetometer();
-      if (!mod || cancelled) return;
+    const startHeading =
+      async () => {
+        /**
+         * Make sure previous subscription
+         * does not remain active.
+         */
+        if (
+          headingSubscriptionRef.current
+        ) {
+          try {
+            headingSubscriptionRef.current.remove();
+          } catch {}
 
-      try {
-        mod.setUpdateInterval(SENSOR_INTERVAL_MS);
-      } catch {}
-
-      if (magnetSubRef.current) {
-        try { magnetSubRef.current.remove(); } catch {}
-        magnetSubRef.current = null;
-      }
-
-      const sub = mod.addListener((reading: MagnetometerReading) => {
-        if (cancelled) return;
-
-        // Compute heading from magnetometer X/Y.
-        // The formula atan2(y, x) gives the angle relative to magnetic north.
-        // We negate and adjust for the device coordinate system so that
-        // 0 = North, 90 = East, 180 = South, 270 = West.
-        let rawHeading = Math.atan2(reading.y, reading.x) * (180 / Math.PI);
-        rawHeading = normalizeAngle(rawHeading);
-
-        // Estimate accuracy from total magnetic field magnitude.
-        const magnitude = Math.sqrt(
-          reading.x * reading.x +
-          reading.y * reading.y +
-          reading.z * reading.z
-        );
-
-        // Typical Earth magnetic field: 25–65 µT. Values far outside
-        // this range indicate interference.
-        let newAccuracy: CompassAccuracy;
-        if (magnitude < 10 || magnitude > 120) {
-          newAccuracy = 'low';
-        } else {
-          const deviation = Math.abs(magnitude - 45);
-          if (deviation <= HIGH_ACCURACY_THRESHOLD) {
-            newAccuracy = 'high';
-          } else if (deviation <= LOW_ACCURACY_THRESHOLD) {
-            newAccuracy = 'medium';
-          } else {
-            newAccuracy = 'low';
-          }
+          headingSubscriptionRef.current =
+            null;
         }
 
-        headingRef.current = rawHeading;
-        setHeading(rawHeading);
-        setAccuracy(newAccuracy);
-        setMagneticField(magnitude);
+        try {
+          /**
+           * Expo Location provides the device
+           * compass heading directly.
+           */
+          const subscription =
+            await Location.watchHeadingAsync(
+              (headingData) => {
+                if (cancelled) {
+                  return;
+                }
 
-        // Check alignment with Qibla using hysteresis to prevent flapping.
-        const bearing = qiblaBearingRef.current;
-        if (bearing !== null) {
-          const diff = Math.abs(angularDifference(rawHeading, bearing));
+                /**
+                 * trueHeading is preferred when
+                 * available.
+                 *
+                 * It requires location permission.
+                 *
+                 * If unavailable (-1), use
+                 * magnetic heading.
+                 */
+                let newHeading =
+                  headingData.trueHeading;
 
-          if (!isAlignedRef.current && diff <= ALIGNED_THRESHOLD_DEG) {
-            isAlignedRef.current = true;
-            setIsAligned(true);
-            // Haptic feedback when aligned.
-            if (Platform.OS !== 'web') {
-              void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-            }
-          } else if (isAlignedRef.current && diff > ALIGNED_HYSTERESIS_DEG) {
-            isAlignedRef.current = false;
-            setIsAligned(false);
+                if (
+                  !Number.isFinite(
+                    newHeading
+                  ) ||
+                  newHeading < 0
+                ) {
+                  newHeading =
+                    headingData.magHeading;
+                }
+
+                if (
+                  !Number.isFinite(
+                    newHeading
+                  ) ||
+                  newHeading < 0
+                ) {
+                  setAccuracy(
+                    'unavailable'
+                  );
+
+                  return;
+                }
+
+                newHeading =
+                  normalizeAngle(
+                    newHeading
+                  );
+
+                // ----------------------------------------------
+                // ACCURACY
+                // ----------------------------------------------
+
+                const newAccuracy =
+                  mapCompassAccuracy(
+                    headingData.accuracy
+                  );
+
+                setAccuracy(
+                  newAccuracy
+                );
+
+                // ----------------------------------------------
+                // SMOOTH HEADING
+                // ----------------------------------------------
+
+                let smoothHeading =
+                  newHeading;
+
+                if (
+                  smoothedHeadingRef.current ===
+                  null
+                ) {
+                  smoothedHeadingRef.current =
+                    newHeading;
+                } else {
+                  smoothHeading =
+                    smoothAngle(
+                      smoothedHeadingRef.current,
+                      newHeading,
+                      HEADING_SMOOTHING_FACTOR
+                    );
+
+                  smoothedHeadingRef.current =
+                    smoothHeading;
+                }
+
+                setHeading(
+                  smoothHeading
+                );
+
+                // ----------------------------------------------
+                // QIBLA ALIGNMENT
+                // ----------------------------------------------
+
+                const bearing =
+                  qiblaBearingRef.current;
+
+                if (
+                  bearing === null
+                ) {
+                  return;
+                }
+
+                const difference =
+                  Math.abs(
+                    angularDifference(
+                      smoothHeading,
+                      bearing
+                    )
+                  );
+
+                // ----------------------------------------------
+                // ENTER ALIGNED
+                // ----------------------------------------------
+
+                if (
+                  !isAlignedRef.current &&
+                  difference <=
+                    ALIGNED_THRESHOLD_DEG
+                ) {
+                  isAlignedRef.current =
+                    true;
+
+                  setIsAligned(true);
+
+                  // --------------------------------------------
+                  // HAPTIC
+                  // --------------------------------------------
+
+                  const now =
+                    Date.now();
+
+                  if (
+                    now -
+                      lastHapticTimeRef.current >=
+                    HAPTIC_COOLDOWN_MS
+                  ) {
+                    lastHapticTimeRef.current =
+                      now;
+
+                    void Haptics
+                      .notificationAsync(
+                        Haptics
+                          .NotificationFeedbackType
+                          .Success
+                      )
+                      .catch(() => {});
+                  }
+                }
+
+                // ----------------------------------------------
+                // EXIT ALIGNED
+                // ----------------------------------------------
+
+                else if (
+                  isAlignedRef.current &&
+                  difference >
+                    ALIGNED_HYSTERESIS_DEG
+                ) {
+                  isAlignedRef.current =
+                    false;
+
+                  setIsAligned(false);
+                }
+              },
+              (reason) => {
+                if (cancelled) {
+                  return;
+                }
+
+                console.log(
+                  '[Qibla] Heading error:',
+                  reason
+                );
+
+                setAccuracy(
+                  'unavailable'
+                );
+              }
+            );
+
+          if (cancelled) {
+            subscription.remove();
+            return;
           }
+
+          headingSubscriptionRef.current =
+            subscription;
+        } catch (e) {
+          if (cancelled) {
+            return;
+          }
+
+          console.log(
+            '[Qibla] Failed to start heading:',
+            e
+          );
+
+          setAccuracy(
+            'unavailable'
+          );
+
+          setHeading(null);
         }
-      });
+      };
 
-      magnetSubRef.current = sub;
-    };
+    void startHeading();
 
-    void setupMagnetometer();
+    // ========================================================
+    // CLEANUP
+    // ========================================================
 
     return () => {
       cancelled = true;
-      if (magnetSubRef.current) {
-        try { magnetSubRef.current.remove(); } catch {}
-        magnetSubRef.current = null;
+
+      if (
+        headingSubscriptionRef.current
+      ) {
+        try {
+          headingSubscriptionRef.current.remove();
+        } catch {}
+
+        headingSubscriptionRef.current =
+          null;
       }
+
+      smoothedHeadingRef.current =
+        null;
+
+      isAlignedRef.current =
+        false;
+
+      setIsAligned(false);
     };
   }, []);
 
+  // ==========================================================
+  // RETURN
+  // ==========================================================
+
   return {
     location,
+
     qiblaBearing,
+
     distanceToKaaba,
+
     heading,
+
     accuracy,
-    magneticField,
+
+    /**
+     * We deliberately do not expose
+     * raw magnetic-field information.
+     */
+    magneticField: null,
+
     isAligned,
+
     isLoadingLocation,
+
     error,
+
     permissionDenied,
+
     refreshLocation,
   };
 }
