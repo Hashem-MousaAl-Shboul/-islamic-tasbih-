@@ -7,14 +7,16 @@ import { Colors } from "@/constants/colors";
 import { AudioProgressBar } from "@/components/AudioProgressBar";
 import { yasAI } from "@/utils/yasAI";
 import OptimizedTabBar from "@/components/OptimizedTabBar";
+import { BottomTabBarProps } from "@react-navigation/bottom-tabs"; // استيراد النوع الصحيح هنا
 
-const TAB_TAG = '[TabLayout]';
+const TAB_TAG = '[واجهة التبويبات]';
 
 export default function TabLayout() {
   const { t } = useLanguageStore();
-  const [isBarVisible, setIsBarVisible] = useState<boolean>(true);
+  const [isBarVisible, setIsBarVisible] = useState<boolean>(false); // جعلها false افتراضياً حتى نتأكد من حالة مستمع الصوت
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
+  // إعدادات الشاشة محسنة مع كتابة الأنواع البرمجية الصحيحة
   const screenOptions = useMemo(() => ({
     headerShown: false,
     tabBarActiveTintColor: Colors.primary,
@@ -23,16 +25,17 @@ export default function TabLayout() {
     tabBarHideOnKeyboard: Platform.OS === 'ios',
     lazy: true,
     tabBarAllowFontScaling: false,
-    tabBar: (props: any) => <OptimizedTabBar {...props} />,
+    tabBar: (props: BottomTabBarProps) => <OptimizedTabBar {...props} />, // تم إصلاح نوع any هنا
   }), []);
 
   useEffect(() => {
     let mounted = true;
-    console.log(TAB_TAG, 'Mounting tab layout, initializing audio listener');
+    console.log(TAB_TAG, 'جاري تحميل واجهة التبويبات وإعداد مستمع الصوت');
 
     const handlePlaybackChange = (state: { isPlaying: boolean; currentId: string | null }) => {
       if (mounted) {
-        setIsBarVisible(state.isPlaying);
+        // تم التعديل: يبقى الشريط ظاهراً طالما هناك ملف صوتي مفعّل حتى لو تم عمل إيقاف مؤقت (Pause)
+        setIsBarVisible(state.currentId !== null);
       }
     };
 
@@ -42,11 +45,11 @@ export default function TabLayout() {
         unsubscribeRef.current = yasAI.addListener(handlePlaybackChange);
         const initialState = yasAI.getPlaybackState();
         if (mounted) {
-          setIsBarVisible(initialState.isPlaying);
-          console.log(TAB_TAG, 'Audio listener ready, playing:', initialState.isPlaying);
+          setIsBarVisible(initialState.currentId !== null);
+          console.log(TAB_TAG, 'مستمع الصوت جاهز، معرف الصوت الحالي:', initialState.currentId);
         }
       } catch (e) {
-        console.log(TAB_TAG, 'Error setting up audio listener:', e);
+        console.log(TAB_TAG, 'خطأ أثناء إعداد مستمع الصوت:', e);
       }
     }, 1000);
 
@@ -57,16 +60,16 @@ export default function TabLayout() {
         unsubscribeRef.current();
         unsubscribeRef.current = null;
       }
-      console.log(TAB_TAG, 'Tab layout unmounted, cleaned up listeners');
+      console.log(TAB_TAG, 'تم إغلاق الواجهة وتنظيف المستمعات لعدم تسريب الذاكرة');
     };
   }, []);
 
   const handleCloseBar = useCallback(async () => {
     try {
       await yasAI.stop();
-      console.log(TAB_TAG, 'Audio bar closed');
+      console.log(TAB_TAG, 'تم إغلاق شريط الصوت وإيقاف التشغيل');
     } catch (e) {
-      console.log(TAB_TAG, 'stop error', e);
+      console.log(TAB_TAG, 'خطأ أثناء إيقاف الصوت:', e);
     } finally {
       setIsBarVisible(false);
     }
