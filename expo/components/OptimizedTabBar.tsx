@@ -153,8 +153,9 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
       backgroundColor: bgColor,
       marginBottom: 12,
     };
-  }, 
+  }, [isDark, bottomPad]);
 
+  
   const tabs = useMemo(() => {
     return state.routes.map((route: any, index: number) => ({
       route,
