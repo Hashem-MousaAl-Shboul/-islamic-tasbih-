@@ -153,7 +153,7 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
       backgroundColor: bgColor,
       marginBottom: 12,
     };
-  }, marginBottom: 12,
+  }, 
 position: 'absolute',
 bottom: 0,
 left: 0,
