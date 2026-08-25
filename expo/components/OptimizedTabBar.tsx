@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { memo, useCallback, useMemo useRef, useEffect } from 'react';
 import { View, StyleSheet, Platform, Pressable, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -140,20 +140,22 @@ interface OptimizedTabBarProps {
 }
 
 const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ state, descriptors, navigation }) {
-  const insets = useSafeAreaInsets();
   const theme = useTheme();
   const isDark = theme.mode === 'dark';
-
-  const bottomPad = Math.max(insets.bottom, 12);
 
   const barStyle = useMemo(() => {
     const bgColor = isDark ? 'rgba(20,25,35,0.96)' : 'rgba(253,251,247,0.97)';
 
     return {
       backgroundColor: bgColor,
-      marginBottom: bottomPad,
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      alignSelf: 'center',
+      marginBottom: 12,
     };
-  }, [isDark, bottomPad]);
+  }, [isDark]);
 
   const tabs = useMemo(() => {
     return state.routes.map((route: any, index: number) => ({
@@ -165,7 +167,7 @@ const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ st
   }, [state.routes, state.index]);
 
   return (
-    <View style={[styles.wrapper, { paddingBottom: 0 }]} testID="optimized-tab-bar">
+    <View style={styles.wrapper} testID="optimized-tab-bar">
       <View style={[styles.tabBar, barStyle]} testID="tab-bar-shell">
         <View style={styles.tabContainer}>
           {tabs.map(({ route, isFocused, key, index: idx }: any) => (
@@ -191,7 +193,7 @@ const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center' as const,
     paddingTop: 4,
-    paddingBottom: 2,
+    paddingBottom: 0,
   },
   tabBar: {
     borderRadius: BAR_RADIUS,
