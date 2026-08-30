@@ -89,7 +89,7 @@ export default function TabLayout() {
   /**
    * منع تحديث State بعد unmount.
    */
-  const mountedRef = useRef(false);
+  const mountedRef = useRef(true);
 
   /* ==========================================================================
      Tab Configuration
