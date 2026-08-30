@@ -108,7 +108,7 @@ export default function TabLayout() {
       tabBarShowLabel: true,
 
       tabBarHideOnKeyboard:
-        Platform.OS === 'ios',
+        Platform.OS === 'android',
 
       lazy: true,
 
