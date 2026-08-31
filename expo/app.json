@@ -21,8 +21,8 @@
         "UIBackgroundModes": [
           "audio"
         ],
-        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
-        "NSPhotoLibraryUsageDescription": "This app lets you choose a custom background image from your photo library."
+        "NSUserTrackingUsageDescription": "Sabbah uses this identifier only to show relevant ads that help keep the app free. Your data is never sold, and you can decline tracking without losing any features.",
+        "NSPhotoLibraryUsageDescription": "Sabbah accesses your photo library only when you choose to set a custom background image. No photos are uploaded or shared."
       }
     },
     "android": {
@@ -35,8 +35,8 @@
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.INTERNET",
-        "com.google.android.gms.permission.AD_ID",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "com.google.android.gms.permission.AD_ID"
       ],
       "blockedPermissions": [
         "android.permission.READ_MEDIA_IMAGES",
@@ -65,15 +65,15 @@
       "expo-localization",
       "expo-location",
       "expo-mail-composer",
+      "expo-audio",
       [
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-4282819777610118~5450174392",
           "iosAppId": "ca-app-pub-4282819777610118~7403522538",
-          "userTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
+          "userTrackingUsageDescription": "Sabbah uses this identifier only to show relevant ads that help keep the app free. Your data is never sold, and you can decline tracking without losing any features."
         }
       ],
-      "expo-audio",
       [
         "expo-build-properties",
         {
