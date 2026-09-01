@@ -48,7 +48,7 @@ import AdBanner from '@/components/AdBanner';
 import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
 import UnifiedHeader from '@/components/UnifiedHeader';
 
-import type { ColorThemeKey } from '@/theme/ThemeProvider';
+import { useTheme, type ColorThemeKey } from '@/theme/ThemeProvider';
 import type { BackgroundThemeKey } from '@/hooks/useTasbihStore';
 
 const GOLD = '#D4A853';
@@ -97,6 +97,7 @@ interface SettingsRowProps {
 }
 
 function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, danger, isLast, disabled, badge }: SettingsRowProps) {
+  const theme = useTheme();
   const handlePress = useCallback(() => {
     if (disabled) return;
     if (type === 'toggle' && onToggle) {
@@ -108,8 +109,17 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
 
   return (
     <Pressable
-      style={[styles.row, !isLast && styles.rowBorder, disabled && styles.rowDisabled]}
+      style={[
+        styles.row,
+        !isLast && styles.rowBorder,
+        !isLast && { borderBottomColor: theme.border },
+        disabled && styles.rowDisabled,
+      ]}
       onPress={handlePress}
+      accessibilityRole={type === 'toggle' ? 'switch' : 'button'}
+      accessibilityLabel={title}
+      accessibilityHint={subtitle}
+      accessibilityState={{ disabled: Boolean(disabled), checked: type === 'toggle' ? Boolean(value) : undefined }}
       android_ripple={disabled ? undefined : androidRipple('rgba(27,67,50,0.06)')}
       testID={`settings-row-${title}`}
     >
@@ -135,20 +145,20 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
         ) : null}
         {type === 'select' && !badge ? (
           <View style={styles.selectContainer}>
-            <ChevronLeft size={16} color={disabled ? '#ccc' : TEXT_MUTED} />
-            <Text style={[styles.selectValue, disabled && styles.selectValueDisabled, androidTextFix]}>{String(value ?? '')}</Text>
+            <ChevronLeft size={16} color={disabled ? '#78817B' : theme.textSecondary} />
+            <Text style={[styles.selectValue, { color: theme.textSecondary }, disabled && styles.selectValueDisabled, androidTextFix]}>{String(value ?? '')}</Text>
           </View>
         ) : null}
         {type === 'action' ? (
-          <ChevronLeft size={18} color={danger ? '#D45050' : TEXT_MUTED} />
+          <ChevronLeft size={18} color={danger ? '#D45050' : theme.textSecondary} />
         ) : null}
       </View>
       <View style={styles.rowRight}>
         <View style={styles.rowTextContainer}>
-          <Text style={[styles.rowTitle, danger && styles.dangerText, disabled && styles.rowTitleDisabled, androidTextFix]}>{title}</Text>
-          {subtitle ? <Text style={[styles.rowSubtitle, disabled && styles.rowSubtitleDisabled, androidTextFix]}>{subtitle}</Text> : null}
+          <Text style={[styles.rowTitle, { color: theme.text }, danger && styles.dangerText, disabled && styles.rowTitleDisabled, androidTextFix]}>{title}</Text>
+          {subtitle ? <Text style={[styles.rowSubtitle, { color: theme.textSecondary }, disabled && styles.rowSubtitleDisabled, androidTextFix]}>{subtitle}</Text> : null}
         </View>
-        <View style={[styles.rowIcon, danger && styles.rowIconDanger, disabled && styles.rowIconDisabled]}>
+        <View style={[styles.rowIcon, { backgroundColor: theme.mode === 'dark' ? '#2D3446' : IVORY }, danger && styles.rowIconDanger, disabled && styles.rowIconDisabled]}>
           {icon}
         </View>
       </View>
@@ -158,6 +168,7 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const { t, getCurrentLanguageInfo } = useLanguageStore();
   const { settings, updateSettings, resetAllData } = useTasbihStore();
   const router = useRouter();
@@ -314,7 +325,7 @@ export default function SettingsScreen() {
   }, [router]);
 
   return (
-    <View style={styles.container} testID="settings-screen"
+    <View style={[styles.container, { backgroundColor: theme.background }]} testID="settings-screen"
       accessibilityLabel="Settings Screen"
       accessibilityHint="Manage app preferences and data">
       <UnifiedHeader title={t('settings') || 'الإعدادات'} testID="settings-header" />
@@ -325,8 +336,8 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
       >
-        <Text style={[styles.sectionTitle, androidTextFix]}>{t('appearance')}</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }, androidTextFix]}>{t('appearance')}</Text>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SettingsRow
             icon={settings.theme === 'dark'
               ? <Moon size={20} color={DEEP_GREEN} />
@@ -354,8 +365,8 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, androidTextFix]}>{t('statistics')}</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }, androidTextFix]}>{t('statistics')}</Text>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SettingsRow
             icon={<TrendingUp size={20} color="#2D8B6F" />}
             title={t('statistics') || 'الإحصائيات'}
@@ -366,8 +377,8 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, androidTextFix]}>{t('interaction')}</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }, androidTextFix]}>{t('interaction')}</Text>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SettingsRow
             icon={<Vibrate size={20} color="#E07A3A" />}
             title={t('vibration')}
@@ -387,8 +398,8 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, androidTextFix]}>{t('notifications')}</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }, androidTextFix]}>{t('notifications')}</Text>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <NotificationPreviewCard />
           {isExpoGoEnvironment ? (
             <View style={styles.expoGoWarning}>
@@ -439,8 +450,8 @@ export default function SettingsScreen() {
           ) : null}
         </View>
 
-        <Text style={[styles.sectionTitle, androidTextFix]}>{t('contactSupport')}</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }, androidTextFix]}>{t('contactSupport')}</Text>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SettingsRow
             icon={<Star size={20} color={GOLD} />}
             title={t('rateApp')}
@@ -465,8 +476,8 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, androidTextFix]}>{t('about')}</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }, androidTextFix]}>{t('about')}</Text>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SettingsRow
             icon={<Shield size={20} color={DEEP_GREEN} />}
             title={t('privacy')}
@@ -491,8 +502,8 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, androidTextFix]}>{t('dataManagement')}</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }, androidTextFix]}>{t('dataManagement')}</Text>
+        <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <SettingsRow
             icon={<RotateCcw size={20} color={GOLD} />}
             title={t('resetSettings')}
@@ -651,7 +662,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 4,
-    ...Platform.select({ android: { borderWidth: 0.5, borderColor: 'rgba(0,0,0,0.04)' } }),
+    borderWidth: StyleSheet.hairlineWidth,
   },
   row: {
     flexDirection: 'row',

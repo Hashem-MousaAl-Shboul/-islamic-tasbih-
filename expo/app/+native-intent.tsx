@@ -1,12 +1,18 @@
-export function redirectSystemPath({
-  path,
-  initial,
-}: { path: string; initial: boolean }) {
-  console.log('[NativeIntent] Redirecting system path:', path, 'initial:', initial);
-  if (initial) {
-    console.log('[NativeIntent] Initial launch, redirecting to root');
-    return '/';
+interface RedirectSystemPathOptions {
+  path: string;
+  initial: boolean;
+}
+
+/** Preserves valid app deep links on both cold and warm launches. */
+export function redirectSystemPath({ path }: RedirectSystemPathOptions): string {
+  if (!path) return '/';
+  if (path.startsWith('/')) return path;
+
+  try {
+    const url = new URL(path);
+    const appPath = `${url.pathname}${url.search}${url.hash}`;
+    return appPath.startsWith('/') ? appPath : `/${appPath}`;
+  } catch {
+    return `/${path.replace(/^\/+/, '')}`;
   }
-  console.log('[NativeIntent] Deep link path:', path || '/');
-  return path || '/';
 }

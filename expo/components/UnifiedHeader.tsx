@@ -1,10 +1,11 @@
 import React, { memo } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { androidTextFix } from '@/utils/androidOptimizations';
+import { Colors } from '@/constants/colors';
 
-const GOLD = '#D4A853';
-const DEEP_GREEN = '#1B4332';
+const GOLD = Colors.secondary;
+const DEEP_GREEN = Colors.primary;
 
 interface UnifiedHeaderProps {
   title: string;
@@ -44,7 +45,7 @@ const UnifiedHeader = memo(function UnifiedHeader({
         <Text
           style={[styles.headerTitle, androidTextFix]}
           numberOfLines={1}
-          allowFontScaling={false}
+          maxFontSizeMultiplier={1.25}
         >
           {title}
         </Text>
@@ -63,7 +64,8 @@ UnifiedHeader.displayName = 'UnifiedHeader';
 const styles = StyleSheet.create({
   header: {
     backgroundColor: DEEP_GREEN,
-    paddingBottom: 12,
+    minHeight: 56,
+    paddingBottom: 11,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderBottomLeftRadius: 20,
@@ -71,8 +73,8 @@ const styles = StyleSheet.create({
     // Shadow for iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
     // Elevation for Android
     elevation: 3,
     // Ensure no gap with status bar

@@ -42,7 +42,7 @@ describe('DhikrCard', () => {
       />
     );
 
-    expect(getByText('15/33')).toBeTruthy();
+    expect(getByText('١٥/٣٣')).toBeTruthy();
   });
 
   it('يجب أن يستدعي onPress عند الضغط', async () => {

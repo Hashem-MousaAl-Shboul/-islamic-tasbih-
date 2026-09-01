@@ -43,12 +43,8 @@ describe('DEFAULT_DHIKR_LIST', () => {
     });
   });
 
-  it('يجب أن تحتوي على أذكار الصباح والمساء', () => {
-    const morningDhikr = DEFAULT_DHIKR_LIST.filter(dhikr => dhikr.category === 'morning');
-    const eveningDhikr = DEFAULT_DHIKR_LIST.filter(dhikr => dhikr.category === 'evening');
-    
-    expect(morningDhikr.length).toBeGreaterThan(0);
-    expect(eveningDhikr.length).toBeGreaterThan(0);
+  it('يجب أن تصنّف قائمة التسبيح الأساسية ضمن الأذكار العامة', () => {
+    expect(DEFAULT_DHIKR_LIST.every(dhikr => dhikr.category === 'general')).toBe(true);
   });
 
   it('يجب أن تحتوي على الأذكار الأساسية', () => {

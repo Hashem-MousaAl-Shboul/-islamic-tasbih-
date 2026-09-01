@@ -4,9 +4,14 @@ import createContextHook from '@nkzw/create-context-hook';
 import { ttsService, ReciterId, RECITER_NAMES } from '@/utils/ttsService';
 
 const RECITER_STORAGE_KEY = 'selected_reciter';
+const DEFAULT_RECITER: ReciterId = 'alafasy';
+
+function isReciterId(value: string | null): value is ReciterId {
+  return value !== null && Object.prototype.hasOwnProperty.call(RECITER_NAMES, value);
+}
 
 export const [ReciterProvider, useReciterStore] = createContextHook(() => {
-  const [currentReciter, setCurrentReciter] = useState<ReciterId>('alafasy');
+  const [currentReciter, setCurrentReciter] = useState<ReciterId>(DEFAULT_RECITER);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -17,19 +22,15 @@ export const [ReciterProvider, useReciterStore] = createContextHook(() => {
         
         if (!mounted) return;
         
-        if (savedReciter && (savedReciter as ReciterId)) {
-          setCurrentReciter(savedReciter as ReciterId);
-          setTimeout(() => ttsService.setReciter(savedReciter as ReciterId), 0);
-        } else {
-          setCurrentReciter('alafasy');
-          setTimeout(() => ttsService.setReciter('alafasy'), 0);
-        }
-        
+        const nextReciter = isReciterId(savedReciter) ? savedReciter : DEFAULT_RECITER;
+        setCurrentReciter(nextReciter);
+        ttsService.setReciter(nextReciter);
         setIsLoading(false);
       } catch (error) {
         console.error('[ReciterStore] Error loading saved reciter:', error);
         if (mounted) {
-          setCurrentReciter('alafasy');
+          setCurrentReciter(DEFAULT_RECITER);
+          ttsService.setReciter(DEFAULT_RECITER);
           setIsLoading(false);
         }
       }
@@ -44,7 +45,6 @@ export const [ReciterProvider, useReciterStore] = createContextHook(() => {
 
   const changeReciter = useCallback(async (reciterId: ReciterId) => {
     try {
-      console.log(`[ReciterStore] Changing reciter to: ${reciterId}`);
       setCurrentReciter(reciterId);
       ttsService.setReciter(reciterId);
       

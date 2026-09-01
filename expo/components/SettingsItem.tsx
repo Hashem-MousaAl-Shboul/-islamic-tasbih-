@@ -49,7 +49,6 @@ export const SettingsItem = memo(function SettingsItem({
     <View style={[styles.touchableContent, variant === 'grouped' && styles.touchableGrouped]}>
       <View style={styles.leftContent}>
         <View style={iconContainerStyle}>
-          {/* eslint-disable-next-line @rork/linters/general-no-raw-text */}
           {icon}
         </View>
         <View style={styles.textContainer}>

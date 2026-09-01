@@ -1,186 +1,110 @@
-import React, { memo, useCallback, useMemo, useRef, useEffect } from 'react';
-import { View, StyleSheet, Platform, Pressable, Animated } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import type { ParamListBase, Route } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@/theme/ThemeProvider';
 import * as Haptics from 'expo-haptics';
-import { androidRipple } from '@/utils/androidOptimizations';
 
-const DEEP_GREEN = '#1B4332';
-const GOLD = '#D4A853';
-const BAR_RADIUS = 28;
-const ICON_SIZE = 22;
+import { Colors, Layout } from '@/constants/colors';
+import { useTheme } from '@/theme/ThemeProvider';
+import { androidRipple, androidTextFix } from '@/utils/androidOptimizations';
+
+const ICON_SIZE = 21;
+
+type TabRoute = Route<string> & { key: string; name: string };
+type TabDescriptor = BottomTabBarProps['descriptors'][string];
 
 interface TabItemProps {
-  route: any;
-  descriptor: any;
-  navigation: any;
+  route: TabRoute;
+  descriptor: TabDescriptor;
+  navigation: BottomTabBarProps['navigation'];
   isFocused: boolean;
-  index: number;
-  totalTabs: number;
 }
 
-const TabItem = memo<TabItemProps>(function TabItem({ route, descriptor, navigation, isFocused }) {
-  const theme = useTheme();
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const focusAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+const TabItem = memo(function TabItem({ route, descriptor, navigation, isFocused }: TabItemProps): React.ReactElement {
+  const scale = useRef<Animated.Value>(new Animated.Value(1)).current;
+  const focus = useRef<Animated.Value>(new Animated.Value(isFocused ? 1 : 0)).current;
+  const options = descriptor.options;
+  const label = typeof options.tabBarLabel === 'string'
+    ? options.tabBarLabel
+    : typeof options.title === 'string'
+      ? options.title
+      : route.name;
 
   useEffect(() => {
-    Animated.spring(focusAnim, {
+    Animated.spring(focus, {
       toValue: isFocused ? 1 : 0,
       useNativeDriver: true,
-      tension: 80,
-      friction: 10,
+      tension: 90,
+      friction: 11,
     }).start();
-  }, [isFocused, focusAnim]);
+  }, [focus, isFocused]);
 
-  const onPressIn = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.82,
-      useNativeDriver: true,
-      tension: 300,
-      friction: 8,
-    }).start();
-  }, [scaleAnim]);
+  const onPress = useCallback((): void => {
+    const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+    if (isFocused || event.defaultPrevented) return;
+    if (Platform.OS !== 'web') void Haptics.selectionAsync().catch(() => {});
+    navigation.navigate(route.name as keyof ParamListBase);
+  }, [isFocused, navigation, route.key, route.name]);
 
-  const onPressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      tension: 200,
-      friction: 10,
-    }).start();
-  }, [scaleAnim]);
+  const onLongPress = useCallback((): void => {
+    navigation.emit({ type: 'tabLongPress', target: route.key });
+  }, [navigation, route.key]);
 
-  const onPress = useCallback(() => {
-    const event = navigation.emit({
-      type: 'tabPress',
-      target: route.key,
-      canPreventDefault: true,
-    });
-    if (!isFocused && !event.defaultPrevented) {
-      if (Platform.OS !== 'web') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-      navigation.navigate(route.name);
-    }
-  }, [isFocused, navigation, route.name, route.key]);
-
-  const isDark = theme.mode === 'dark';
-  const activeColor = isFocused ? DEEP_GREEN : (isDark ? 'rgba(255,255,255,0.32)' : 'rgba(27,67,50,0.3)');
-
-  const icon = descriptor.options.tabBarIcon
-    ? descriptor.options.tabBarIcon({ color: activeColor, size: ICON_SIZE })
-    : null;
-
-  const iconScale = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 1.15],
-  });
-
-  const iconTranslateY = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -2],
-  });
-
-  const dotScale = focusAnim.interpolate({
-    inputRange: [0, 0.6, 1],
-    outputRange: [0, 0.5, 1],
-  });
-
-  const dotOpacity = focusAnim.interpolate({
-    inputRange: [0, 0.4, 1],
-    outputRange: [0, 0, 1],
-  });
+  const iconColor = isFocused ? Colors.secondary : Colors.light.textSecondary;
+  const icon = options.tabBarIcon?.({ focused: isFocused, color: iconColor, size: ICON_SIZE });
+  const iconScale = focus.interpolate({ inputRange: [0, 1], outputRange: [1, 1.08] });
 
   return (
     <Pressable
       onPress={onPress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      android_ripple={androidRipple('rgba(27,67,50,0.1)', true, 28)}
+      onLongPress={onLongPress}
+      onPressIn={() => Animated.spring(scale, { toValue: 0.92, useNativeDriver: true }).start()}
+      onPressOut={() => Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start()}
+      android_ripple={androidRipple('rgba(212,168,83,0.14)', true, 28)}
       style={styles.tabItem}
       testID={`tab-${route.name}`}
+      accessibilityRole="tab"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: isFocused }}
     >
-      <Animated.View
-        style={[
-          styles.tabContent,
-          { transform: [{ scale: scaleAnim }] },
-        ]}
-      >
-        <Animated.View
-          style={{
-            transform: [
-              { scale: iconScale },
-              { translateY: iconTranslateY },
-            ],
-          }}
-        >
+      <Animated.View style={[styles.tabContent, { transform: [{ scale }] }]}>
+        <Animated.View style={[styles.iconShell, isFocused && styles.iconShellActive, { transform: [{ scale: iconScale }] }]}>
           {icon}
         </Animated.View>
-
-        <Animated.View
-          style={[
-            styles.activeDot,
-            {
-              backgroundColor: GOLD,
-              transform: [{ scale: dotScale }],
-              opacity: dotOpacity,
-            },
-          ]}
-        />
+        <Text
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.2}
+          style={[styles.label, isFocused && styles.labelActive, androidTextFix]}
+        >
+          {label}
+        </Text>
       </Animated.View>
     </Pressable>
   );
 });
 
-interface OptimizedTabBarProps {
-  state: any;
-  descriptors: any;
-  navigation: any;
-}
-
-const OptimizedTabBar = memo<OptimizedTabBarProps>(function OptimizedTabBar({ state, descriptors, navigation }) {
+const OptimizedTabBar = memo(function OptimizedTabBar({ state, descriptors, navigation }: BottomTabBarProps): React.ReactElement {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
-  const isDark = theme.mode === 'dark';
-
-  const bottomPad = Math.max(insets.bottom, 12);
-
-  const barStyle = useMemo(() => {
-    const bgColor = isDark ? 'rgba(20,25,35,0.96)' : 'rgba(253,251,247,0.97)';
-
-    return {
-      backgroundColor: bgColor,
-      marginBottom: bottomPad,
-    };
-  }, [isDark, bottomPad]);
-
-  
-  const tabs = useMemo(() => {
-    return state.routes.map((route: any, index: number) => ({
-      route,
-      isFocused: state.index === index,
-      key: route.key,
-      index,
-    }));
-  }, [state.routes, state.index]);
+  const barStyle = useMemo(() => ({
+    backgroundColor: theme.mode === 'dark' ? 'rgba(23,28,41,0.98)' : 'rgba(255,253,249,0.98)',
+    borderColor: theme.mode === 'dark' ? Colors.dark.border : Colors.light.border,
+    marginBottom: Math.max(insets.bottom, 8),
+  }), [insets.bottom, theme.mode]);
 
   return (
-    <View style={[styles.wrapper, { paddingBottom: 0 }]} testID="optimized-tab-bar">
+    <View style={styles.wrapper} testID="optimized-tab-bar">
       <View style={[styles.tabBar, barStyle]} testID="tab-bar-shell">
-        <View style={styles.tabContainer}>
-          {tabs.map(({ route, isFocused, key, index: idx }: any) => (
-            <TabItem
-              key={key}
-              route={route}
-              descriptor={descriptors[route.key]}
-              navigation={navigation}
-              isFocused={isFocused}
-              index={idx}
-              totalTabs={state.routes.length}
-            />
-          ))}
-        </View>
+        {state.routes.map((route, index) => (
+          <TabItem
+            key={route.key}
+            route={route}
+            descriptor={descriptors[route.key]}
+            navigation={navigation}
+            isFocused={state.index === index}
+          />
+        ))}
       </View>
     </View>
   );
@@ -190,51 +114,63 @@ export default OptimizedTabBar;
 
 const styles = StyleSheet.create({
   wrapper: {
-    alignItems: 'center' as const,
+    alignItems: 'center',
     paddingTop: 4,
-    paddingBottom: 2,
   },
   tabBar: {
-    borderRadius: BAR_RADIUS,
-    paddingVertical: 10,
-    width: '88%' as any,
-    maxWidth: 360,
+    width: '94%',
+    maxWidth: 480,
+    minHeight: 62,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 5,
+    paddingVertical: 5,
     ...Platform.select({
       ios: {
-        shadowColor: '#1B4332',
+        shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.12,
-        shadowRadius: 24,
+        shadowOpacity: 0.14,
+        shadowRadius: 22,
       },
-      android: {
-        elevation: 20,
-        borderWidth: 0.5,
-        borderColor: 'rgba(0,0,0,0.04)',
-      },
-      web: {
-        boxShadow: '0 8px 32px rgba(27,67,50,0.10), 0 2px 8px rgba(0,0,0,0.06)',
-      } as any,
+      android: { elevation: 14 },
+      web: { boxShadow: '0 8px 28px rgba(27,67,50,0.14)' },
     }),
-  },
-  tabContainer: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-evenly' as const,
   },
   tabItem: {
     flex: 1,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    paddingVertical: 4,
+    minHeight: Layout.touchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 18,
+    overflow: 'hidden',
   },
   tabContent: {
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    gap: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
   },
-  activeDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+  iconShell: {
+    width: 30,
+    height: 28,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconShellActive: {
+    backgroundColor: 'rgba(212,168,83,0.14)',
+  },
+  label: {
+    maxWidth: 64,
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '600',
+    color: Colors.light.textSecondary,
+    textAlign: 'center',
+  },
+  labelActive: {
+    color: Colors.secondary,
+    fontWeight: '800',
   },
 });

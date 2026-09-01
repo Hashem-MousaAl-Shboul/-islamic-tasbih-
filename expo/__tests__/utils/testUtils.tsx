@@ -10,6 +10,7 @@ import {
   render as rtlRender,
   RenderOptions,
 } from '@testing-library/react-native';
+import type { ReactTestInstance } from 'react-test-renderer';
 
 import {
   QueryClient,
@@ -234,7 +235,7 @@ export const waitForAnimations = (
  * await multiplePress(button, 5);
  */
 export const multiplePress = async (
-  element: unknown,
+  element: ReactTestInstance,
   times: number
 ): Promise<void> => {
   if (!Number.isInteger(times)) {

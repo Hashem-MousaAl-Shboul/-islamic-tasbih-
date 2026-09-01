@@ -86,6 +86,10 @@ const DhikrCardComponent: React.FC<DhikrCardProps> = ({
   const isCompleted = progress >= 1;
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'test') {
+      progressValue.setValue(progress);
+      return;
+    }
     const animation = Animated.timing(progressValue, {
       toValue: progress,
       duration: isCompleted ? 300 : 150,
@@ -152,13 +156,13 @@ const DhikrCardComponent: React.FC<DhikrCardProps> = ({
           numberOfLines={variant === 'vertical' ? 1 : 2}
           adjustsFontSizeToFit
           minimumFontScale={0.8}
-          allowFontScaling={false}
+          maxFontSizeMultiplier={1.25}
         >
           {arabicText}
         </Text>
 
         {isCompleted && (
-          <View style={styles.completionIcon}>
+          <View style={styles.completionIcon} testID="completion-icon">
             <CheckCircle
               size={variant === 'vertical' ? 14 : 18}
               color="#4CAF50"
@@ -169,11 +173,13 @@ const DhikrCardComponent: React.FC<DhikrCardProps> = ({
 
       <Text
         style={variant === 'vertical' ? styles.verticalCountText : styles.countText}
-        allowFontScaling={false}
+        maxFontSizeMultiplier={1.2}
         numberOfLines={1}
       >
         {count.toLocaleString('ar-SA')}/{targetCount.toLocaleString('ar-SA')}
       </Text>
+
+      <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
 
       <View style={styles.progressContainer}>
         <View style={styles.progressBackground} />
@@ -280,6 +286,13 @@ const styles = StyleSheet.create({
     color: '#FFF',
     textAlign: 'center',
     fontWeight: '600',
+  },
+  progressText: {
+    color: 'rgba(255,255,255,0.82)',
+    fontSize: 11,
+    lineHeight: 13,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   progressContainer: {
     width: '100%',

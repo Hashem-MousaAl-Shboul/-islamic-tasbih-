@@ -4,7 +4,6 @@ let client: QueryClient | null = null;
 
 export function getQueryClient(): QueryClient {
   if (!client) {
-    console.log('[QueryClient] Initializing global QueryClient');
     client = new QueryClient({
       defaultOptions: {
         queries: {
@@ -14,7 +13,7 @@ export function getQueryClient(): QueryClient {
           refetchOnWindowFocus: false,
         },
         mutations: {
-          retry: 1,
+          retry: false,
         },
       },
     });

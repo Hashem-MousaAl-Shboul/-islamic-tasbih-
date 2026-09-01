@@ -41,7 +41,7 @@ export default function TermsOfUseScreen() {
           <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>{t('terms')}</Text>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/settings')}
             style={styles.actionButton}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             testID="terms-back-button"

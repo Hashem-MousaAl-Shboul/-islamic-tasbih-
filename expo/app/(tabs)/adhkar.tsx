@@ -417,6 +417,7 @@ function useReducedMotion(): boolean {
 export default function AdhkarScreen() {
   const { isLoading, t } = useLanguageStore();
   const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const { isLoading: areCountsLoading } = useAdhkarCountsStore();
   const insets = useSafeAreaInsets();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const deferredFilter = useDeferredValue<FilterType>(selectedFilter);
@@ -535,7 +536,7 @@ export default function AdhkarScreen() {
     }, 500);
   }, []);
 
-  if (isLoading) {
+  if (isLoading || areCountsLoading) {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]} testID="adhkar-loading">
         <ActivityIndicator size="large" color={GOLD} />

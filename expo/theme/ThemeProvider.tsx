@@ -111,10 +111,10 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeTokens>(() => {
   };
   const mode = settings.theme ?? 'dark';
   const primary = computePrimaryFromTheme(settings.colorTheme as ColorThemeKey | undefined, Colors.primary);
-  const backgroundTheme = computeBackgroundTheme(
+  const backgroundTheme = useMemo(() => computeBackgroundTheme(
     (settings.backgroundTheme as BackgroundThemeKey) ?? 'default',
     settings.customBackgroundImage ?? null
-  );
+  ), [settings.backgroundTheme, settings.customBackgroundImage]);
 
   const fontSize = settings.fontSize || 'medium';
   let scale: TypographyScale = 'md';

@@ -30,7 +30,6 @@ import {
 } from 'lucide-react-native';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useQibla, type CompassAccuracy } from '@/hooks/useQibla';
-import { useImmersiveMode } from '@/hooks/useImmersiveMode';
 import { useCompassStyleStore } from '@/hooks/useCompassStyleStore';
 import type { CompassTheme } from '@/constants/compassThemes';
 import CompassStylePicker from '@/components/CompassStylePicker';
@@ -73,6 +72,7 @@ interface PrayerTimeEntry {
   key: string;
   label: string;
   time: string;
+  minutesOfDay: number;
   isNext?: boolean;
 }
 
@@ -657,6 +657,29 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
 
   useEffect(() => {
+    const updateNextPrayer = (): void => {
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      setPrayerTimes((current) => {
+        if (!current) return current;
+        let nextFound = false;
+        const updated = current.map((entry) => {
+          const isNext = !nextFound && entry.key !== 'Sunrise' && entry.minutesOfDay > currentMinutes;
+          if (isNext) nextFound = true;
+          return { ...entry, isNext };
+        });
+        if (!nextFound) {
+          const fajrIndex = updated.findIndex((entry) => entry.key === 'Fajr');
+          if (fajrIndex >= 0) updated[fajrIndex] = { ...updated[fajrIndex], isNext: true };
+        }
+        return updated;
+      });
+    };
+    const timer = setInterval(updateNextPrayer, 60_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     if (!location) return;
 
     const fetchPrayerTimes = async () => {
@@ -711,6 +734,7 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
             key: e.key,
             label: e.label,
             time: formatTime(e.rawTime),
+            minutesOfDay: h24 * 60 + m,
             isNext,
           };
         });
@@ -864,13 +888,12 @@ export default function QiblaScreen() {
   const { dialStyle, arrowColor } = useCompassStyleStore();
   const compassTheme: CompassTheme = { dialStyle, arrowColor };
 
-  useImmersiveMode();
 
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [showStylePicker, setShowStylePicker] = useState<boolean>(false);
 
   // Compass size adapts to screen width.
-  const compassSize = Math.min(window.width - 80, 320);
+  const compassSize = Math.max(220, Math.min(window.width - 56, 304));
 
   // Format distance for display.
   const distanceText = useMemo(() => {
@@ -895,7 +918,7 @@ export default function QiblaScreen() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: insets.bottom + 120 },
+          { paddingBottom: insets.bottom + 92 },
         ]}
         showsVerticalScrollIndicator={false}
         bounces={!showCompass}

@@ -174,14 +174,16 @@ export default function QuranMiniPlayer() {
             style={styles.auxButton}
             onPress={handlePauseStop}
             activeOpacity={0.7}
-            disabled={!isPlaying && position === 0}
+            disabled={!isLoading && !isPlaying && position === 0}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !isLoading && !isPlaying && position === 0 }}
             accessibilityLabel={t('stopRecitation')}
             testID="mini-player-stop"
           >
             <Square
               size={16}
-              color={(!isPlaying && position === 0) ? '#555' : IVORY}
-              fill={(!isPlaying && position === 0) ? '#555' : IVORY}
+              color={(!isLoading && !isPlaying && position === 0) ? '#8A938C' : IVORY}
+              fill={(!isLoading && !isPlaying && position === 0) ? '#8A938C' : IVORY}
             />
           </TouchableOpacity>
 
@@ -269,18 +271,18 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 11,
     fontWeight: '500' as const,
-    color: 'rgba(255,255,255,0.5)',
+    color: 'rgba(255,255,255,0.72)',
     marginTop: 2,
   },
   controlsRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 8,
+    gap: 4,
   },
   auxButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.08)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
@@ -291,17 +293,17 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212,168,83,0.4)',
   },
   playButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: GOLD,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
@@ -312,8 +314,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   timeText: {
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: 10,
+    color: 'rgba(255,255,255,0.68)',
+    fontSize: 11,
     fontWeight: '500' as const,
   },
 });

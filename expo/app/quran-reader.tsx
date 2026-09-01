@@ -261,15 +261,17 @@ export default function QuranReaderScreen() {
     if (Platform.OS !== 'web') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
-    if (isPageMode) {
-      const firstSurahMeta = verses?.[0] ? getSurahByNumber(verses[0].surahNumber) : null;
-      if (firstSurahMeta) {
-        await playSurah(firstSurahMeta);
-      }
-    } else if (surahMeta) {
-      await playSurah(surahMeta);
+    const targetSurah = isPageMode
+      ? (verses?.[0] ? getSurahByNumber(verses[0].surahNumber) : null)
+      : surahMeta;
+    if (!targetSurah) return;
+    if (isCurrentSurah(targetSurah.number)) {
+      await seekTo(0);
+      if (!isPlaying) await togglePlayPause();
+    } else {
+      await playSurah(targetSurah);
     }
-  }, [isPageMode, surahMeta, playSurah, verses]);
+  }, [isPageMode, surahMeta, verses, isCurrentSurah, seekTo, isPlaying, togglePlayPause, playSurah]);
 
   const handleReciterSelect = useCallback(async (reciter: ReciterId) => {
     setShowReciterPicker(false);
@@ -279,7 +281,7 @@ export default function QuranReaderScreen() {
       if (firstSurahMeta && (isPlaying || isThisSurahPlaying)) {
         await playSurah(firstSurahMeta, reciter);
       }
-    } else if ((isThisSurahPlaying || isPlaying) && surahMeta) {
+    } else if (isThisSurahPlaying && surahMeta) {
       await playSurah(surahMeta, reciter);
     }
   }, [changeReciter, isThisSurahPlaying, isPlaying, surahMeta, playSurah, isPageMode, verses]);
@@ -458,7 +460,7 @@ export default function QuranReaderScreen() {
           </Text>
         </View>
 
-        {duration > 0 && (
+        {isThisSurahPlaying && duration > 0 && (
           <View style={styles.progressContainer}>
             <TouchableOpacity
               style={styles.progressBar}
@@ -501,12 +503,12 @@ export default function QuranReaderScreen() {
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleStop}
-            disabled={!isThisSurahPlaying && position === 0}
+            disabled={!isThisSurahPlaying && !isLoadingAudio}
           >
             <Square
               size={18}
-              color={(!isThisSurahPlaying && position === 0) ? '#555' : IVORY}
-              fill={(!isThisSurahPlaying && position === 0) ? '#555' : IVORY}
+              color={(!isThisSurahPlaying && !isLoadingAudio) ? '#687067' : IVORY}
+              fill={(!isThisSurahPlaying && !isLoadingAudio) ? '#687067' : IVORY}
             />
           </TouchableOpacity>
 
