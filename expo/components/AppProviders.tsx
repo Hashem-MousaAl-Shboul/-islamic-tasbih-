@@ -12,6 +12,7 @@ import { CreditsProvider } from '@/hooks/useCreditsStore';
 import { AdhkarCountsProvider } from '@/hooks/useAdhkarCountsStore';
 import { CompassStyleProvider } from '@/hooks/useCompassStyleStore';
 import { queryClient } from '@/utils/queryClient';
+import { AuthProvider } from '@/hooks/useAuthStore';
 
 interface AppProvidersProps { children: ReactNode }
 
@@ -19,6 +20,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
+        <AuthProvider>
         <LanguageProvider>
           <ReciterProvider>
             <QuranStoreProvider>
@@ -40,6 +42,7 @@ export function AppProviders({ children }: AppProvidersProps) {
             </QuranStoreProvider>
           </ReciterProvider>
         </LanguageProvider>
+        </AuthProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

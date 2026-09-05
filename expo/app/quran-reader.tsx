@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   Platform,
   ActivityIndicator,
   Modal,
@@ -77,9 +76,19 @@ interface PageApiResponse {
   };
 }
 
-/** Strip BOM (U+FEFF) and trim whitespace from API-returned Arabic text */
+/** تنظيف النص من رمز BOM والمسافات الزائدة */
 function cleanArabicText(text: string): string {
   return text.replace(/^\uFEFF/, '').trim();
+}
+
+/** تحويل الأرقام إلى الأرقام العربية المشكولة */
+function toArabicDigits(num: number): string {
+  const digits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return num
+    .toString()
+    .split('')
+    .map((digit) => digits[parseInt(digit, 10)] || digit)
+    .join('');
 }
 
 async function fetchSurahVerses(surahNumber: number): Promise<{ verses: Verse[]; surahName: string }> {
@@ -121,14 +130,20 @@ async function fetchPageVerses(pageNumber: number): Promise<{ verses: Verse[]; s
   return { verses, surahName: firstName };
 }
 
-/** Whether a surah should show Bismillah as a header before the first ayah.
- *  Surah 1 (Al-Fatiha): Bismillah IS the first ayah — don't show as header.
- *  Surah 9 (At-Tawba): No Bismillah at all.
- *  All others: Show Bismillah header. */
 function shouldShowBismillah(surahNumber: number, isPageMode: boolean): boolean {
   if (isPageMode) return false;
   return surahNumber !== 1 && surahNumber !== 9;
 }
+
+/** مكون خاص لضبط تمركز رقم الآية داخل الشكل تماماً */
+const AyahEndSymbol = ({ number }: { number: number }) => {
+  return (
+    <View style={styles.ayahSymbolContainer}>
+      <Text style={styles.ayahSymbolBg}>۝</Text>
+      <Text style={styles.ayahSymbolNumber}>{toArabicDigits(number)}</Text>
+    </View>
+  );
+};
 
 export default function QuranReaderScreen() {
   const params = useLocalSearchParams<{ surah?: string; ayah?: string; page?: string }>();
@@ -137,7 +152,6 @@ export default function QuranReaderScreen() {
   const { currentReciter, changeReciter } = useReciterStore();
   const { saveLastRead } = useQuranStore();
   const {
-    currentSurah: audioSurah,
     isPlaying,
     isLoading: isLoadingAudio,
     position,
@@ -162,7 +176,6 @@ export default function QuranReaderScreen() {
 
   const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
   const [progressBarWidth, setProgressBarWidth] = useState<number>(Dimensions.get('window').width - 40);
-  const flatListRef = useRef<FlatList<Verse>>(null);
 
   const { data: surahData, isLoading, isError, refetch } = useQuery<{
     verses: Verse[];
@@ -183,7 +196,6 @@ export default function QuranReaderScreen() {
   const verses = surahData?.verses ?? null;
   const displaySurahName = surahData?.surahName ?? surahMeta?.name ?? t('quranKareem');
 
-  // Save last read position when surah changes
   useEffect(() => {
     if (!isPageMode && surahMeta) {
       void saveLastRead({
@@ -196,7 +208,6 @@ export default function QuranReaderScreen() {
     }
   }, [surahNumber, surahMeta, ayahNumber, saveLastRead, isPageMode]);
 
-  // Show audio error alert
   const audioErrorRef = useRef<string | null>(null);
   const tRef = useRef(t);
   useEffect(() => { tRef.current = t; }, [t]);
@@ -212,23 +223,6 @@ export default function QuranReaderScreen() {
     }
   }, [audioError, dismissError]);
 
-  // Scroll to specific ayah when verses are loaded
-  useEffect(() => {
-    if (ayahNumber && verses && verses.length > 0 && flatListRef.current) {
-      const ayahIndex = verses.findIndex(v => v.numberInSurah === ayahNumber);
-      if (ayahIndex >= 0) {
-        const timer = setTimeout(() => {
-          flatListRef.current?.scrollToIndex({
-            index: ayahIndex,
-            animated: true,
-            viewPosition: 0.3,
-          });
-        }, 300);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [ayahNumber, verses]);
-
   const isThisSurahPlaying = isPageMode
     ? (verses?.[0] ? isCurrentSurah(verses[0].surahNumber) : false)
     : isCurrentSurah(surahNumber);
@@ -238,7 +232,6 @@ export default function QuranReaderScreen() {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
     if (isPageMode) {
-      // In page mode, play the first surah on the page
       const firstSurahMeta = verses?.[0] ? getSurahByNumber(verses[0].surahNumber) : null;
       if (firstSurahMeta) {
         await playSurah(firstSurahMeta);
@@ -312,33 +305,6 @@ export default function QuranReaderScreen() {
   const progressPercentage = useMemo(() => {
     return duration > 0 ? (position / duration) * 100 : 0;
   }, [position, duration]);
-
-  const renderVerse = useCallback(({ item, index }: { item: Verse; index: number }) => (
-    <View style={styles.verseCard}>
-      <View style={styles.verseHeader}>
-        <View style={styles.ayahBadge}>
-          <Text style={[styles.ayahBadgeText, androidTextFix]}>{item.numberInSurah}</Text>
-        </View>
-        {isPageMode && item.surahName ? (
-          <Text style={[styles.verseSurahName, androidTextFix]} numberOfLines={1}>
-            {item.surahName}
-          </Text>
-        ) : null}
-        <Text style={[styles.verseIndex, androidTextFix]}>
-          {index + 1} / {verses?.length ?? 0}
-        </Text>
-      </View>
-      <Text style={[styles.arabicText, androidTextFix]}>
-        {item.arabicText}
-      </Text>
-    </View>
-  ), [verses, isPageMode]);
-
-  const keyExtractor = useCallback((item: Verse, index: number) =>
-    isPageMode
-      ? `verse-${index}-${item.surahNumber}-${item.numberInSurah}`
-      : `verse-${item.number}`,
-  [isPageMode]);
 
   const headerComponent = useMemo(() => {
     if (isPageMode) {
@@ -419,29 +385,27 @@ export default function QuranReaderScreen() {
     <View style={styles.container} testID="quran-reader-screen">
       <ReaderHeader title={displaySurahName} onBack={handleBack} />
 
-      <FlatList
-        ref={flatListRef}
-        data={verses}
-        renderItem={renderVerse}
-        keyExtractor={keyExtractor}
-        ListHeaderComponent={headerComponent}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={[
-          styles.listContent,
+          styles.quranPageContainer,
           { paddingBottom: 200 + insets.bottom },
         ]}
-        showsVerticalScrollIndicator={false}
-        overScrollMode="never"
-        initialNumToRender={8}
-        maxToRenderPerBatch={10}
-        windowSize={8}
-        onScrollToIndexFailed={(info) => {
-          console.log('[QuranReader] scrollToIndex failed:', info);
-          // Retry after a short delay to allow item measurement
-          setTimeout(() => {
-            flatListRef.current?.scrollToIndex({ index: info.index, animated: true, viewPosition: 0.3 });
-          }, 100);
-        }}
-      />
+      >
+        {headerComponent}
+
+        <View style={styles.mushafCard}>
+          <Text style={[styles.quranParagraphText, androidTextFix]}>
+            {verses.map((item) => (
+              <React.Fragment key={`verse-${item.surahNumber}-${item.numberInSurah}`}>
+                <Text>{item.arabicText} </Text>
+                <AyahEndSymbol number={item.numberInSurah} />
+                <Text> </Text>
+              </React.Fragment>
+            ))}
+          </Text>
+        </View>
+      </ScrollView>
 
       {/* Audio Player Bar */}
       <View style={[styles.audioBar, { paddingBottom: 16 + insets.bottom }]}>
@@ -484,7 +448,6 @@ export default function QuranReaderScreen() {
         )}
 
         <View style={styles.controlsRow}>
-          {/* Repeat button */}
           <TouchableOpacity
             style={[
               styles.controlButton,
@@ -499,7 +462,6 @@ export default function QuranReaderScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Stop button */}
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleStop}
@@ -512,7 +474,6 @@ export default function QuranReaderScreen() {
             />
           </TouchableOpacity>
 
-          {/* Play/Pause button */}
           <TouchableOpacity
             style={[styles.playButton, isLoadingAudio && styles.playButtonDisabled]}
             onPress={handlePlayPause}
@@ -527,7 +488,6 @@ export default function QuranReaderScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Restart button */}
           <TouchableOpacity
             style={styles.controlButton}
             onPress={handleRestart}
@@ -536,7 +496,6 @@ export default function QuranReaderScreen() {
             <RotateCcw size={18} color={isLoadingAudio ? '#555' : IVORY} />
           </TouchableOpacity>
 
-          {/* Spacer for symmetry */}
           <View style={styles.controlButtonSpacer} />
         </View>
       </View>
@@ -679,9 +638,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: DARK_BG,
   },
-  listContent: {
+  quranPageContainer: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 10,
   },
   centerContent: {
     flex: 1,
@@ -713,7 +672,7 @@ const styles = StyleSheet.create({
   },
   surahHeader: {
     alignItems: 'center' as const,
-    paddingVertical: 24,
+    paddingVertical: 16,
     marginBottom: 8,
   },
   bismillah: {
@@ -722,7 +681,7 @@ const styles = StyleSheet.create({
     color: GOLD,
     writingDirection: 'rtl',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   surahMetaRow: {
     flexDirection: 'row' as const,
@@ -743,7 +702,7 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: GOLD,
   },
-  verseCard: {
+  mushafCard: {
     backgroundColor: CARD_BG,
     borderRadius: 18,
     padding: 20,
@@ -751,48 +710,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: CARD_BORDER,
   },
-  verseHeader: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-    marginBottom: 16,
-  },
-  ayahBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(212,168,83,0.15)',
-    borderWidth: 1.5,
-    borderColor: GOLD,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  },
-  ayahBadgeText: {
-    fontSize: 13,
-    fontWeight: '700' as const,
-    color: GOLD,
-  },
-  verseSurahName: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-    color: GOLD,
-    flex: 1,
-    textAlign: 'center',
-    writingDirection: 'rtl',
-  },
-  verseIndex: {
-    fontSize: 12,
-    fontWeight: '500' as const,
-    color: TEXT_MUTED,
-  },
-  arabicText: {
-    fontSize: 24,
-    fontWeight: '400' as const,
+  quranParagraphText: {
+    fontSize: 23,
     color: '#FFFFFF',
     writingDirection: 'rtl',
     textAlign: 'right',
-    lineHeight: 42,
-    marginBottom: 14,
+    lineHeight: 52,
+  },
+  ayahSymbolContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginHorizontal: 4,
+    display: 'flex' as const,
+  },
+  ayahSymbolBg: {
+    position: 'absolute' as const,
+    color: GOLD,
+    fontSize: 28,
+    textAlign: 'center',
+    lineHeight: 32,
+  },
+  ayahSymbolNumber: {
+    color: GOLD,
+    fontSize: 11,
+    fontWeight: '700' as const,
+    textAlign: 'center',
+    lineHeight: 14,
   },
   audioBar: {
     position: 'absolute' as const,
