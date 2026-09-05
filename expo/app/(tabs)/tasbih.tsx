@@ -279,20 +279,7 @@ export default function TasbihScreen() {
             {settings.showTranslation && (
               <Text style={[styles.translationText, androidTextFix]}>{selectedItem.translation}</Text>
             )}
-            <TouchableOpacity
-              style={[styles.speakDhikrButton, styles.speakDhikrButtonLocked]}
-              onPress={handleLockedSpeak}
-              activeOpacity={0.7}
-              testID="tasbih-speak-button"
-            >
-              <Lock size={14} color={TEXT_MUTED} />
-              <Text style={[styles.speakDhikrText, styles.speakDhikrTextLocked, androidTextFix]}>
-                {t('listenToDhikr')}
-              </Text>
-              <View style={styles.comingSoonBadgeMini}>
-                <Text style={[styles.comingSoonBadgeMiniText, androidTextFix]}>{t('comingSoon')}</Text>
-              </View>
-            </TouchableOpacity>
+  
           </LinearGradient>
 
           <View style={styles.counterSection}>

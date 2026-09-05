@@ -42,8 +42,8 @@ import {
 } from '@/utils/qiblaUtils';
 import { androidTextFix } from '@/utils/androidOptimizations';
 import { createShadow, pointerEventsNone } from '@/utils/shadowUtils';
+import AdBanner from '@/components/AdBanner';
 
-// ── Design tokens ──────────────────────────────────────────────
 const GOLD = '#D4A853';
 const GOLD_DIM = '#B8923F';
 const DEEP_GREEN = '#1B4332';
@@ -59,7 +59,6 @@ const TEXT_MUTED_LIGHT = 'rgba(255,255,255,0.55)';
 const TEXT_DARK = '#1B4332';
 const TEXT_MUTED_DARK = 'rgba(27,67,50,0.5)';
 
-// ── Prayer times API types ────────────────────────────────────
 interface PrayerTimesResponse {
   data: {
     timings: Record<string, string>;
@@ -76,10 +75,8 @@ interface PrayerTimeEntry {
   isNext?: boolean;
 }
 
-// ── Kaaba coordinates ──────────────────────────────────────────
 const KAABA_COORDS = { latitude: KAABA_LATITUDE, longitude: KAABA_LONGITUDE };
 
-// Cardinal direction labels (module-level — never changes, avoids re-creation on each render).
 const CARDINALS = [
   { label: 'N', angle: 0 },
   { label: 'E', angle: 90 },
@@ -87,12 +84,8 @@ const CARDINALS = [
   { label: 'W', angle: 270 },
 ] as const;
 
-// Degree marks for compass dial (module-level constant).
 const DEGREE_MARKS = [30, 60, 120, 150, 210, 240, 300, 330] as const;
 
-// ════════════════════════════════════════════════════════════════
-//  COMPASS COMPONENT — SVG-based Islamic compass with rotating dial
-// ════════════════════════════════════════════════════════════════
 interface CompassProps {
   heading: number | null;
   qiblaBearing: number | null;
@@ -110,20 +103,13 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
   const compassRingColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(27,67,50,0.08)';
 
-  // The compass dial rotates opposite to the heading so that North always
-  // points to geographic North relative to the device.
   const dialRotation = heading != null ? -heading : 0;
-  // The Qibla arrow is drawn at the Qibla bearing relative to the dial,
-  // so it rotates together with the dial and always points toward the Kaaba.
   const qiblaArrowAngle = qiblaBearing ?? 0;
 
   const center = size / 2;
   const radius = size / 2 - 8;
   const innerRadius = radius - 4;
 
-  // Tick marks every 15°, labels at cardinal/intercardinal points.
-  // Shape varies by dial style: 'line' | 'diamond' | 'star'
-  // Memoized so ticks are only rebuilt when inputs actually change.
   const ticks = useMemo((): React.ReactElement[] => {
     const result: React.ReactElement[] = [];
     for (let angle = 0; angle < 360; angle += 15) {
@@ -143,7 +129,6 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
       const x2 = center + innerRadius * Math.sin(rad);
       const y2 = center - innerRadius * Math.cos(rad);
 
-      // For diamond/star shapes, draw a small rotated diamond at the tick position
       if (dialStyle.tickShape === 'diamond' && isMajor) {
         const mx = (x1 + x2) / 2;
         const my = (y1 + y2) / 2;
@@ -159,7 +144,6 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
         const mx = (x1 + x2) / 2;
         const my = (y1 + y2) / 2;
         const sSize = 6;
-        // Simple 4-point star
         result.push(
           <React.Fragment key={`tick-${angle}`}>
             <G x={mx} y={my} rotation={angle}>
@@ -183,22 +167,18 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
 
   return (
     <View style={[styles.compassContainer, { width: size, height: size }]}>
-      {/* Outer glow when aligned */}
       {isAligned && (
         <View style={[styles.compassGlow, { width: size + 20, height: size + 20, borderRadius: (size + 20) / 2 }]} />
       )}
 
-      {/* Outer ring */}
       <LinearGradient
         colors={isAligned ? [arrowColor.color, arrowColor.dimColor] : [dialStyle.ringGradient[0], dialStyle.ringGradient[1]]}
         style={[styles.compassOuterRing, { width: size, height: size, borderRadius: size / 2, borderColor }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        {/* Inner compass face */}
         <View style={[styles.compassFace, { width: size - 16, height: size - 16, borderRadius: (size - 16) / 2, backgroundColor: isAligned ? `${arrowColor.color}14` : (isDark ? dialStyle.faceGradientDark[0] : dialStyle.faceGradientLight[0]) }]}>
 
-          {/* Decorative inner ring */}
           {dialStyle.pattern !== 'none' && (
             <View
               style={[
@@ -220,7 +200,6 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
             />
           )}
 
-          {/* Decorative second ring for 'double' style */}
           {dialStyle.innerRingStyle === 'double' && (
             <View
               style={[
@@ -236,7 +215,6 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
             />
           )}
 
-          {/* Rotating dial with ticks + cardinal labels + qibla arrow */}
           <AnimatedDial
             rotation={dialRotation}
             center={center - 8}
@@ -252,12 +230,10 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
             dialStyle={dialStyle}
           />
 
-          {/* Fixed North indicator at top */}
           <View style={styles.northIndicator}>
             <View style={[styles.northTriangle, { borderTopColor: isAligned ? arrowColor.color : '#E63946' }]} />
           </View>
 
-          {/* Center Kaaba icon */}
           {dialStyle.centerShape === 'circle' && (
             <View style={[styles.centerKaaba, { backgroundColor: isAligned ? arrowColor.color : DEEP_GREEN_DARK }]}>
               <Text style={styles.centerKaabaText}>🕋</Text>
@@ -274,7 +250,6 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
             </View>
           )}
 
-          {/* Aligned text */}
           {isAligned && (
             <View style={[styles.alignedBadge, { backgroundColor: arrowColor.color }]}>
               <Text style={styles.alignedText}>✓</Text>
@@ -286,8 +261,6 @@ const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, 
   );
 });
 Compass.displayName = 'Compass';
-
-// ── Animated dial wrapper ──────────────────────────────────────
 
 interface AnimatedDialProps {
   rotation: number;
@@ -350,10 +323,8 @@ const AnimatedDial = memo(function AnimatedDial({
       >
         <Svg width={dialSize} height={dialSize} viewBox={`0 0 ${dialSize} ${dialSize}`}>
           <G x={dialSize / 2} y={dialSize / 2}>
-            {/* Tick marks */}
             {ticks}
 
-            {/* Cardinal labels */}
             {CARDINALS.map(({ label, angle }) => {
               const rad = (angle * Math.PI) / 180;
               const labelRadius = radius - 28;
@@ -375,9 +346,7 @@ const AnimatedDial = memo(function AnimatedDial({
               );
             })}
 
-            {/* Qibla direction arrow — points from center outward at the Qibla bearing */}
             <G rotation={qiblaArrowAngle}>
-              {/* Decorative pattern background for arabesque/geometric/floral */}
               {dialStyle.pattern === 'arabesque' && (
                 <G opacity={0.3}>
                   <Circle cx={0} cy={0} r={radius * 0.5} fill="none" stroke={arrowDimColor} strokeWidth={0.5} strokeDasharray="2 3" />
@@ -397,18 +366,15 @@ const AnimatedDial = memo(function AnimatedDial({
                 </G>
               )}
 
-              {/* Arrow shaft */}
               <Path
                 d={`M 0 ${-radius * 0.85} L -12 ${-radius * 0.55} L -4 ${-radius * 0.55} L -4 ${-radius * 0.2} L 4 ${-radius * 0.2} L 4 ${-radius * 0.55} L 12 ${-radius * 0.55} Z`}
                 fill={isAligned ? arrowColor : arrowDimColor}
                 opacity={0.95}
               />
-              {/* Small Kaaba marker at the tip */}
               <Circle cx={0} cy={-radius * 0.85} r={6} fill={isAligned ? arrowColor : DEEP_GREEN_DARK} />
               <Circle cx={0} cy={-radius * 0.85} r={3} fill={isAligned ? arrowMarkerColor : arrowColor} />
             </G>
 
-            {/* Degree marks every 30° */}
             {DEGREE_MARKS.map((angle) => {
               const rad = (angle * Math.PI) / 180;
               const labelRadius = radius - 28;
@@ -437,9 +403,6 @@ const AnimatedDial = memo(function AnimatedDial({
 });
 AnimatedDial.displayName = 'AnimatedDial';
 
-// ════════════════════════════════════════════════════════════════
-//  ACCURACY INDICATOR — visual sensor quality bar + magnetic field
-// ════════════════════════════════════════════════════════════════
 interface AccuracyIndicatorProps {
   accuracy: CompassAccuracy;
   magneticField: number | null;
@@ -467,7 +430,6 @@ const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, magneticFi
   const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
   const Icon = config.icon;
 
-  // Magnetic field display (typical Earth field: 25–65 µT).
   const magText = useMemo(() => {
     if (magneticField == null) return '—';
     return `${magneticField.toFixed(0)} µT`;
@@ -485,7 +447,6 @@ const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, magneticFi
         <Text style={[styles.accuracyValueBadge, { color: config.color }]}>{config.label}</Text>
       </View>
 
-      {/* Segmented bar — 3 segments showing quality level */}
       <View style={styles.accuracyBar}>
         {[1, 2, 3].map((i) => (
           <View
@@ -502,7 +463,6 @@ const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, magneticFi
         ))}
       </View>
 
-      {/* Magnetic field reading */}
       <View style={styles.accuracyMagRow}>
         <Gauge size={12} color={mutedColor} strokeWidth={2} />
         <Text style={[styles.accuracyMagLabel, { color: mutedColor }]}>
@@ -515,9 +475,6 @@ const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, magneticFi
 });
 AccuracyIndicator.displayName = 'AccuracyIndicator';
 
-// ════════════════════════════════════════════════════════════════
-//  CALIBRATION CARD — detailed step-by-step calibration guide
-// ════════════════════════════════════════════════════════════════
 interface CalibrationCardProps {
   isDark: boolean;
 }
@@ -554,9 +511,6 @@ const CalibrationCard = memo(function CalibrationCard({ isDark }: CalibrationCar
 });
 CalibrationCard.displayName = 'CalibrationCard';
 
-// ════════════════════════════════════════════════════════════════
-//  MINI MAP — simplified visual showing user → Kaaba direction
-// ════════════════════════════════════════════════════════════════
 interface MiniMapProps {
   userLocation: { latitude: number; longitude: number } | null;
   qiblaBearing: number | null;
@@ -571,13 +525,9 @@ const MiniMap = memo(function MiniMap({ userLocation, qiblaBearing, isDark, size
   const textColor = isDark ? TEXT_LIGHT : TEXT_DARK;
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
 
-  // Map the user's longitude and Kaaba's longitude onto the mini map width.
-  // We center the map between the user and Kaaba for visual balance.
   const userLon = userLocation?.longitude ?? 0;
   const userLat = userLocation?.latitude ?? 0;
 
-  // Simple linear projection: map longitude range to x, latitude range to y.
-  // We use a window that covers from user to Kaaba.
   const minLon = Math.min(userLon, KAABA_COORDS.longitude) - 10;
   const maxLon = Math.max(userLon, KAABA_COORDS.longitude) + 10;
   const minLat = Math.min(userLat, KAABA_COORDS.latitude) - 10;
@@ -602,7 +552,6 @@ const MiniMap = memo(function MiniMap({ userLocation, qiblaBearing, isDark, size
       </View>
       <View style={[styles.miniMapCanvas, { width: size - 2, height: size * 0.6, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(27,67,50,0.03)' }]}>
         <Svg width={size - 2} height={size * 0.6}>
-          {/* Connection line */}
           <Line
             x1={userX}
             y1={userY}
@@ -614,15 +563,12 @@ const MiniMap = memo(function MiniMap({ userLocation, qiblaBearing, isDark, size
             opacity={0.6}
           />
 
-          {/* User position */}
           <Circle cx={userX} cy={userY} r={7} fill={DEEP_GREEN} />
           <Circle cx={userX} cy={userY} r={3.5} fill="#FFFFFF" />
 
-          {/* Kaaba position */}
           <Circle cx={kaabaX} cy={kaabaY} r={9} fill={GOLD} />
           <Circle cx={kaabaX} cy={kaabaY} r={5} fill={DEEP_GREEN_DARK} />
 
-          {/* Labels */}
           <SvgText x={userX} y={userY + 20} fontSize={9} fill={mutedColor} textAnchor="middle">
             {t('yourLocation').substring(0, 8)}
           </SvgText>
@@ -636,9 +582,6 @@ const MiniMap = memo(function MiniMap({ userLocation, qiblaBearing, isDark, size
 });
 MiniMap.displayName = 'MiniMap';
 
-// ════════════════════════════════════════════════════════════════
-//  PRAYER TIMES COMPONENT
-// ════════════════════════════════════════════════════════════════
 interface PrayerTimesProps {
   location: { latitude: number; longitude: number } | null;
   isDark: boolean;
@@ -710,8 +653,6 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
           return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
         };
 
-        // Determine next prayer by comparing 24h times from the API directly
-        // (avoids fragile string-based AM/PM parsing that breaks with translations).
         const now = new Date();
         const prayerKeys = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const;
         const rawEntries = prayerKeys.map((key) => ({
@@ -739,7 +680,6 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
           };
         });
         if (!nextFound && entries.length > 0) {
-          // All prayers passed today; next is Fajr tomorrow.
           const fajrEntry = entries.find((e) => e.key === 'Fajr');
           if (fajrEntry) fajrEntry.isNext = true;
           else entries[0].isNext = true;
@@ -820,9 +760,6 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
 });
 PrayerTimes.displayName = 'PrayerTimes';
 
-// ════════════════════════════════════════════════════════════════
-//  ERROR / EMPTY STATE COMPONENTS
-// ════════════════════════════════════════════════════════════════
 interface ErrorStateProps {
   icon: React.ReactNode;
   title: string;
@@ -856,9 +793,6 @@ const ErrorState = memo(function ErrorState({ icon, title, message, buttonText, 
 });
 ErrorState.displayName = 'ErrorState';
 
-// ════════════════════════════════════════════════════════════════
-//  MAIN QIBLA SCREEN
-// ════════════════════════════════════════════════════════════════
 export default function QiblaScreen() {
   const { t } = useLanguageStore();
   const theme = useTheme();
@@ -895,7 +829,6 @@ export default function QiblaScreen() {
   // Compass size adapts to screen width.
   const compassSize = Math.max(220, Math.min(window.width - 56, 304));
 
-  // Format distance for display.
   const distanceText = useMemo(() => {
     if (distanceToKaaba == null) return null;
     if (distanceToKaaba < 1) return `${Math.round(distanceToKaaba * 1000)} m`;
@@ -903,13 +836,11 @@ export default function QiblaScreen() {
     return `${Math.round(distanceToKaaba).toLocaleString()} ${t('km')}`;
   }, [distanceToKaaba, t]);
 
-  // Bearing display.
   const bearingText = useMemo(() => {
     if (qiblaBearing == null) return null;
     return `${Math.round(qiblaBearing)}${t('degree')}`;
   }, [qiblaBearing, t]);
 
-  // Determine screen state.
   const showCompass = location && qiblaBearing != null && accuracy !== 'unavailable';
 
   return (
@@ -925,7 +856,6 @@ export default function QiblaScreen() {
       >
         <UnifiedHeader title={t('qibla')} testID="qibla-header" accessibilityLabel={t('qibla')} />
 
-        {/* ── Loading state ── */}
         {isLoadingLocation && !location ? (
           <View style={styles.centerState}>
             <ActivityIndicator size="large" color={GOLD} />
@@ -934,7 +864,6 @@ export default function QiblaScreen() {
             </Text>
           </View>
         ) : permissionDenied ? (
-          /* ── Permission denied state ── */
           <ErrorState
             icon={<MapPin size={40} color={GOLD} strokeWidth={1.5} />}
             title={t('locationNeeded')}
@@ -950,7 +879,6 @@ export default function QiblaScreen() {
             isDark={isDark}
           />
         ) : error && !location ? (
-          /* ── Location error state ── */
           <ErrorState
             icon={<AlertCircle size={40} color="#FF6B6B" strokeWidth={1.5} />}
             title={t('error')}
@@ -960,9 +888,7 @@ export default function QiblaScreen() {
             isDark={isDark}
           />
         ) : (
-          /* ── Main content ── */
           <View style={styles.mainContent}>
-            {/* Compass section */}
             <View style={styles.compassSection}>
               <Compass
                 heading={heading}
@@ -973,10 +899,8 @@ export default function QiblaScreen() {
                 theme={compassTheme}
               />
 
-              {/* Accuracy indicator — visual sensor quality card */}
               <AccuracyIndicator accuracy={accuracy} magneticField={magneticField} isDark={isDark} />
 
-              {/* Bearing & distance info */}
               <View style={[styles.infoRow, { backgroundColor: cardColor, borderColor }]}>
                 <View style={styles.infoItem}>
                   <Text style={[styles.infoLabel, { color: mutedColor }]}>
@@ -997,7 +921,6 @@ export default function QiblaScreen() {
                 </View>
               </View>
 
-              {/* Alignment status */}
               <View style={styles.alignmentStatus}>
                 {isAligned ? (
                   <View style={styles.alignedRow}>
@@ -1013,7 +936,6 @@ export default function QiblaScreen() {
                 )}
               </View>
 
-              {/* Recalibrate + Style buttons */}
               <View style={styles.buttonRow}>
                 <TouchableOpacity
                   style={[styles.recalibrateButton, { borderColor }]}
@@ -1039,7 +961,6 @@ export default function QiblaScreen() {
               </View>
             </View>
 
-            {/* Info card — virtue of facing Qibla */}
             <TouchableOpacity
               style={[styles.infoCard, { backgroundColor: cardColor, borderColor }]}
               onPress={() => setShowInfo((v) => !v)}
@@ -1066,7 +987,6 @@ export default function QiblaScreen() {
               ) : null}
             </TouchableOpacity>
 
-            {/* Mini map */}
             {location ? (
               <View style={styles.miniMapSection}>
                 <MiniMap
@@ -1078,22 +998,21 @@ export default function QiblaScreen() {
               </View>
             ) : null}
 
-            {/* Prayer times */}
             {location ? (
               <View style={styles.prayerSection}>
                 <PrayerTimes location={location} isDark={isDark} />
               </View>
             ) : null}
 
-            {/* Calibration guide — shown when accuracy is low or medium */}
             {(accuracy === 'low' || accuracy === 'medium') && showCompass ? (
               <CalibrationCard isDark={isDark} />
             ) : null}
+
+            <AdBanner />
           </View>
         )}
       </ScrollView>
 
-      {/* Compass style picker modal */}
       <CompassStylePicker
         visible={showStylePicker}
         onClose={() => setShowStylePicker(false)}
@@ -1102,9 +1021,6 @@ export default function QiblaScreen() {
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-//  STYLES
-// ════════════════════════════════════════════════════════════════
 const styles = StyleSheet.create({
   scroll: {
     flex: 1,
@@ -1127,7 +1043,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     ...androidTextFix,
   },
-  // ── Compass ──
   compassSection: {
     alignItems: 'center',
     gap: 14,
@@ -1195,7 +1110,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800' as const,
   },
-  // ── Accuracy card (rebuilt) ──
   accuracyCard: {
     borderRadius: 12,
     borderWidth: 1.5,
@@ -1247,7 +1161,6 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     ...androidTextFix,
   },
-  // ── Calibration card (new) ──
   calibrationCard: {
     borderRadius: 12,
     borderWidth: 1.5,
@@ -1294,7 +1207,6 @@ const styles = StyleSheet.create({
     paddingTop: 1,
     ...androidTextFix,
   },
-  // ── Info row ──
   infoRow: {
     flexDirection: 'row',
     borderRadius: 14,
@@ -1322,7 +1234,6 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     ...androidTextFix,
   },
-  // ── Alignment ──
   alignmentStatus: {
     alignItems: 'center',
     minHeight: 28,
@@ -1356,7 +1267,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     ...androidTextFix,
   },
-  // ── Recalibrate button ──
   recalibrateButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1371,13 +1281,11 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: 'center',
   },
-  // ── Decorative inner ring ──
   decorativeInnerRing: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // ── Octagon center ──
   centerKaabaOctagon: {
     width: 34,
     height: 34,
@@ -1391,7 +1299,6 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     ...androidTextFix,
   },
-  // ── Info card ──
   infoCard: {
     borderRadius: 14,
     borderWidth: 1,
@@ -1419,7 +1326,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     ...androidTextFix,
   },
-  // ── Mini map ──
   miniMapSection: {
     alignItems: 'center',
     marginBottom: 12,
@@ -1444,7 +1350,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  // ── Prayer times ──
   prayerSection: {
     marginBottom: 12,
   },
@@ -1518,8 +1423,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     ...androidTextFix,
   },
-  // ── Calibration hint (removed — replaced by CalibrationCard component) ──
-  // ── Error state ──
   errorContainer: {
     alignItems: 'center',
     padding: 24,
