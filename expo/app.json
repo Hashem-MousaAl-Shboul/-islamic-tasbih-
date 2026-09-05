@@ -122,6 +122,9 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {
+        "origin": "https://rork.com/"
+      },
       "expo-navigation-bar": {
         "backgroundColor": "#000000",
         "behavior": "overlay-swipe",
