@@ -18,9 +18,6 @@
       "bundleIdentifier": "app.islamicdhikr.sabbah",
       "buildNumber": "101",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "audio"
-        ],
         "NSUserTrackingUsageDescription": "Sabbah uses this identifier only to show relevant ads that help keep the app free. Your data is never sold, and you can decline tracking without losing any features.",
         "NSPhotoLibraryUsageDescription": "Sabbah accesses your photo library only when you choose to set a custom background image. No photos are uploaded or shared."
       }
@@ -30,7 +27,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1B4332"
       },
-      "versionCode": 118,
+      "versionCode": 119,
+      "targetSdkVersion": 35,
       "package": "app.islamicdhikr.sabbah",
       "permissions": [
         "android.permission.VIBRATE",
@@ -80,8 +78,7 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 36,
-            "kotlinVersion": "2.0.21"
+            "compileSdkVersion": 35
           }
         }
       ],
@@ -131,22 +128,7 @@
         "visibility": "hidden",
         "barStyle": "light",
         "position": "absolute"
-      },
-      "eas": {
-        "projectId": "0b6ad68e-8289-44b7-9a5d-4132d654b5cc"
-      },
-      "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyCJu75ibC7Rr20HqCuGJyXIfEiQRhREs8E",
-      "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "sabbah-db62d.firebaseapp.com",
-      "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "sabbah-db62d",
-      "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "sabbah-db62d.firebasestorage.app",
-      "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "353254380055",
-      "EXPO_PUBLIC_FIREBASE_APP_ID": "1:353254380055:web:5d2911d97f2b0aa4744252",
-      "EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID": "353254380055-uinm0l8lu2ajm23sfrjnvqqgs8vn50b0.apps.googleusercontent.com",
-      "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "353254380055-nss6fta5902ed8bg8hv5ufbb24f20mmv.apps.googleusercontent.com",
-      "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "353254380055-uinm0l8lu2ajm23sfrjnvqqgs8vn50b0.apps.googleusercontent.com",
-      "EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME": "dajioti7d",
-      "EXPO_PUBLIC_CLOUDINARY_API_SECRET": "Ef7qF_XjHE4vXjGXiFMm5dSyEww",
-      "EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "sabbah_profile"
+      }
     },
     "owner": "esraamohammad"
   }
