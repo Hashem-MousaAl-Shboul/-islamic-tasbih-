@@ -29,7 +29,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import {
   firebaseAuth,
   firestore,
-  isFirebaseConfigured = true;
+  isFirebaseConfigured,
  } from '@/utils/firebase';
 import Constants from 'expo-constants';
 
