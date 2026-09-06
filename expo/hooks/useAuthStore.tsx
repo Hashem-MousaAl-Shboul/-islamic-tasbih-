@@ -30,7 +30,8 @@ import {
   firebaseAuth,
   firestore,
   isFirebaseConfigured,
-  } 
+ } from '@/utils/firebase';
+
 import Constants from 'expo-constants';
 
 WebBrowser.maybeCompleteAuthSession();
