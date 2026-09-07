@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -14,6 +15,7 @@ import { useRouter } from "expo-router";
 
 import {
   AuthButton,
+  AuthInput,
   AuthLink,
   AuthShell,
   authStyles,
@@ -23,19 +25,57 @@ import { useLanguageStore } from "@/hooks/useLanguageStore";
 
 export default function SignIn() {
   const router = useRouter();
-  const { signInWithGoogle, isConfigured, isLoading } = useAuthStore();
+  const { signInWithGoogle, isLoading } = useAuthStore();
   const { t } = useLanguageStore();
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  // Animation values
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
     setError("");
+
+    // Continuous pulse glow animation for Google button
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.03,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseLoop.start();
+
+    return () => pulseLoop.stop();
   }, []);
 
-  const handleGoogleSignIn = async () => {
-    if (busy || !isConfigured) return;
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
 
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 4,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (busy || isLoading) return;
     setBusy(true);
     setError("");
 
@@ -55,62 +95,55 @@ export default function SignIn() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <AuthShell title={t("welcomeBack")} subtitle={t("signInToContinue")}>
-          {!isConfigured && (
-            <Text style={authStyles.error}>{t("firebaseNotConfigured")}</Text>
-          )}
-
           {!!error && <Text style={authStyles.error}>{error}</Text>}
 
-          <Pressable
-            disabled={busy || !isConfigured || isLoading}
-            onPress={handleGoogleSignIn}
-            accessibilityRole="button"
-            accessibilityLabel={t("signInWithGoogle")}
-            accessibilityState={{
-              disabled: busy || !isConfigured || isLoading,
-              busy,
+          <Animated.View
+            style={{
+              width: "100%",
+              transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }],
             }}
-            style={({ pressed }) => [
-              authStyles.googleButton,
-              (pressed || busy || !isConfigured || isLoading) &&
-                authStyles.googleButtonPressed,
-            ]}
           >
-            {busy || isLoading ? (
-              <ActivityIndicator size="small" color="#1F1F1F" />
-            ) : (
-              <>
-                <Image
-                  source={require("@/assets/images/google-logo.png")}
-                  style={authStyles.googleLogo}
-                  resizeMode="contain"
-                />
-                <Text style={authStyles.googleButtonText}>
-                  {t("signInWithGoogle")}
-                </Text>
-              </>
-            )}
-          </Pressable>
-
-          <View style={authStyles.row}>
-            <Text style={[authStyles.muted, { color: "#8A9B91" }]}>
-              {t("noAccount")}
-            </Text>
-            <Text
-              style={[
-                authStyles.link,
-                { color: "#D4A853", fontWeight: "700" },
+            <Pressable
+              disabled={busy || isLoading}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              onPress={handleGoogleSignIn}
+              accessibilityRole="button"
+              accessibilityLabel={t("signInWithGoogle")}
+              style={({ pressed }) => [
+                authStyles.googleButton,
+                {
+                  marginTop: 24,
+                  paddingVertical: 16,
+                  shadowColor: "#D4A853",
+                  shadowOpacity: 0.3,
+                  shadowRadius: 10,
+                  elevation: 5,
+                },
+                (pressed || busy || isLoading) && authStyles.googleButtonPressed,
               ]}
-              onPress={() => router.push("/(auth)/sign-up")}
             >
-              {t("createAccount")}
-            </Text>
-          </View>
+              {busy || isLoading ? (
+                <ActivityIndicator size="small" color="#1F1F1F" />
+              ) : (
+                <>
+                  <Image
+                    source={require("@/assets/images/google-logo.png")}
+                    style={authStyles.googleLogo}
+                    resizeMode="contain"
+                  />
+                  <Text style={[authStyles.googleButtonText, { fontSize: 16, fontWeight: "700" }]}>
+                    {t("signInWithGoogle")}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          </Animated.View>
         </AuthShell>
       </ScrollView>
     </KeyboardAvoidingView>

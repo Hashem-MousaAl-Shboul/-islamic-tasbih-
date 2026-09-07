@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -11,6 +14,7 @@ import { useRouter } from "expo-router";
 
 import {
   AuthButton,
+  AuthInput,
   AuthLink,
   AuthShell,
   authStyles,
@@ -23,8 +27,7 @@ export default function SignUp() {
   const router = useRouter();
   const { t } = useLanguageStore();
 
-  const { signInWithGoogle, isConfigured, isLoading } = useAuthStore();
-
+  const { signInWithGoogle, isLoading } = useAuthStore();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,7 +36,7 @@ export default function SignUp() {
   }, []);
 
   const handleGoogleSignIn = async () => {
-    if (busy || !isConfigured || isLoading) return;
+    if (busy || isLoading) return;
 
     setBusy(true);
     setError("");
@@ -49,58 +52,46 @@ export default function SignUp() {
   };
 
   return (
-    <AuthShell title={t("createAccount")} subtitle={t("signInDescription")}>
-      {!isConfigured && (
-        <Text style={authStyles.error}>{t("firebaseNotConfigured")}</Text>
-      )}
-
-      {!!error && <Text style={authStyles.error}>{error}</Text>}
-
-      <Pressable
-        disabled={busy || !isConfigured || isLoading}
-        onPress={handleGoogleSignIn}
-        accessibilityRole="button"
-        accessibilityLabel={t("signInWithGoogle")}
-        accessibilityState={{
-          disabled: busy || !isConfigured || isLoading,
-          busy,
-        }}
-        style={({ pressed }) => [
-          authStyles.googleButton,
-          (pressed || busy || !isConfigured || isLoading) &&
-            authStyles.googleButtonPressed,
-        ]}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {busy || isLoading ? (
-          <ActivityIndicator size="small" color="#1F1F1F" />
-        ) : (
-          <>
-            <Image
-              source={require("@/assets/images/google-logo.png")}
-              style={authStyles.googleLogo}
-              resizeMode="contain"
-            />
-            <Text style={authStyles.googleButtonText}>
-              {t("signInWithGoogle")}
-            </Text>
-          </>
-        )}
-      </Pressable>
+        <AuthShell title={t("welcomeBack")} subtitle={t("signInToContinue")}>
+          {!!error && <Text style={authStyles.error}>{error}</Text>}
 
-      <View style={authStyles.row}>
-        <Text style={[authStyles.muted, { color: "#8A9B91" }]}>
-          {t("alreadyHaveAccount")}
-        </Text>
-        <Text
-          style={[
-            authStyles.link,
-            { color: "#D4A853", fontWeight: "700" },
-          ]}
-          onPress={() => router.replace("/(auth)/sign-in")}
-        >
-          {t("signIn")}
-        </Text>
-      </View>
-    </AuthShell>
+          <Pressable
+            disabled={busy || isLoading}
+            onPress={handleGoogleSignIn}
+            accessibilityRole="button"
+            accessibilityLabel={t("signInWithGoogle")}
+            style={({ pressed }) => [
+              authStyles.googleButton,
+              { marginTop: 24, paddingVertical: 16 },
+              (pressed || busy || isLoading) && authStyles.googleButtonPressed,
+            ]}
+          >
+            {busy || isLoading ? (
+              <ActivityIndicator size="small" color="#1F1F1F" />
+            ) : (
+              <>
+                <Image
+                  source={require("@/assets/images/google-logo.png")}
+                  style={authStyles.googleLogo}
+                  resizeMode="contain"
+                />
+                <Text style={[authStyles.googleButtonText, { fontSize: 16 }]}>
+                  {t("signInWithGoogle")}
+                </Text>
+              </>
+            )}
+          </Pressable>
+        </AuthShell>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

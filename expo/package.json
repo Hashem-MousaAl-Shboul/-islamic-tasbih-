@@ -3,17 +3,19 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "bunx rork start -p y6fnt30m8wxs9ylhkjcut",
-    "start-web": "bunx rork start -p y6fnt30m8wxs9ylhkjcut --web",
-    "start-web-dev": "DEBUG=expo* bunx rork start -p y6fnt30m8wxs9ylhkjcut --web"
+    "start": "expo start",
+    "expo": "expo start",
+    "web": "expo start --web",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
-    "@ai-sdk/react": "^2.0.215",
     "@expo/vector-icons": "^15.1.1",
     "@nkzw/create-context-hook": "^1.1.0",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@rork-ai/toolkit-sdk": "latest",
+    "@react-native-google-signin/google-signin": "^16.1.5",
     "@stardazed/streams-text-encoding": "^1.0.2",
+    "@supabase/supabase-js": "^2.115.0",
     "@tanstack/eslint-plugin-query": "^5.101.2",
     "@tanstack/react-query": "^5.101.2",
     "@testing-library/jest-native": "^5.4.3",

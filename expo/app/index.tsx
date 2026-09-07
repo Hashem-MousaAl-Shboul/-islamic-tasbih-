@@ -24,11 +24,6 @@ export default function Index() {
         setLoading(false);
         return;
       }
-      if (!user.emailVerified && user.providerData.some(provider => provider.providerId === 'password')) {
-        router.replace('/(auth)/verify-email');
-        setLoading(false);
-        return;
-      }
       try {
         console.log(INDEX_TAG, 'Checking welcome screen status...');
         const val = await AsyncStorage.getItem(WELCOME_SEEN_KEY);

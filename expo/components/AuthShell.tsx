@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -36,6 +37,44 @@ export function AuthShell({
 }: AuthShellProps) {
   const theme = useTheme();
 
+  // Floating Star Animation
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    // Entrance animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(translateY, {
+        toValue: 0,
+        tension: 40,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Floating stars continuous animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: -8,
+          duration: 2500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 2500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
   return (
     <LinearGradient
       colors={
@@ -70,49 +109,63 @@ export function AuthShell({
             bounces={false}
           >
             {showDecoration && (
-              <View style={styles.decorationContainer}>
-                <Star size={16} color={theme.primary} style={styles.star1} />
-                <Star size={12} color={theme.primary} style={styles.star2} />
-                <Star size={20} color={theme.primary} style={styles.star3} />
+              <Animated.View
+                style={[
+                  styles.decorationContainer,
+                  { transform: [{ translateY: floatAnim }] },
+                ]}
+              >
+                <Star size={18} color={theme.primary} style={styles.star1} />
+                <Star size={14} color={theme.primary} style={styles.star2} />
+                <Star size={22} color={theme.primary} style={styles.star3} />
+              </Animated.View>
+            )}
+
+            <Animated.View
+              style={{
+                opacity: fadeAnim,
+                transform: [{ translateY }],
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <View style={styles.logoContainer}>
+                <Text
+                  style={[styles.logo, { color: theme.primary }]}
+                  accessibilityRole="header"
+                >
+                  Sabbah
+                </Text>
               </View>
-            )}
 
-            <View style={styles.logoContainer}>
-              <Text
-                style={[styles.logo, { color: theme.primary }]}
-                accessibilityRole="header"
-              >
-                Sabbah
-              </Text>
-            </View>
+              {title && (
+                <Text
+                  style={[
+                    styles.title,
+                    {
+                      color: theme.mode === "dark" ? "#F8FAFC" : "#2C241B",
+                    },
+                  ]}
+                >
+                  {title}
+                </Text>
+              )}
 
-            {title && (
-              <Text
-                style={[
-                  styles.title,
-                  {
-                    color: theme.mode === "dark" ? "#F8FAFC" : "#2C241B",
-                  },
-                ]}
-              >
-                {title}
-              </Text>
-            )}
+              {subtitle && (
+                <Text
+                  style={[
+                    styles.subtitle,
+                    {
+                      color: theme.mode === "dark" ? "#CBD5E1" : "#756B5F",
+                    },
+                  ]}
+                >
+                  {subtitle}
+                </Text>
+              )}
 
-            {subtitle && (
-              <Text
-                style={[
-                  styles.subtitle,
-                  {
-                    color: theme.mode === "dark" ? "#CBD5E1" : "#756B5F",
-                  },
-                ]}
-              >
-                {subtitle}
-              </Text>
-            )}
-
-            {children}
+              {children}
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

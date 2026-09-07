@@ -220,9 +220,9 @@ export default function SettingsScreen() {
   const borderColor = isDark ? Colors.dark.border : Colors.light.border;
   const primaryColor = Colors.primary;
 
-  const displayName = profile?.name || user?.displayName || t('user');
+  const displayName = profile?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || t('user');
   const displayEmail = profile?.email || user?.email || t('noEmail');
-  const photoURL = profile?.photoURL || user?.photoURL || null;
+  const photoURL = profile?.photoURL || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
 
   useEffect(() => {
     if (isEditing) {

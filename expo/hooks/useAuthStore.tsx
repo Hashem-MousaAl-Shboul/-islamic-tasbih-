@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {
   useCallback,
   useEffect,
@@ -5,44 +6,24 @@ import React, {
   useState,
 } from 'react';
 
-import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-
-import {
-  GoogleAuthProvider,
-  User,
-  onAuthStateChanged,
-  signInWithCredential,
-  signOut,
-  updateProfile as firebaseUpdateProfile,
-} from 'firebase/auth';
-
-import {
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc,
-} from 'firebase/firestore';
+import * as Linking from 'expo-linking';
+import { makeRedirectUri } from 'expo-auth-session';
+import Constants from 'expo-constants';
 
 import createContextHook from '@nkzw/create-context-hook';
 
-import {
-  firebaseAuth,
-  firestore,
-  isFirebaseConfigured,
- } from '@/utils/firebase';
-import Constants from 'expo-constants';
+import { supabase, isSupabaseConfigured } from '@/utils/supabase';
+import type { Session, User } from '@supabase/supabase-js';
 
 WebBrowser.maybeCompleteAuthSession();
+
 const extra = Constants.expoConfig?.extra;
 
-const CLOUDINARY_CLOUD_NAME =
-  process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME ||
-  extra?.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
-
-const CLOUDINARY_UPLOAD_PRESET =
-  process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
-  extra?.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+const GOOGLE_WEB_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+  extra?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+  '';
 
 export type AuthProfile = {
   uid: string;
@@ -60,6 +41,9 @@ type AuthStore = {
   isConfigured: boolean;
 
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, name: string) => Promise<void>;
+  continueAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 
@@ -76,110 +60,64 @@ function getAuthErrorMessage(
   error: unknown,
   fallback = 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'
 ): string {
-  const code =
-    typeof error === 'object' && error !== null && 'code' in error
-      ? String((error as { code?: unknown }).code || '')
+  const message =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message?: unknown }).message || '')
       : '';
 
-  switch (code) {
-    case 'auth/invalid-credential':
-    case 'auth/wrong-password':
-    case 'auth/user-not-found':
-      return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
-
-    case 'auth/invalid-email':
-      return 'يرجى إدخال بريد إلكتروني صحيح.';
-
-    case 'auth/email-already-in-use':
-      return 'هذا البريد الإلكتروني مستخدم بالفعل. جرّب تسجيل الدخول أو استخدم بريدًا آخر.';
-
-    case 'auth/weak-password':
-      return 'كلمة المرور ضعيفة. يرجى اختيار كلمة مرور أقوى.';
-
-    case 'auth/password-does-not-meet-requirements':
-      return 'كلمة المرور لا تستوفي المتطلبات المطلوبة.';
-
-    case 'auth/user-disabled':
-      return 'هذا الحساب تم تعطيله. يرجى التواصل مع الدعم.';
-
-    case 'auth/too-many-requests':
-      return 'تم إجراء محاولات كثيرة. يرجى الانتظار قليلًا ثم المحاولة مرة أخرى.';
-
-    case 'auth/network-request-failed':
-      return 'تعذر الاتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.';
-
-    case 'auth/operation-not-allowed':
-      return 'طريقة تسجيل الدخول هذه غير مفعلة حاليًا.';
-
-    case 'auth/account-exists-with-different-credential':
-      return 'يوجد حساب بالفعل باستخدام طريقة تسجيل دخول مختلفة لهذا البريد الإلكتروني.';
-
-    case 'auth/popup-closed-by-user':
-    case 'auth/cancelled-popup-request':
-      return 'تم إلغاء تسجيل الدخول.';
-
-    case 'auth/popup-blocked':
-      return 'تم منع نافذة تسجيل الدخول. يرجى السماح بالنوافذ المنبثقة والمحاولة مرة أخرى.';
-
-    case 'auth/credential-already-in-use':
-      return 'بيانات تسجيل الدخول هذه مرتبطة بحساب آخر.';
-
-    case 'auth/requires-recent-login':
-      return 'لأمان حسابك، يرجى تسجيل الدخول مرة أخرى ثم المحاولة.';
-
-    case 'auth/invalid-verification-code':
-      return 'رمز التحقق غير صحيح.';
-
-    case 'auth/invalid-verification-id':
-      return 'رمز التحقق غير صالح. يرجى طلب رمز جديد.';
-
-    case 'auth/missing-email':
-      return 'يرجى إدخال بريدك الإلكتروني.';
-
-    case 'auth/missing-password':
-      return 'يرجى إدخال كلمة المرور.';
-
-    case 'auth/user-token-expired':
-    case 'auth/invalid-user-token':
-      return 'انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مرة أخرى.';
-
-    default: {
-      if (typeof error === 'object' && error !== null && 'message' in error) {
-        const firebaseMessage = String((error as { message?: unknown }).message || '');
-        if (firebaseMessage && !firebaseMessage.startsWith('Firebase:')) {
-          return firebaseMessage;
-        }
-      }
-      return fallback;
-    }
+  if (message.includes('Invalid login credentials')) {
+    return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
   }
-}
-
-function getErrorCode(error: unknown): string {
-  if (typeof error === 'object' && error !== null && 'code' in error) {
-    return String((error as { code?: unknown }).code || '');
+  if (message.includes('User already registered')) {
+    return 'هذا البريد الإلكتروني مستخدم بالفعل. جرّب تسجيل الدخول أو استخدم بريدًا آخر.';
   }
-  return '';
+  if (message.includes('Email not confirmed')) {
+    return 'يرجى تأكيد بريدك الإلكتروني أولاً.';
+  }
+  if (message.includes('Password should be at least')) {
+    return 'كلمة المرور يجب أن لا تقل عن 6 أحرف.';
+  }
+  if (message.includes('rate limit') || message.includes('too many requests')) {
+    return 'تم إجراء محاولات كثيرة. يرجى الانتظار قليلًا ثم المحاولة مرة أخرى.';
+  }
+  if (message.includes('network') || message.includes('fetch')) {
+    return 'تعذر الاتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.';
+  }
+
+  if (message && !message.startsWith('AuthApiError')) {
+    return message;
+  }
+
+  return fallback;
 }
 
-function providerName(user: User): string {
-  const providerId = user.providerData[0]?.providerId;
-  return providerId === 'google.com' ? 'Google' : 'Email';
-}
+function createProfileFromUser(supaUser: User): AuthProfile {
+  const meta = supaUser.user_metadata || {};
+  const provider = supaUser.app_metadata?.provider || 'email';
 
-function createProfile(firebaseUser: User, name?: string): AuthProfile {
   return {
-    uid: firebaseUser.uid,
+    uid: supaUser.id,
     name:
-      name?.trim() ||
-      firebaseUser.displayName?.trim() ||
-      firebaseUser.email?.split('@')[0] ||
+      meta.full_name ||
+      meta.name ||
+      meta.display_name ||
+      supaUser.email?.split('@')[0] ||
       'User',
-    email: firebaseUser.email || '',
-    photoURL: firebaseUser.photoURL || null,
-    provider: providerName(firebaseUser),
+    email: supaUser.email || '',
+    photoURL: meta.avatar_url || meta.picture || null,
+    provider: provider === 'google' ? 'Google' : 'Email',
   };
 }
+
+const GUEST_STORAGE_KEY = '@sabbah_guest_user';
+
+const CLOUDINARY_CLOUD_NAME =
+  process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME ||
+  extra?.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+const CLOUDINARY_UPLOAD_PRESET =
+  process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+  extra?.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 async function uploadImageToCloudinary(uri: string, userId: string): Promise<string> {
   if (!CLOUDINARY_CLOUD_NAME) {
@@ -238,20 +176,32 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Persist profile to Supabase profiles table
   const persistProfile = useCallback(
-    async (firebaseUser: User, name?: string): Promise<AuthProfile> => {
-      const userRef = doc(firestore, 'users', firebaseUser.uid);
-      const existing = await getDoc(userRef);
-      const userProfile = createProfile(firebaseUser, name);
+    async (supaUser: User, name?: string): Promise<AuthProfile> => {
+      const userProfile = createProfileFromUser(supaUser);
+      if (name) userProfile.name = name;
 
-      if (existing.exists()) {
-        await setDoc(userRef, { ...userProfile, updatedAt: serverTimestamp() }, { merge: true });
-      } else {
-        await setDoc(
-          userRef,
-          { ...userProfile, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
-          { merge: true }
-        );
+      try {
+        const { error: upsertError } = await supabase
+          .from('profiles')
+          .upsert(
+            {
+              id: supaUser.id,
+              name: userProfile.name,
+              email: userProfile.email,
+              photo_url: userProfile.photoURL,
+              provider: userProfile.provider,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' }
+          );
+
+        if (upsertError) {
+          console.warn('[Auth] Profile upsert warning:', upsertError.message);
+        }
+      } catch (e) {
+        console.warn('[Auth] Profile persist failed (non-fatal):', e);
       }
 
       setProfile(userProfile);
@@ -260,158 +210,414 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
     []
   );
 
+  // Listen for auth state changes
   useEffect(() => {
     let active = true;
 
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (nextUser) => {
-      if (!active) return;
-
-      setUser(nextUser);
-
-      if (!nextUser) {
-        setProfile(null);
-        setIsLoading(false);
-        return;
-      }
-
+    // Check guest user first
+    const checkGuest = async () => {
       try {
-        await persistProfile(nextUser);
-        if (!active) return;
-      } catch (cause) {
-        console.error('[Auth] Profile hydration failed:', cause);
-        if (!active) return;
-        setProfile(createProfile(nextUser));
-      } finally {
+        const savedGuest = await AsyncStorage.getItem(GUEST_STORAGE_KEY);
+        if (savedGuest && active) {
+          const parsed = JSON.parse(savedGuest);
+          setProfile(parsed);
+          setUser({ id: parsed.uid, email: parsed.email } as any);
+          setIsLoading(false);
+          return true;
+        }
+      } catch (e) {
+        console.error('[Auth] Error checking guest storage:', e);
+      }
+      return false;
+    };
+
+    const init = async () => {
+      const isGuest = await checkGuest();
+
+      // Get initial session
+      if (!isGuest) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && active) {
+          setUser(session.user);
+          try {
+            await persistProfile(session.user);
+          } catch {
+            if (active) setProfile(createProfileFromUser(session.user));
+          }
+        }
         if (active) setIsLoading(false);
       }
+    };
+
+    init();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!active) return;
+
+        if (event === 'SIGNED_IN' && session?.user) {
+          await AsyncStorage.removeItem(GUEST_STORAGE_KEY);
+          setUser(session.user);
+          try {
+            await persistProfile(session.user);
+          } catch {
+            if (active) setProfile(createProfileFromUser(session.user));
+          }
+          if (active) setIsLoading(false);
+        } else if (event === 'SIGNED_OUT') {
+          const savedGuest = await AsyncStorage.getItem(GUEST_STORAGE_KEY);
+          if (!savedGuest && active) {
+            setUser(null);
+            setProfile(null);
+          }
+          if (active) setIsLoading(false);
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          setUser(session.user);
+        }
+      }
+    );
+
+    // Subscribe to incoming deep links for OAuth callbacks
+    const handleDeepLink = async (url: string) => {
+      if (!url) return;
+      console.log('[Auth] Deep link received:', url);
+      try {
+        const parsedUrl = new URL(url);
+        const fragment = parsedUrl.hash?.substring(1);
+        if (fragment) {
+          const params = new URLSearchParams(fragment);
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          if (accessToken) {
+            console.log('[Auth] Extracting session from deep link...');
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || '',
+            });
+            if (sessionError) console.warn('[Auth] Session set warning:', sessionError);
+            else console.log('[Auth] Session set successfully via deep link!');
+          }
+        }
+      } catch (err) {
+        console.warn('[Auth] Error parsing deep link:', err);
+      }
+    };
+
+    const linkSubscription = Linking.addEventListener('url', (event) => {
+      handleDeepLink(event.url);
+    });
+
+    // Check initial URL if app was opened from cold start via deep link
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink(url);
     });
 
     return () => {
       active = false;
-      unsubscribe();
+      subscription.unsubscribe();
+      linkSubscription.remove();
     };
   }, [persistProfile]);
 
-  const run = useCallback(async (action: () => Promise<void>) => {
-    if (!isFirebaseConfigured) {
-      const message = 'خدمة تسجيل الدخول غير متاحة حاليًا. يرجى المحاولة لاحقًا.';
-      setError(message);
-      throw new Error(message);
-    }
-
+  // ─── Google Sign-In ──────────────────────────────────────
+  const signInWithGoogle = useCallback(async () => {
     setError(null);
-
     try {
-      await action();
-    } catch (cause: any) {
-      const code = getErrorCode(cause);
-      const message = getAuthErrorMessage(cause);
-      console.error('[Auth] Firebase error:', { code, message: cause?.message, error: cause });
+      if (!isSupabaseConfigured) {
+        // Demo mode
+        const demoProfile: AuthProfile = {
+          uid: 'google_demo_' + Date.now(),
+          name: 'مستخدم Google',
+          email: 'user@google.com',
+          photoURL: null,
+          provider: 'Google',
+        };
+        await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(demoProfile));
+        setProfile(demoProfile);
+        setUser({ id: demoProfile.uid, email: demoProfile.email } as any);
+        return;
+      }
+
+      // WebBrowser OAuth Flow (Universal for Expo Go, Standalone APK & Web)
+      const redirectUrl = makeRedirectUri({
+        scheme: 'sabbah',
+      });
+
+      console.log('--------------------------------------------------');
+      console.log('[Auth] 1. Google Sign-In Started (WebBrowser)');
+      console.log('[Auth] 2. Generated Redirect URL:', redirectUrl);
+
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+          queryParams: {
+            prompt: 'select_account',
+          },
+        },
+      });
+
+      if (oauthError) {
+        console.error('[Auth] OAuth initiation error:', oauthError);
+        throw oauthError;
+      }
+
+      if (!data?.url) {
+        console.error('[Auth] Missing OAuth URL from Supabase');
+        throw new Error('تعذر بدء تسجيل الدخول بواسطة Google.');
+      }
+
+      console.log('[Auth] 3. Supabase Auth URL:', data.url);
+      console.log('[Auth] 4. Opening WebBrowser...');
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+
+      console.log('[Auth] 5. WebBrowser Result:', JSON.stringify(result, null, 2));
+
+      if (result.type === 'success' && result.url) {
+        console.log('[Auth] 6. Success URL received:', result.url);
+        const url = new URL(result.url);
+
+        // Try fragment first (implicit flow)
+        let accessToken = '';
+        let refreshToken = '';
+
+        const fragment = url.hash?.substring(1);
+        if (fragment) {
+          const params = new URLSearchParams(fragment);
+          accessToken = params.get('access_token') || '';
+          refreshToken = params.get('refresh_token') || '';
+        }
+
+        // Try query params (PKCE flow)
+        if (!accessToken) {
+          const code = url.searchParams.get('code');
+          if (code) {
+            console.log('[Auth] Exchanging code for session...');
+            const { data: sessionData, error: exchangeError } =
+              await supabase.auth.exchangeCodeForSession(code);
+            if (exchangeError) throw exchangeError;
+            console.log('[Auth] Session created successfully via code exchange');
+            return;
+          }
+        }
+
+        if (accessToken) {
+          console.log('[Auth] Setting session via access token...');
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (sessionError) throw sessionError;
+          console.log('[Auth] Session set successfully via access token');
+        }
+      } else {
+        console.warn('[Auth] WebBrowser did not return success. Result type:', result.type);
+      }
+    } catch (e: any) {
+      const message = getAuthErrorMessage(e);
+      console.error('[Auth] Google sign-in catch block:', e);
       setError(message);
       throw new Error(message);
     }
   }, []);
 
-  const [googleRequest, , promptAsync] = Google.useAuthRequest({
-    clientId:
-      process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID ||
-      extra?.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID,
+  // ─── Email Sign-In ───────────────────────────────────────
+  const signInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      setError(null);
+      try {
+        const cleanEmail = email.trim();
+        const cleanPassword = password.trim();
 
-    iosClientId:
-      process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
-      extra?.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-
-    androidClientId:
-      process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ||
-      extra?.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-
-    webClientId:
-      process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
-      extra?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
-      'dummy-web-client-id.apps.googleusercontent.com',
-  });
-
-  const signInWithGoogle = useCallback(
-    () =>
-      run(async () => {
-        if (!googleRequest) {
-          throw new Error('تسجيل الدخول باستخدام Google غير جاهز حاليًا. يرجى المحاولة مرة أخرى.');
+        if (!cleanEmail || !cleanPassword) {
+          throw new Error('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
         }
 
-        const result = await promptAsync();
-
-        if (result.type === 'dismiss' || result.type === 'cancel') {
+        if (!isSupabaseConfigured) {
+          const demoProfile: AuthProfile = {
+            uid: 'user_' + Date.now(),
+            name: cleanEmail.split('@')[0] || 'مستخدم',
+            email: cleanEmail,
+            photoURL: null,
+            provider: 'Email',
+          };
+          await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(demoProfile));
+          setProfile(demoProfile);
+          setUser({ id: demoProfile.uid, email: demoProfile.email } as any);
           return;
         }
 
-        if (result.type !== 'success') {
-          throw new Error('تعذر تسجيل الدخول باستخدام Google. يرجى المحاولة مرة أخرى.');
-        }
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: cleanPassword,
+        });
 
-        const idToken = result.params?.id_token;
-        if (!idToken) {
-          throw new Error('تعذر إكمال تسجيل الدخول باستخدام Google. يرجى المحاولة مرة أخرى.');
-        }
-
-        const credential = GoogleAuthProvider.credential(idToken);
-        const signedIn = await signInWithCredential(firebaseAuth, credential);
-        await persistProfile(signedIn.user);
-      }),
-    [googleRequest, persistProfile, promptAsync, run]
+        if (signInError) throw signInError;
+      } catch (e: any) {
+        const message = getAuthErrorMessage(e);
+        console.error('[Auth] Email sign-in error:', e);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    []
   );
 
-  const logout = useCallback(
-    () =>
-      run(async () => {
-        await signOut(firebaseAuth);
-        setUser(null);
-        setProfile(null);
-      }),
-    [run]
+  // ─── Email Sign-Up ───────────────────────────────────────
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string, name: string) => {
+      setError(null);
+      try {
+        const cleanEmail = email.trim();
+        const cleanPassword = password.trim();
+        const cleanName = name.trim();
+
+        if (!cleanEmail || !cleanPassword || !cleanName) {
+          throw new Error('يرجى ملء جميع الحقول المطلوبة.');
+        }
+
+        if (cleanPassword.length < 6) {
+          throw new Error('كلمة المرور يجب أن لا تقل عن 6 أحرف.');
+        }
+
+        if (!isSupabaseConfigured) {
+          const demoProfile: AuthProfile = {
+            uid: 'user_' + Date.now(),
+            name: cleanName,
+            email: cleanEmail,
+            photoURL: null,
+            provider: 'Email',
+          };
+          await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(demoProfile));
+          setProfile(demoProfile);
+          setUser({ id: demoProfile.uid, email: demoProfile.email } as any);
+          return;
+        }
+
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: cleanPassword,
+          options: {
+            data: {
+              full_name: cleanName,
+              display_name: cleanName,
+            },
+          },
+        });
+
+        if (signUpError) throw signUpError;
+      } catch (e: any) {
+        const message = getAuthErrorMessage(e);
+        console.error('[Auth] Email sign-up error:', e);
+        setError(message);
+        throw new Error(message);
+      }
+    },
+    []
   );
+
+  // ─── Continue as Guest ───────────────────────────────────
+  const continueAsGuest = useCallback(async () => {
+    setError(null);
+    try {
+      const guestProfile: AuthProfile = {
+        uid: 'guest_user',
+        name: 'زائر',
+        email: '',
+        photoURL: null,
+        provider: 'Guest',
+      };
+      await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(guestProfile));
+      setProfile(guestProfile);
+      setUser({ id: 'guest_user', email: null } as any);
+    } catch (e: any) {
+      setError('حدث خطأ أثناء الدخول كزائر.');
+    }
+  }, []);
+
+  // ─── Logout ──────────────────────────────────────────────
+  const logout = useCallback(async () => {
+    try {
+      await AsyncStorage.removeItem(GUEST_STORAGE_KEY);
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('[Auth] Logout error:', e);
+    } finally {
+      setUser(null);
+      setProfile(null);
+    }
+  }, []);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
+  // ─── Update Profile ──────────────────────────────────────
   const updateProfile = useCallback(
     async (data: { name: string; photoURL?: string | null }) => {
-      const currentUser = firebaseAuth.currentUser;
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) {
         const message = 'لم يتم تسجيل الدخول. يرجى تسجيل الدخول أولًا.';
         setError(message);
         throw new Error(message);
       }
 
-      await run(async () => {
+      setError(null);
+      try {
         const cleanName = data.name.trim();
         if (!cleanName) {
           throw new Error('يرجى إدخال الاسم.');
         }
 
-        const updateData: { displayName: string; photoURL?: string | null } = {
-          displayName: cleanName,
+        // Update Supabase auth metadata
+        const updateData: Record<string, any> = {
+          full_name: cleanName,
+          display_name: cleanName,
         };
-
         if (data.photoURL !== undefined) {
-          updateData.photoURL = data.photoURL;
+          updateData.avatar_url = data.photoURL;
         }
 
-        await firebaseUpdateProfile(currentUser, updateData);
-        await currentUser.reload();
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: updateData,
+        });
+        if (updateError) throw updateError;
 
-        const refreshedUser = firebaseAuth.currentUser;
+        // Update profiles table
+        const profileUpdate: Record<string, any> = {
+          name: cleanName,
+          updated_at: new Date().toISOString(),
+        };
+        if (data.photoURL !== undefined) {
+          profileUpdate.photo_url = data.photoURL;
+        }
+
+        await supabase
+          .from('profiles')
+          .update(profileUpdate)
+          .eq('id', currentUser.id);
+
+        // Refresh local state
+        const { data: { user: refreshedUser } } = await supabase.auth.getUser();
         if (refreshedUser) {
           await persistProfile(refreshedUser, cleanName);
         }
-      });
+      } catch (e: any) {
+        const message = getAuthErrorMessage(e);
+        setError(message);
+        throw new Error(message);
+      }
     },
-    [persistProfile, run]
+    [persistProfile]
   );
 
+  // ─── Upload Profile Photo ────────────────────────────────
   const uploadProfilePhoto = useCallback(
     async (uri: string): Promise<string> => {
-      const currentUser = firebaseAuth.currentUser;
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) {
         const message = 'لم يتم تسجيل الدخول. يرجى تسجيل الدخول أولًا.';
         setError(message);
@@ -425,11 +631,21 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
       }
 
       try {
-        const imageUrl = await uploadImageToCloudinary(uri, currentUser.uid);
-        await firebaseUpdateProfile(currentUser, { photoURL: imageUrl });
-        await currentUser.reload();
+        const imageUrl = await uploadImageToCloudinary(uri, currentUser.id);
 
-        const refreshedUser = firebaseAuth.currentUser;
+        await supabase.auth.updateUser({
+          data: { avatar_url: imageUrl },
+        });
+
+        await supabase
+          .from('profiles')
+          .update({
+            photo_url: imageUrl,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', currentUser.id);
+
+        const { data: { user: refreshedUser } } = await supabase.auth.getUser();
         if (refreshedUser) {
           await persistProfile(refreshedUser);
         }
@@ -437,7 +653,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         setError(null);
         return imageUrl;
       } catch (error: any) {
-        console.error('[Auth] Cloudinary profile photo upload error:', error);
+        console.error('[Auth] Profile photo upload error:', error);
         const message = error?.message || 'تعذر رفع الصورة. يرجى المحاولة مرة أخرى.';
         setError(message);
         throw new Error(message);
@@ -446,21 +662,29 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
     [persistProfile]
   );
 
+  // ─── Delete Profile Photo ────────────────────────────────
   const deleteProfilePhoto = useCallback(async (): Promise<void> => {
-    const currentUser = firebaseAuth.currentUser;
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (!currentUser) {
       const message = 'لم يتم تسجيل الدخول. يرجى تسجيل الدخول أولًا.';
       setError(message);
       throw new Error(message);
     }
 
-    if (!currentUser.photoURL) return;
-
     try {
-      await firebaseUpdateProfile(currentUser, { photoURL: null });
-      await currentUser.reload();
+      await supabase.auth.updateUser({
+        data: { avatar_url: null },
+      });
 
-      const refreshedUser = firebaseAuth.currentUser;
+      await supabase
+        .from('profiles')
+        .update({
+          photo_url: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', currentUser.id);
+
+      const { data: { user: refreshedUser } } = await supabase.auth.getUser();
       if (refreshedUser) {
         await persistProfile(refreshedUser);
       }
@@ -480,8 +704,11 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
       profile,
       isLoading,
       error,
-      isConfigured: isFirebaseConfigured,
+      isConfigured: isSupabaseConfigured,
       signInWithGoogle,
+      signInWithEmail,
+      signUpWithEmail,
+      continueAsGuest,
       logout,
       clearError,
       updateProfile,
@@ -494,6 +721,9 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
       isLoading,
       error,
       signInWithGoogle,
+      signInWithEmail,
+      signUpWithEmail,
+      continueAsGuest,
       logout,
       clearError,
       updateProfile,
