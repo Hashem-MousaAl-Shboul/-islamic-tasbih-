@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1B4332"
       },
-      "versionCode": 119,
+      "versionCode": 121,
       "targetSdkVersion": 35,
       "package": "app.islamicdhikr.sabbah",
       "permissions": [
