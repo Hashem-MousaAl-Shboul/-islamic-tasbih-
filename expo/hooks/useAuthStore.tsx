@@ -20,10 +20,13 @@ WebBrowser.maybeCompleteAuthSession();
 
 const extra = Constants.expoConfig?.extra;
 
+const DEFAULT_GOOGLE_WEB_CLIENT_ID =
+  '876532173264-rb5a1kr14oq3k7us1bevpcsd58umhjhl.apps.googleusercontent.com';
+
 const GOOGLE_WEB_CLIENT_ID =
   process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
   extra?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
-  '';
+  DEFAULT_GOOGLE_WEB_CLIENT_ID;
 
 export type AuthProfile = {
   uid: string;

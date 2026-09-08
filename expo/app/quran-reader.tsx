@@ -130,18 +130,14 @@ async function fetchPageVerses(pageNumber: number): Promise<{ verses: Verse[]; s
   return { verses, surahName: firstName };
 }
 
-function shouldShowBismillah(surahNumber: number, isPageMode: boolean): boolean {
-  if (isPageMode) return false;
-  return surahNumber !== 1 && surahNumber !== 9;
-}
 
-/** مكون خاص لضبط تمركز رقم الآية داخل الشكل تماماً */
+
+/** مكون خاص لترقيم الآيات كنص ضمن الفقرة لضمان المحاذاة التامة مع النص */
 const AyahEndSymbol = ({ number }: { number: number }) => {
   return (
-    <View style={styles.ayahSymbolContainer}>
-      <Text style={styles.ayahSymbolBg}>۝</Text>
-      <Text style={styles.ayahSymbolNumber}>{toArabicDigits(number)}</Text>
-    </View>
+    <Text style={styles.ayahSymbolText}>
+      {` ۝${toArabicDigits(number)} `}
+    </Text>
   );
 };
 
@@ -326,14 +322,8 @@ export default function QuranReaderScreen() {
       );
     }
     if (!surahMeta) return null;
-    const showBismillah = shouldShowBismillah(surahNumber, false);
     return (
       <View style={styles.surahHeader}>
-        {showBismillah && (
-          <Text style={[styles.bismillah, androidTextFix]}>
-            {t('bismillah')}
-          </Text>
-        )}
         <View style={styles.surahMetaRow}>
           <View style={styles.metaPill}>
             <Text style={[styles.metaPillText, androidTextFix]}>
@@ -353,7 +343,7 @@ export default function QuranReaderScreen() {
         </View>
       </View>
     );
-  }, [surahMeta, t, isPageMode, pageNumber, surahNumber]);
+  }, [surahMeta, t, isPageMode, pageNumber]);
 
   if (isLoading) {
     return (
@@ -717,27 +707,11 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     lineHeight: 52,
   },
-  ayahSymbolContainer: {
-    width: 32,
-    height: 32,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginHorizontal: 4,
-    display: 'flex' as const,
-  },
-  ayahSymbolBg: {
-    position: 'absolute' as const,
+  ayahSymbolText: {
     color: GOLD,
-    fontSize: 28,
-    textAlign: 'center',
-    lineHeight: 32,
-  },
-  ayahSymbolNumber: {
-    color: GOLD,
-    fontSize: 11,
+    fontSize: 20,
     fontWeight: '700' as const,
-    textAlign: 'center',
-    lineHeight: 14,
+    writingDirection: 'rtl',
   },
   audioBar: {
     position: 'absolute' as const,

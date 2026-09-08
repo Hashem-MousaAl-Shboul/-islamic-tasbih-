@@ -9,12 +9,22 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://qaqvmaqoykfrmdcavblv.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_M9iqhGgJdGBqCUHkntpH6w_g06tMifr",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "876532173264-rb5a1kr14oq3k7us1bevpcsd58umhjhl.apps.googleusercontent.com"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://qaqvmaqoykfrmdcavblv.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_M9iqhGgJdGBqCUHkntpH6w_g06tMifr",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "876532173264-rb5a1kr14oq3k7us1bevpcsd58umhjhl.apps.googleusercontent.com"
       }
     },
     "production": {
@@ -23,6 +33,11 @@
       "android": {
         "buildType": "app-bundle",
         "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://qaqvmaqoykfrmdcavblv.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_M9iqhGgJdGBqCUHkntpH6w_g06tMifr",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "876532173264-rb5a1kr14oq3k7us1bevpcsd58umhjhl.apps.googleusercontent.com"
       }
     }
   },
