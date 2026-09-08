@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   View,
   Text,
@@ -6,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   I18nManager,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -29,6 +29,18 @@ export default function TermsOfUseScreen() {
   const isRTL = I18nManager.isRTL;
   const BackIcon = isRTL ? ArrowLeft : ArrowRight;
 
+  const handleBack = () => {
+    try {
+      if (Platform.OS !== 'web' && router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/settings');
+      }
+    } catch {
+      router.replace('/(tabs)/settings');
+    }
+  };
+
   return (
     <View
       style={styles.container}
@@ -41,7 +53,7 @@ export default function TermsOfUseScreen() {
           <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>{t('terms')}</Text>
           <TouchableOpacity
-            onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/settings')}
+            onPress={handleBack}
             style={styles.actionButton}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             testID="terms-back-button"

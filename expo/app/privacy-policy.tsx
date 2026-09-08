@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -25,6 +26,18 @@ export default function PrivacyPolicyScreen() {
   const router = useRouter();
   const { t } = useLanguageStore();
 
+  const handleBack = () => {
+    try {
+      if (Platform.OS !== 'web' && router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/settings');
+      }
+    } catch {
+      router.replace('/(tabs)/settings');
+    }
+  };
+
   return (
     <View style={styles.container} testID="privacy-policy-screen" accessibilityLabel="Privacy Policy Screen"
       accessibilityHint="Read our privacy policy">
@@ -33,7 +46,7 @@ export default function PrivacyPolicyScreen() {
           <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>{t('privacy')}</Text>
           <TouchableOpacity
-            onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/settings')}
+            onPress={handleBack}
             style={styles.actionButton}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             testID="privacy-back-button"

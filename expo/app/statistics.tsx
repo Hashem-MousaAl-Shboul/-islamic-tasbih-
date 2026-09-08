@@ -177,6 +177,18 @@ const StatisticsScreen = memo(function StatisticsScreen() {
     }
   }, [resetStats, saveData]);
 
+  const handleBack = useCallback(() => {
+    try {
+      if (Platform.OS !== 'web' && router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/settings');
+      }
+    } catch {
+      router.replace('/(tabs)/settings');
+    }
+  }, [router]);
+
   return (
     <View style={styles.container} testID="statistics-screen"
       accessibilityLabel="Statistics Screen"
@@ -186,7 +198,7 @@ const StatisticsScreen = memo(function StatisticsScreen() {
           <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>{i18n.t('statistics') || 'الإحصائيات'}</Text>
           <TouchableOpacity
-            onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/settings')}
+            onPress={handleBack}
             style={styles.actionButton}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             testID="statistics-back-button"

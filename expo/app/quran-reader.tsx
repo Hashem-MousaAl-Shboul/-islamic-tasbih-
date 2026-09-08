@@ -276,9 +276,13 @@ export default function QuranReaderScreen() {
   }, [changeReciter, isThisSurahPlaying, isPlaying, surahMeta, playSurah, isPageMode, verses]);
 
   const handleBack = useCallback(() => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
+    try {
+      if (Platform.OS !== 'web' && router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)/quran');
+      }
+    } catch {
       router.replace('/(tabs)/quran');
     }
   }, [router]);
