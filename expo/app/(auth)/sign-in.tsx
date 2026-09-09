@@ -120,7 +120,7 @@ export default function SignIn() {
                 {
                   marginTop: 10,
                   paddingVertical: 16,
-                  shadowColor: "#D4A853",
+                  shadowColor: "#B88A3D",
                   shadowOpacity: 0.3,
                   shadowRadius: 10,
                   elevation: 5,
