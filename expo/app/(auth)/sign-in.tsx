@@ -118,9 +118,9 @@ export default function SignIn() {
               style={({ pressed }) => [
                 authStyles.googleButton,
                 {
-                  marginTop: 10,
+                  marginTop: 24,
                   paddingVertical: 16,
-                  shadowColor: "#1B4332",
+                  shadowColor: "#D4A853",
                   shadowOpacity: 0.3,
                   shadowRadius: 10,
                   elevation: 5,
