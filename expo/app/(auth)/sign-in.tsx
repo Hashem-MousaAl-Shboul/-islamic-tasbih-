@@ -68,8 +68,9 @@ export default function SignIn() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* ✅ تأكد من عدم وجود أي نص مباشر هنا */}
         <AuthShell title="مرحباً بعودتك - سجل الدخول للمتابعة" subtitle="">
-          {!!error && <Text style={authStyles.error}>{error}</Text>}
+          {!!error ? <Text style={authStyles.error}>{error}</Text> : <View />}
 
           <Animated.View style={{ width: "100%", transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }] }}>
             <Pressable
@@ -88,12 +89,12 @@ export default function SignIn() {
               {busy || isLoading ? (
                 <ActivityIndicator size="small" color="#1F1F1F" />
               ) : (
-                <>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 }}>
                   <Image source={require("@/assets/images/google-logo.png")} style={authStyles.googleLogo} resizeMode="contain" />
                   <Text style={[authStyles.googleButtonText, { fontSize: 16, fontWeight: "700" }]}>
                     تسجيل الدخول باستخدام جوجل
                   </Text>
-                </>
+                </View>
               )}
             </Pressable>
           </Animated.View>
