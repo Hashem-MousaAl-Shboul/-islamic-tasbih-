@@ -9,6 +9,7 @@ import {
   ScrollView,
   Text,
   View,
+  StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -62,13 +63,12 @@ export default function SignIn() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ✅ تأكد من عدم وجود أي نص مباشر هنا */}
         <AuthShell title="مرحباً بعودتك - سجل الدخول للمتابعة" subtitle="">
           {!!error ? <Text style={authStyles.error}>{error}</Text> : <View />}
 
@@ -82,7 +82,7 @@ export default function SignIn() {
               accessibilityLabel="تسجيل الدخول باستخدام جوجل"
               style={({ pressed }) => [
                 authStyles.googleButton,
-                { marginTop: 10, paddingVertical: 16, shadowColor: "#1B4332", shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
+                { marginTop: 10, paddingVertical: 16, shadowColor: "#B78B3C", shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
                 (pressed || busy || isLoading) && authStyles.googleButtonPressed,
               ]}
             >
@@ -103,3 +103,15 @@ export default function SignIn() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#D4A853", // ✅ لون ذهبي أصلي
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    backgroundColor: "#F7EED8", // ✅ لون ذهبي فاتح للخلفية الداخلية
+  },
+});
