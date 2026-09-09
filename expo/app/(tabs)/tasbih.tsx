@@ -35,14 +35,12 @@ const TASBIH_TAG = '[TasbihScreen]';
 // 📿 إضافة صورة الخلفية
 const TASBIH_BACKGROUND = require('@/assets/images/tasbih-bg.png');
 
-
 export default function TasbihScreen() {
   const { t } = useLanguageStore();
   const insets = useSafeAreaInsets();
   const windowDimensions = useWindowDimensions();
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -80,7 +78,6 @@ export default function TasbihScreen() {
       console.log(TASBIH_TAG, 'Screen unmounting, cleaning up sound service');
       void soundService.unload();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -205,9 +202,7 @@ export default function TasbihScreen() {
     Alert.alert(t('comingSoon'), t('featureComingSoon'));
   }, [t]);
 
-  const toggleSound = useCallback(() => {
-    // يمكنك إضافة منطق تبديل الصوت هنا
-  }, []);
+  const toggleSound = useCallback(() => {}, []);
 
   const predefinedColors = useMemo(() => ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'], []);
   const counterSize = Math.max(184, Math.min(220, windowDimensions.width - 96, windowDimensions.height * 0.28));
@@ -235,7 +230,6 @@ export default function TasbihScreen() {
 
   return (
     <ThemedBackground testID="tasbih-screen" style={{ backgroundColor: '#004D33' }}>
-      {/* 📿 صورة الخلفية الكاملة */}
       <ImageBackground
         source={TASBIH_BACKGROUND}
         style={styles.backgroundImage}
@@ -282,9 +276,7 @@ export default function TasbihScreen() {
         <View style={styles.mainContent}>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             
-            {/* 📿 بطاقة الذكر مع زر الصوت */}
             <View style={styles.dhikrCardWrapper}>
-
               <LinearGradient colors={['rgba(255,255,255,0.95)', 'rgba(247,244,238,0.95)']} style={styles.dhikrDisplay}>
                 <View style={styles.dhikrIconContainer}>
                   <View style={styles.dhikrIcon}><Moon size={20} color={DEEP_GREEN} /></View>
@@ -297,7 +289,6 @@ export default function TasbihScreen() {
                   <Text style={[styles.translationText, androidTextFix]}>{selectedItem.translation}</Text>
                 )}
                 
-                {/* 🔊 زر الصوت وزر الاستمع للذكر */}
                 <View style={styles.dhikrActions}>
                   <TouchableOpacity style={styles.soundButton} onPress={toggleSound}>
                     {settings.soundEnabled ? <Volume2 size={20} color={DEEP_GREEN} /> : <VolumeX size={20} color={TEXT_MUTED} />}
@@ -314,7 +305,6 @@ export default function TasbihScreen() {
               </LinearGradient>
             </View>
 
-            {/* 📿 العداد الدائري الكبير */}
             <View style={styles.counterSection}>
               <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
                 <BeadRingCounter
@@ -337,18 +327,19 @@ export default function TasbihScreen() {
 
               <Text style={[styles.tapHint, androidTextFix]}>{t('tapToCount')}</Text>
 
-              {/* 📊 شريط التقدم */}
               <View style={styles.progressBarContainer}>
                 <View style={styles.progressBarTrack}>
                   <Animated.View
-                    style={[styles.progressBarFill, { width: ${progressPercent}%, backgroundColor: selectedItem.color }]}
+                    style={[
+                      styles.progressBarFill,
+                      { width: `${progressPercent}%`, backgroundColor: selectedItem.color },
+                    ]}
                   />
                 </View>
                 <Text style={[styles.progressText, androidTextFix]}>{selectedItem.count} / {selectedItem.targetCount}</Text>
               </View>
             </View>
 
-            {/* ➖ الإحصائيات + إعادة */}
             <View style={styles.controlButtonsRow}>
               <TouchableOpacity style={styles.controlButton} onPress={handleDecrement} activeOpacity={0.7} testID="decrement-button">
                 <LinearGradient colors={['#FFE4E4', '#FFF0F0']} style={styles.controlButtonGradient}>
@@ -359,7 +350,7 @@ export default function TasbihScreen() {
               <View style={styles.statsDisplay}>
                 <View style={styles.statItem}>
                   <Text style={[styles.statLabel, androidTextFix]}>{t('today')}</Text>
-<Text style={[styles.statValue, androidTextFix]}>{stats.todayCount}</Text>
+                  <Text style={[styles.statValue, androidTextFix]}>{stats.todayCount}</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
@@ -375,7 +366,6 @@ export default function TasbihScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* 📈 رابط الإحصائيات */}
             <TouchableOpacity
               style={styles.liveStatsSummary}
               onPress={() => router.push('/statistics')}
@@ -387,7 +377,7 @@ export default function TasbihScreen() {
                 <View>
                   <Text style={[styles.liveStatsTitle, androidTextFix]}>{t('statistics') || 'الإحصائيات'}</Text>
                   <Text style={[styles.liveStatsSubtitle, androidTextFix]}>
-                    {stats.completedSessions} {t('sessions')  'جلسات'} · {stats.todayCount} {t('today')  'اليوم'}
+                    {stats.completedSessions} {t('sessions') || 'جلسات'} · {stats.todayCount} {t('today') || 'اليوم'}
                   </Text>
                 </View>
                 <View style={styles.liveStatsIconCircle}>
@@ -403,7 +393,6 @@ export default function TasbihScreen() {
         </View>
       </ImageBackground>
 
-      {/* ➕ نافذة إضافة ذكر جديد */}
       <Modal visible={showAddModal} animationType="slide" transparent onRequestClose={handleCloseModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -437,7 +426,6 @@ export default function TasbihScreen() {
                   style={styles.textInput}
                   value={newTasbih.transliteration}
                   onChangeText={(text) => setNewTasbih(prev => ({ ...prev, transliteration: text }))}
-
                   placeholder={t('transliterationPlaceholder')}
                   placeholderTextColor={TEXT_MUTED}
                   testID="input-transliteration"
@@ -478,7 +466,7 @@ export default function TasbihScreen() {
                       key={color}
                       style={[styles.colorOption, { backgroundColor: color }, newTasbih.color === color && styles.selectedColor]}
                       onPress={() => setNewTasbih(prev => ({ ...prev, color }))}
-                      testID={color-option-${color}}
+                      testID={`color-option-${color}`}
                     />
                   ))}
                 </View>
@@ -522,8 +510,7 @@ const styles = StyleSheet.create({
     borderRadius: 24, marginBottom: 10, width: '90%',
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 8,
     borderWidth: 1, borderColor: 'rgba(212,168,83,0.2)',
-
-    },
+  },
   dhikrIconContainer: { marginBottom: 8 },
   dhikrIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(27,67,50,0.08)', alignItems: 'center', justifyContent: 'center' },
   mainArabicText: { fontSize: 20, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'center', marginBottom: 4, lineHeight: 30, paddingHorizontal: 6, writingDirection: 'rtl' as const },
@@ -560,7 +547,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 20, paddingHorizontal: 20, paddingVertical: 16,
     marginTop: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1, shadowRadius: 12, elevation: 6,
-
     borderWidth: 1, borderColor: GOLD + '20',
   },
   liveStatsRight: { flexDirection: 'row', alignItems: 'center', gap: 14 },
