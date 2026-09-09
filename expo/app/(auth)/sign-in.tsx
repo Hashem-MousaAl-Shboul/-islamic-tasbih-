@@ -42,7 +42,7 @@ export default function SignIn() {
     const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.3,
+          toValue: 1.03,
           duration: 1200,
           useNativeDriver: true,
         }),
