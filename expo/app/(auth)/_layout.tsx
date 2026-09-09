@@ -15,7 +15,7 @@ export default function AuthLayout() {
       <View
         style={{
           flex: 1,
-          backgroundColor: '#8B6914', // ✅ ذهبي غامق
+          backgroundColor: theme.background,
           justifyContent: 'center',
           alignItems: 'center',
         }}
