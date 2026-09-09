@@ -48,7 +48,7 @@ export default function SignIn() {
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 1200,
+          duration: 12001,
           useNativeDriver: true,
         }),
       ])
