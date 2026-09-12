@@ -6,20 +6,11 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
-  View,
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import {
-  AuthButton,
-  AuthInput,
-  AuthLink,
-  AuthShell,
-  authStyles,
-} from "@/components/AuthShell";
-
+import { AuthShell, authStyles } from "@/components/AuthShell";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
 
@@ -35,7 +26,7 @@ export default function SignUp() {
     setError("");
   }, []);
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignUp = async () => {
     if (busy || isLoading) return;
 
     setBusy(true);
@@ -61,12 +52,15 @@ export default function SignUp() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AuthShell title={t("welcomeBack")} subtitle={t("signInToContinue")}>
+        <AuthShell
+          title={t("createAccount") || t("welcomeBack")}
+          subtitle={t("signUpToContinue") || t("signInToContinue")}
+        >
           {!!error && <Text style={authStyles.error}>{error}</Text>}
 
           <Pressable
             disabled={busy || isLoading}
-            onPress={handleGoogleSignIn}
+            onPress={handleGoogleSignUp}
             accessibilityRole="button"
             accessibilityLabel={t("signInWithGoogle")}
             style={({ pressed }) => [
