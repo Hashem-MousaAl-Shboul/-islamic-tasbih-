@@ -8,7 +8,6 @@ import {
   CircleDot,
   Compass,
   SlidersHorizontal,
-  User,
 } from 'lucide-react-native';
 
 import OptimizedTabBar from '@/components/OptimizedTabBar';
@@ -17,52 +16,69 @@ import { useLanguageStore } from '@/hooks/useLanguageStore';
 
 export default function TabLayout(): React.ReactElement {
   const { t } = useLanguageStore();
-  const screenOptions = useMemo(() => ({
-    headerShown: false,
-    tabBarActiveTintColor: Colors.secondary,
-    tabBarInactiveTintColor: Colors.dark.textSecondary,
-    tabBarShowLabel: true,
-    tabBarHideOnKeyboard: Platform.OS === 'android',
-    lazy: true,
-    tabBarAllowFontScaling: true,
-    tabBar: (props: BottomTabBarProps): React.ReactElement => <OptimizedTabBar {...props} />,
-  }), []);
+
+  // إعدادات الشاشات الأساسية بدون كائن الـ Custom TabBar
+  const screenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      tabBarActiveTintColor: Colors.secondary,
+      tabBarInactiveTintColor: Colors.dark.textSecondary,
+      tabBarShowLabel: true,
+      tabBarHideOnKeyboard: Platform.OS === 'android',
+      lazy: true,
+      tabBarAllowFontScaling: true,
+    }),
+    []
+  );
 
   return (
-    <Tabs screenOptions={screenOptions}>
+    <Tabs
+      screenOptions={screenOptions}
+      tabBar={(props: BottomTabBarProps) => <OptimizedTabBar {...props} />}
+    >
       <Tabs.Screen
-        name="settings"
+        name="tasbih"
         options={{
-          title: t('settings') || 'الإعدادات',
-          tabBarIcon: ({ color, size }) => <SlidersHorizontal size={size} color={color} strokeWidth={1.8} />,
-        }}
-      />
-      <Tabs.Screen
-        name="adhkar"
-        options={{
-          title: t('adhkar') || 'الأذكار',
-          tabBarIcon: ({ color, size }) => <BookOpen size={size} color={color} strokeWidth={1.8} />,
+          title: t('tasbih') || 'التسبيح',
+          tabBarIcon: ({ color, size }) => (
+            <CircleDot size={size} color={color} strokeWidth={2} />
+          ),
         }}
       />
       <Tabs.Screen
         name="quran"
         options={{
           title: t('quranKareem') || 'القرآن',
-          tabBarIcon: ({ color, size }) => <BookOpenCheck size={size} color={color} strokeWidth={1.8} />,
+          tabBarIcon: ({ color, size }) => (
+            <BookOpenCheck size={size} color={color} strokeWidth={1.8} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="adhkar"
+        options={{
+          title: t('adhkar') || 'الأذكار',
+          tabBarIcon: ({ color, size }) => (
+            <BookOpen size={size} color={color} strokeWidth={1.8} />
+          ),
         }}
       />
       <Tabs.Screen
         name="qibla"
         options={{
           title: t('qibla') || 'القبلة',
-          tabBarIcon: ({ color, size }) => <Compass size={size} color={color} strokeWidth={1.8} />,
+          tabBarIcon: ({ color, size }) => (
+            <Compass size={size} color={color} strokeWidth={1.8} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="tasbih"
+        name="settings"
         options={{
-          title: t('tasbih') || 'التسبيح',
-          tabBarIcon: ({ color, size }) => <CircleDot size={size} color={color} strokeWidth={2} />,
+          title: t('settings') || 'الإعدادات',
+          tabBarIcon: ({ color, size }) => (
+            <SlidersHorizontal size={size} color={color} strokeWidth={1.8} />
+          ),
         }}
       />
     </Tabs>
