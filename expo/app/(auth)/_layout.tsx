@@ -1,4 +1,4 @@
-import { Redirect, Stack, useSegments } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -6,10 +6,8 @@ import { useTheme } from '@/theme/ThemeProvider';
 export default function AuthLayout() {
   const theme = useTheme();
   const { user, isLoading } = useAuthStore();
-  const segments = useSegments();
 
-  const isVerifyScreen = (segments as string[]).includes('verify-email');
-
+  // 1. حالة التحميل
   if (isLoading) {
     return (
       <View
@@ -25,26 +23,18 @@ export default function AuthLayout() {
     );
   }
 
-  if (!user) {
-    return (
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: 'fade',
-        }}
-      />
-    );
+  // 2. إذا كان المستخدم مسجل دخوله بالفعل، أرسله إلى الشاشة الرئيسية للتطبيق
+  if (user) {
+    return <Redirect href="/(tabs)" />;
   }
 
-  return <Redirect href="/(tabs)/tasbih" />;
-}
-
-export function redirectSystemPath({
-  path,
-  initial,
-}: { path: string; initial: boolean }) {
-  if (initial) {
-    return '/';
-  }
-  return path || '/';
+  // 3. إذا لم يكن مسجلاً، اترك له حرية التصفح داخل صفحات Auth (تسجيل الدخول / إنشاء حساب)
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: 'fade',
+      }}
+    />
+  );
 }
