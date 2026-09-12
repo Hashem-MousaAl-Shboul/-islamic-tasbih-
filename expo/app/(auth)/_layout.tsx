@@ -1,21 +1,12 @@
 import { Redirect, Stack, useSegments } from 'expo-router';
-import { ActivityIndicator, Platform, View } from 'react-native';
-import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 export default function AuthLayout() {
   const theme = useTheme();
   const { user, isLoading } = useAuthStore();
   const segments = useSegments();
-
-  // ✅ منع خطأ الويب: تشغيل فقط على الهاتف
-  useEffect(() => {
-    if (Platform.OS !== 'web') {
-      GoogleSignin.maybeCompleteAuthSession();
-    }
-  }, []);
 
   const isVerifyScreen = (segments as string[]).includes('verify-email');
 
