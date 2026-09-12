@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
@@ -16,7 +17,14 @@ import createContextHook from '@nkzw/create-context-hook';
 import { supabase, isSupabaseConfigured } from '@/utils/supabase';
 import type { Session, User } from '@supabase/supabase-js';
 
-WebBrowser.maybeCompleteAuthSession();
+// تجنب استدعاء جلسة المصادقة على الويب داخل iframe لمنع أخطاء الأمان Cross-Origin
+if (Platform.OS !== 'web') {
+  try {
+    WebBrowser.maybeCompleteAuthSession();
+  } catch (e) {
+    console.warn('[Auth] WebBrowser session complete error:', e);
+  }
+}
 
 const extra = Constants.expoConfig?.extra;
 
