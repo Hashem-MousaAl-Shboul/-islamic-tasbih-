@@ -7,19 +7,11 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
-  View,
 } from "react-native";
 import { useRouter } from "expo-router";
 
-import {
-  AuthButton,
-  AuthInput,
-  AuthLink,
-  AuthShell,
-  authStyles,
-} from "@/components/AuthShell";
+import { AuthShell, authStyles } from "@/components/AuthShell";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
 
@@ -31,37 +23,36 @@ export default function SignIn() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  // Animation values
+  // قيمة الحركة الرئيسية
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     setError("");
 
-    // Continuous pulse glow animation for Google button
+    // تأثير النبض الضوئي لخيار تسجيل الدخول
     const pulseLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.03,
+        Animated.timing(scaleAnim, {
+          toValue: 1.02,
           duration: 1200,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
-        Animated.timing(pulseAnim, {
+        Animated.timing(scaleAnim, {
           toValue: 1,
           duration: 1200,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
       ])
     );
     pulseLoop.start();
 
     return () => pulseLoop.stop();
-  }, []);
+  }, [scaleAnim]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.95,
-      useNativeDriver: true,
+      toValue: 0.96,
+      useNativeDriver: Platform.OS !== "web",
     }).start();
   };
 
@@ -70,7 +61,7 @@ export default function SignIn() {
       toValue: 1,
       friction: 4,
       tension: 40,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== "web",
     }).start();
   };
 
@@ -81,7 +72,7 @@ export default function SignIn() {
 
     try {
       await signInWithGoogle();
-    } catch (err) {
+    } catch (err: any) {
       const message = err?.message || t("unexpectedError");
       setError(message);
     } finally {
@@ -105,7 +96,7 @@ export default function SignIn() {
           <Animated.View
             style={{
               width: "100%",
-              transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }],
+              transform: [{ scale: scaleAnim }],
             }}
           >
             <Pressable
@@ -120,10 +111,7 @@ export default function SignIn() {
                 {
                   marginTop: 24,
                   paddingVertical: 16,
-                  shadowColor: "#D4A853",
-                  shadowOpacity: 0.3,
-                  shadowRadius: 10,
-                  elevation: 5,
+                  boxShadow: "0px 4px 10px rgba(212, 168, 83, 0.3)",
                 },
                 (pressed || busy || isLoading) && authStyles.googleButtonPressed,
               ]}
@@ -137,7 +125,12 @@ export default function SignIn() {
                     style={authStyles.googleLogo}
                     resizeMode="contain"
                   />
-                  <Text style={[authStyles.googleButtonText, { fontSize: 16, fontWeight: "700" }]}>
+                  <Text
+                    style={[
+                      authStyles.googleButtonText,
+                      { fontSize: 16, fontWeight: "700" },
+                    ]}
+                  >
                     {t("signInWithGoogle")}
                   </Text>
                 </>
