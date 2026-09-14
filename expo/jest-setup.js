@@ -1,4 +1,3 @@
-import React from "react";
 /* eslint-disable */
 import '@testing-library/jest-native/extend-expect';
 
@@ -18,8 +17,10 @@ jest.mock('expo-haptics', () => ({
 jest.mock('expo-linear-gradient', () => {
   const React = require('react');
   const { View } = require('react-native');
+
   return {
-    LinearGradient: ({ children, ...props }) => React.createElement(View, props, children),
+    LinearGradient: ({ children, ...props }) =>
+      React.createElement(View, props, children),
   };
 });
 
@@ -27,11 +28,19 @@ jest.mock('expo-linear-gradient', () => {
 jest.mock('react-native-svg', () => {
   const React = require('react');
   const { View } = require('react-native');
+
   return {
-    Svg: ({ children, ...props }) => React.createElement(View, props, children),
-    Circle: ({ children, ...props }) => React.createElement(View, props, children),
-    Path: ({ children, ...props }) => React.createElement(View, props, children),
-    G: ({ children, ...props }) => React.createElement(View, props, children),
+    Svg: ({ children, ...props }) =>
+      React.createElement(View, props, children),
+
+    Circle: ({ children, ...props }) =>
+      React.createElement(View, props, children),
+
+    Path: ({ children, ...props }) =>
+      React.createElement(View, props, children),
+
+    G: ({ children, ...props }) =>
+      React.createElement(View, props, children),
   };
 });
 
@@ -39,8 +48,13 @@ jest.mock('react-native-svg', () => {
 jest.mock('lucide-react-native', () => {
   const React = require('react');
   const { View } = require('react-native');
-  const MockIcon = (props) => React.createElement(View, { testID: 'mock-icon', ...props });
-  
+
+  const MockIcon = (props) =>
+    React.createElement(View, {
+      testID: 'mock-icon',
+      ...props,
+    });
+
   return {
     Settings: MockIcon,
     Moon: MockIcon,
@@ -65,12 +79,15 @@ jest.mock('expo-router', () => ({
     back: jest.fn(),
     replace: jest.fn(),
   }),
+
   useLocalSearchParams: () => ({}),
+
   Stack: {
-    Screen: ({ children, ...props }) => children,
+    Screen: ({ children }) => children,
   },
+
   Tabs: {
-    Screen: ({ children, ...props }) => children,
+    Screen: ({ children }) => children,
   },
 }));
 
