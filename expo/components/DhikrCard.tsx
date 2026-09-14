@@ -1,54 +1,26 @@
-import React, { memo, useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect, memo } from 'react';
 import {
-  Animated,
-  Easing,
-  Platform,
-  Pressable,
   StyleSheet,
   Text,
   View,
+  TouchableOpacity,
+  Platform,
+  Animated,
+  Easing,
   useWindowDimensions,
 } from 'react-native';
 import { CheckCircle } from 'lucide-react-native';
 import { Dhikr } from '@/types';
 
-type DhikrCardVariant = 'horizontal' | 'vertical';
-
-interface DhikrCardProps {
-  dhikr: Dhikr;
-  isActive: boolean;
-  onPress: () => void;
-  variant?: DhikrCardVariant;
-  locale?: string;
-}
-
-interface DhikrCardMetrics {
-  cardWidth: number;
-  cardHeight: number;
-  marginH: number;
-  snapInterval: number;
-  verticalCardWidth: number;
-  verticalCardHeight: number;
-}
-
-function computeMetrics(screenWidth: number): DhikrCardMetrics {
-  const safeWidth = Number.isFinite(screenWidth) && screenWidth > 0
-    ? screenWidth
-    : 400;
-
+function computeMetrics(screenWidth: number) {
   const marginH = 8;
   const paddingH = 20;
-  const isTablet = safeWidth >= 768;
-  const visible = isTablet ? 5 : safeWidth >= 414 ? 3 : 2.4;
-
-  const availableWidth =
-    safeWidth -
-    paddingH * 2 -
-    marginH * 2 * visible;
+  const isTablet = screenWidth >= 768;
+  const visible = isTablet ? 5 : screenWidth >= 414 ? 3 : 2.4;
 
   const cardWidth = Math.max(
     120,
-    Math.floor(availableWidth / visible)
+    Math.floor((screenWidth - paddingH * 2 - marginH * 2 * visible) / visible)
   );
 
   return {
@@ -56,55 +28,41 @@ function computeMetrics(screenWidth: number): DhikrCardMetrics {
     cardHeight: Math.round(cardWidth * 0.66),
     marginH,
     snapInterval: cardWidth + marginH * 2,
-    verticalCardWidth: Math.min(180, safeWidth * 0.35),
+    verticalCardWidth: Math.min(180, screenWidth * 0.35),
     verticalCardHeight: 80,
-  };
+  } as const;
 }
 
-export const getDhikrCardMetrics = (
-  screenWidth = 400
-): DhikrCardMetrics => computeMetrics(screenWidth);
+export const getDhikrCardMetrics = () => computeMetrics(400);
 
-function withAlpha(color: string, alpha: number): string {
-  const normalizedColor = color.trim().replace('#', '');
+function withAlpha(color: string, alpha: number) {
+  const hex = color.replace('#', '');
 
-  const safeAlpha = Math.min(Math.max(alpha, 0), 1);
+  if (/^[0-9A-Fa-f]{6}$/.test(hex)) {
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
 
-  if (/^[0-9A-Fa-f]{6}$/.test(normalizedColor)) {
-    const r = parseInt(normalizedColor.slice(0, 2), 16);
-    const g = parseInt(normalizedColor.slice(2, 4), 16);
-    const b = parseInt(normalizedColor.slice(4, 6), 16);
-
-    return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
-  if (/^[0-9A-Fa-f]{3}$/.test(normalizedColor)) {
-    const r = parseInt(normalizedColor[0] + normalizedColor[0], 16);
-    const g = parseInt(normalizedColor[1] + normalizedColor[1], 16);
-    const b = parseInt(normalizedColor[2] + normalizedColor[2], 16);
+  if (/^[0-9A-Fa-f]{3}$/.test(hex)) {
+    const r = parseInt(hex[0] + hex[0], 16);
+    const g = parseInt(hex[1] + hex[1], 16);
+    const b = parseInt(hex[2] + hex[2], 16);
 
-    return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
+  // لا يمكن إضافة alpha بشكل آمن إلى لون نصّي مثل "red".
   return color;
 }
 
-function clampProgress(
-  count: number,
-  targetCount: number
-): number {
-  if (
-    !Number.isFinite(count) ||
-    !Number.isFinite(targetCount) ||
-    targetCount <= 0
-  ) {
-    return 0;
-  }
-
-  return Math.min(
-    Math.max(count / targetCount, 0),
-    1
-  );
+interface DhikrCardProps {
+  dhikr: Dhikr;
+  isActive: boolean;
+  onPress: () => void;
+  variant?: 'horizontal' | 'vertical';
 }
 
 const DhikrCardComponent: React.FC<DhikrCardProps> = ({
@@ -112,340 +70,185 @@ const DhikrCardComponent: React.FC<DhikrCardProps> = ({
   isActive,
   onPress,
   variant = 'horizontal',
-  locale = 'ar-SA',
 }) => {
   const { width: screenWidth } = useWindowDimensions();
+  const metrics = useMemo(() => computeMetrics(screenWidth), [screenWidth]);
 
-  const metrics = useMemo(
-    () => computeMetrics(screenWidth),
-    [screenWidth]
-  );
+  const { arabicText, count, targetCount, color } = dhikr;
+  const progressValue = useRef(new Animated.Value(0)).current;
 
-  const {
-    id,
-    arabicText,
-    count,
-    targetCount,
-    color,
-  } = dhikr;
-
-  const progress = useMemo(
-    () => clampProgress(count, targetCount),
-    [count, targetCount]
-  );
+  // حماية من القسمة على صفر أو القيم غير الصحيحة.
+  const progress = useMemo(() => {
+    if (targetCount <= 0) return 0;
+    return Math.min(Math.max(count / targetCount, 0), 1);
+  }, [count, targetCount]);
 
   const isCompleted = progress >= 1;
 
-  const progressAnimation = useRef(
-    new Animated.Value(progress)
-  ).current;
-
   useEffect(() => {
     if (process.env.NODE_ENV === 'test') {
-      progressAnimation.setValue(progress);
+      progressValue.setValue(progress);
       return;
     }
-
-    const animation = Animated.timing(
-      progressAnimation,
-      {
-        toValue: progress,
-        duration: isCompleted ? 300 : 150,
-        easing: isCompleted
-          ? Easing.out(Easing.back(1.2))
-          : Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }
-    );
+    const animation = Animated.timing(progressValue, {
+      toValue: progress,
+      duration: isCompleted ? 300 : 150,
+      easing: isCompleted
+        ? Easing.out(Easing.back(1.2))
+        : Easing.out(Easing.quad),
+      useNativeDriver: false,
+    });
 
     animation.start();
 
-    return () => {
-      animation.stop();
-    };
-  }, [
-    progress,
-    isCompleted,
-    progressAnimation,
-  ]);
+    return () => animation.stop();
+  }, [progress, progressValue, isCompleted]);
 
-  const progressScaleX =
-    progressAnimation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-      extrapolate: 'clamp',
-    });
+  const progressWidth = progressValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
 
   const cardBackgroundColor = useMemo(
-    () =>
-      isActive
-        ? color
-        : withAlpha(color, 0.15),
+    () => (isActive ? color : withAlpha(color, 0.15)),
     [isActive, color]
   );
 
-  const borderColor = useMemo(
-    () =>
-      withAlpha(
-        color,
-        isActive ? 0.44 : 0.19
-      ),
-    [color, isActive]
-  );
-
   const cardWidth =
-    variant === 'vertical'
-      ? metrics.verticalCardWidth
-      : metrics.cardWidth;
+    variant === 'vertical' ? metrics.verticalCardWidth : metrics.cardWidth;
 
   const cardHeight =
-    variant === 'vertical'
-      ? metrics.verticalCardHeight
-      : metrics.cardHeight;
-
-  const containerStyle =
-    variant === 'vertical'
-      ? styles.verticalContainer
-      : styles.container;
+    variant === 'vertical' ? metrics.verticalCardHeight : metrics.cardHeight;
 
   const marginStyle =
     variant === 'vertical'
-      ? styles.verticalMargin
-      : {
-          marginHorizontal: metrics.marginH,
-        };
-
-  const headerStyle =
-    variant === 'vertical'
-      ? styles.verticalCardHeader
-      : styles.cardHeader;
-
-  const arabicTextStyle =
-    variant === 'vertical'
-      ? styles.verticalArabicText
-      : styles.arabicText;
-
-  const countTextStyle =
-    variant === 'vertical'
-      ? styles.verticalCountText
-      : styles.countText;
-
-  const accessibilityLabel = isCompleted
-    ? `${arabicText}. ${count} من ${targetCount}. مكتمل`
-    : `${arabicText}. ${count} من ${targetCount}. ${Math.round(
-        progress * 100
-      )} بالمئة`;
-
-  const formattedCount = Number.isFinite(count)
-    ? count.toLocaleString(locale)
-    : '0';
-
-  const formattedTargetCount =
-    Number.isFinite(targetCount)
-      ? targetCount.toLocaleString(locale)
-      : '0';
+      ? { marginVertical: 4 }
+      : { marginHorizontal: metrics.marginH };
 
   return (
-    <Pressable
-      testID={`dhikr-card-${id}`}
-      accessible
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{
-        selected: isActive,
-      }}
+    <TouchableOpacity
+      activeOpacity={0.85}
       onPress={onPress}
-      style={({ pressed }) => [
-        containerStyle,
+      style={[
+        variant === 'vertical' ? styles.verticalContainer : styles.container,
         {
           backgroundColor: cardBackgroundColor,
           borderWidth: isActive ? 2 : 1,
-          borderColor,
+          borderColor: withAlpha(color, isActive ? 0.44 : 0.19),
           width: cardWidth,
           height: cardHeight,
+          ...marginStyle,
         },
-        marginStyle,
-        pressed && styles.pressed,
       ]}
+      testID={`dhikr-card-${dhikr.id}`}
     >
-      <View style={headerStyle}>
+      <View
+        style={
+          variant === 'vertical' ? styles.verticalCardHeader : styles.cardHeader
+        }
+      >
         <Text
-          style={arabicTextStyle}
-          numberOfLines={
-            variant === 'vertical' ? 1 : 2
+          style={
+            variant === 'vertical'
+              ? styles.verticalArabicText
+              : styles.arabicText
           }
+          numberOfLines={variant === 'vertical' ? 1 : 2}
           adjustsFontSizeToFit
           minimumFontScale={0.8}
           maxFontSizeMultiplier={1.25}
-          accessibilityRole="text"
         >
           {arabicText}
         </Text>
 
         {isCompleted && (
-          <View
-            style={styles.completionIcon}
-            testID="completion-icon"
-            accessible
-            accessibilityLabel="تم إكمال الذكر"
-          >
+          <View style={styles.completionIcon} testID="completion-icon">
             <CheckCircle
               size={variant === 'vertical' ? 14 : 18}
               color="#4CAF50"
-              strokeWidth={2.5}
             />
           </View>
         )}
       </View>
 
       <Text
-        style={countTextStyle}
+        style={variant === 'vertical' ? styles.verticalCountText : styles.countText}
         maxFontSizeMultiplier={1.2}
         numberOfLines={1}
       >
-        {formattedCount}/{formattedTargetCount}
+        {count.toLocaleString('ar-SA')}/{targetCount.toLocaleString('ar-SA')}
       </Text>
 
-      <Text
-        style={styles.progressText}
-        maxFontSizeMultiplier={1.2}
-        numberOfLines={1}
-      >
-        {Math.round(progress * 100)}%
-      </Text>
+      <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
 
-      <View
-        style={styles.progressContainer}
-        accessible
-        accessibilityRole="progressbar"
-        accessibilityValue={{
-          min: 0,
-          max: 100,
-          now: Math.round(progress * 100),
-        }}
-      >
+      <View style={styles.progressContainer}>
         <View style={styles.progressBackground} />
-
         <Animated.View
-          testID="progress-bar"
           style={[
             styles.progressBar,
             {
-              backgroundColor: isActive
-                ? 'rgba(255,255,255,0.7)'
-                : color,
-              transform: [
-                {
-                  scaleX: progressScaleX,
-                },
-              ],
+              width: progressWidth,
+              backgroundColor: isActive ? 'rgba(255,255,255,0.7)' : color,
             },
           ]}
         />
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
 DhikrCardComponent.displayName = 'DhikrCard';
 
-export const DhikrCard = memo(
-  DhikrCardComponent,
-  (prevProps, nextProps) => {
-    if (prevProps === nextProps) {
-      return true;
-    }
-
-    return (
-      prevProps.dhikr.id === nextProps.dhikr.id &&
-      prevProps.dhikr.arabicText ===
-        nextProps.dhikr.arabicText &&
-      prevProps.dhikr.count ===
-        nextProps.dhikr.count &&
-      prevProps.dhikr.targetCount ===
-        nextProps.dhikr.targetCount &&
-      prevProps.dhikr.color ===
-        nextProps.dhikr.color &&
-      prevProps.isActive ===
-        nextProps.isActive &&
-      prevProps.variant ===
-        nextProps.variant &&
-      prevProps.locale ===
-        nextProps.locale &&
-      prevProps.onPress ===
-        nextProps.onPress
-    );
-  }
-);
+export const DhikrCard = memo(DhikrCardComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.dhikr.id === nextProps.dhikr.id &&
+    prevProps.dhikr.arabicText === nextProps.dhikr.arabicText &&
+    prevProps.dhikr.count === nextProps.dhikr.count &&
+    prevProps.dhikr.targetCount === nextProps.dhikr.targetCount &&
+    prevProps.dhikr.color === nextProps.dhikr.color &&
+    prevProps.isActive === nextProps.isActive &&
+    prevProps.variant === nextProps.variant &&
+    prevProps.onPress === nextProps.onPress
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
     borderRadius: 14,
     padding: 10,
     justifyContent: 'space-between',
-    overflow: 'hidden',
-
     ...Platform.select({
-      android: {
-        elevation: 4,
-      },
-
       ios: {
         shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 3,
-        },
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
       },
-
-      web: {
-        boxShadow:
-          '0px 3px 8px rgba(0,0,0,0.2)',
-      },
+      android: { elevation: 4 },
+      web: { boxShadow: '0px 3px 8px rgba(0,0,0,0.2)' },
     }),
   },
-
   verticalContainer: {
     borderRadius: 10,
     padding: 6,
     justifyContent: 'space-between',
-    overflow: 'hidden',
-
     ...Platform.select({
-      android: {
-        elevation: 2,
-      },
-
       ios: {
         shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 2,
       },
-
-      web: {
-        boxShadow:
-          '0px 1px 4px rgba(0,0,0,0.1)',
-      },
+      android: { elevation: 2 },
+      web: { boxShadow: '0px 1px 4px rgba(0,0,0,0.1)' },
     }),
   },
-
-  verticalMargin: {
-    marginVertical: 4,
-  },
-
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     width: '100%',
   },
-
   verticalCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -453,7 +256,6 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 4,
   },
-
   arabicText: {
     fontSize: 22,
     fontWeight: '800',
@@ -463,7 +265,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     writingDirection: 'rtl',
   },
-
   verticalArabicText: {
     fontSize: 18,
     fontWeight: '700',
@@ -473,25 +274,19 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     writingDirection: 'rtl',
   },
-
-  completionIcon: {
-    marginLeft: 8,
-  },
-
+  completionIcon: { marginLeft: 8 },
   countText: {
     fontSize: 16,
     color: '#FFF',
     textAlign: 'center',
     fontWeight: '700',
   },
-
   verticalCountText: {
     fontSize: 14,
     color: '#FFF',
     textAlign: 'center',
     fontWeight: '600',
   },
-
   progressText: {
     color: 'rgba(255,255,255,0.82)',
     fontSize: 11,
@@ -499,7 +294,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
   },
-
   progressContainer: {
     width: '100%',
     height: 5,
@@ -508,26 +302,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginTop: 6,
   },
-
   progressBackground: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor:
-      'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-
   progressBar: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: '100%',
     height: '100%',
+    position: 'absolute',
     borderRadius: 3,
-    transformOrigin: 'left',
-  },
-
-  pressed: {
-    opacity: 0.85,
   },
 });
