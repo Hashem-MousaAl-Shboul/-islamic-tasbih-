@@ -8,7 +8,6 @@ import {
   CircleDot,
   Compass,
   SlidersHorizontal,
-  User,
 } from 'lucide-react-native';
 
 import OptimizedTabBar from '@/components/OptimizedTabBar';

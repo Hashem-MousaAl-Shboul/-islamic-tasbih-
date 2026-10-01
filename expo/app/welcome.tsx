@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Pressable,
   Animated,
   Dimensions,
@@ -232,8 +231,8 @@ export default function WelcomeScreen() {
                 style={[
                   styles.featureCard,
                   {
-                    opacity: anim.fade,
-                    transform: [{ translateY: anim.slide }],
+                    opacity: anim?.fade,
+                    transform: [{ translateY: anim?.slide ?? 0 }],
                   },
                 ]}
               >

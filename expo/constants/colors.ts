@@ -46,11 +46,11 @@ export const Layout = {
   contentMaxWidth: 680,
 } as const;
 
-export const DefaultDhikrColors: Record<string, HexColor> = {
+export const DefaultDhikrColors = {
   'سبحان الله': '#2D8B6F',
   'الحمد لله': '#3777A8',
   'الله أكبر': '#7656A8',
   'لا إله إلا الله': '#238A86',
   'أستغفر الله': '#B27B25',
   default: '#238A86',
-};
+} as const satisfies Record<string, HexColor>;

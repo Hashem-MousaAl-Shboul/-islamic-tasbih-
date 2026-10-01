@@ -37,7 +37,6 @@ const BeadRingCounter = memo<BeadRingCounterProps>(({
   const spacerRadius = size * 0.048;
 
   const clampedCount = Math.max(0, Math.min(count, targetCount));
-  const progress = targetCount > 0 ? clampedCount / targetCount : 0;
 
   const beads = useMemo(() => {
     const total = Math.max(1, targetCount);

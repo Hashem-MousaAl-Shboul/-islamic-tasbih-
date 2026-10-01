@@ -91,20 +91,6 @@ function parseTime(timeStr: string): { hour: number; minute: number } {
   return { hour: h ?? 6, minute: m ?? 0 };
 }
 
-function getNextTrigger(hour: number, minute: number): Date {
-  const now = new Date();
-  const trigger = new Date();
-  trigger.setFullYear(now.getFullYear());
-  trigger.setMonth(now.getMonth());
-  trigger.setDate(now.getDate());
-  trigger.setHours(hour, minute, 0, 0);
-
-  if (trigger <= now) {
-    trigger.setDate(trigger.getDate() + 1);
-  }
-  return trigger;
-}
-
 async function scheduleReminder(
   id: string,
   hour: number,
@@ -282,7 +268,6 @@ export function useNotifications(): NotificationsHook {
 
       const granted = await requestPermissions();
       if (!granted) {
-        const appName = Constants.expoConfig?.name ?? 'Sabbah';
         Alert.alert(
           t('notificationsPermissionTitle'),
           t('notificationsPermissionDenied'),

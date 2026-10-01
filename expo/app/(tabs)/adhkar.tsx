@@ -143,7 +143,7 @@ const FilterButtonComponent: React.FC<FilterButtonProps> = ({
   label,
 }) => {
   const isSelected = selectedFilter === filter;
-  const colors = FILTER_COLORS[filter] || FILTER_COLORS.all;
+  const colors = FILTER_COLORS[filter] ?? { icon: GOLD, activeBg: DEEP_GREEN };
 
   const handlePress = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -888,7 +888,7 @@ class ErrorBoundary extends React.Component<
     };
   }
 
-  componentDidCatch(error: unknown) {
+  override componentDidCatch(error: unknown) {
     console.log(
       '[AdhkarScreen] Caught error:',
       error
@@ -901,7 +901,7 @@ class ErrorBoundary extends React.Component<
     });
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <View

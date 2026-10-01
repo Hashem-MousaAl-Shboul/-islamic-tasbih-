@@ -6,7 +6,6 @@ import {
   ScrollView,
   Platform,
   Alert,
-  Linking,
   TouchableOpacity,
   Pressable,
   Switch,
@@ -38,13 +37,11 @@ import {
   Sun as SunIcon,
   TrendingUp,
   User,
-  Mail,
   LogOut,
   Camera,
   X,
   Check,
   Save,
-  Edit2,
   ImageIcon,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -117,11 +114,6 @@ function SettingsRow({ icon, title, subtitle, type, value, onPress, onToggle, da
     }
   }, [type, onToggle, onPress, disabled]);
 
-  const isDark = theme.mode === 'dark';
-  const textColor = isDark ? Colors.dark.text : Colors.light.text;
-  const textSecondary = isDark ? Colors.dark.textSecondary : Colors.light.textSecondary;
-  const borderColor = isDark ? Colors.dark.border : Colors.light.border;
-  const surfaceColor = isDark ? Colors.dark.surface : Colors.light.surface;
   const primaryColor = Colors.primary;
 
   return (
@@ -400,7 +392,7 @@ export default function SettingsScreen() {
       if (result.canceled || !result.assets || result.assets.length === 0) {
         return;
       }
-      const uri = result.assets[0].uri;
+      const uri = result.assets[0]?.uri;
       if (!uri) {
         throw new Error('Selected image does not contain a valid URI.');
       }
@@ -430,7 +422,7 @@ export default function SettingsScreen() {
       if (result.canceled || !result.assets || result.assets.length === 0) {
         return;
       }
-      const uri = result.assets[0].uri;
+      const uri = result.assets[0]?.uri;
       if (!uri) {
         throw new Error('Captured image does not contain a valid URI.');
       }

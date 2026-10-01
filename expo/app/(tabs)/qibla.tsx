@@ -16,7 +16,6 @@ import { Line, Text as SvgText, G, Path, Circle, Svg, Polygon } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
-  Navigation2,
   MapPin,
   RefreshCw,
   Info,
@@ -45,13 +44,10 @@ import { createShadow, pointerEventsNone } from '@/utils/shadowUtils';
 import AdBanner from '@/components/AdBanner';
 
 const GOLD = '#D4A853';
-const GOLD_DIM = '#B8923F';
 const DEEP_GREEN = '#1B4332';
 const DEEP_GREEN_DARK = '#134238';
-const DARK_BG = '#1B1F2E';
 const DARK_CARD = '#232838';
 const DARK_BORDER = '#2D3142';
-const LIGHT_BG = '#F5F1E8';
 const LIGHT_CARD = '#FFFFFF';
 const LIGHT_BORDER = '#E0E8E5';
 const TEXT_LIGHT = '#FFFFFF';
@@ -97,11 +93,9 @@ interface CompassProps {
 
 const Compass = memo(function Compass({ heading, qiblaBearing, isAligned, size, isDark, theme }: CompassProps) {
   const { dialStyle, arrowColor } = theme;
-  const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
   const borderColor = isAligned ? arrowColor.color : (isDark ? DARK_BORDER : LIGHT_BORDER);
   const textColor = isAligned ? arrowColor.color : (isDark ? TEXT_LIGHT : TEXT_DARK);
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
-  const compassRingColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(27,67,50,0.08)';
 
   const dialRotation = heading != null ? -heading : 0;
   const qiblaArrowAngle = qiblaBearing ?? 0;
@@ -284,7 +278,6 @@ const AnimatedDial = memo(function AnimatedDial({
   ticks,
   qiblaArrowAngle,
   isAligned,
-  textColor,
   mutedColor,
   arrowColor,
   arrowDimColor,
@@ -426,8 +419,6 @@ const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, magneticFi
   }, [accuracy, t]);
 
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
-  const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
-  const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
   const Icon = config.icon;
 
   const magText = useMemo(() => {
@@ -482,8 +473,6 @@ interface CalibrationCardProps {
 const CalibrationCard = memo(function CalibrationCard({ isDark }: CalibrationCardProps) {
   const { t } = useLanguageStore();
   const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
-  const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
-  const textColor = isDark ? TEXT_LIGHT : TEXT_DARK;
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
 
   const steps = useMemo(() => [
@@ -518,11 +507,10 @@ interface MiniMapProps {
   size: number;
 }
 
-const MiniMap = memo(function MiniMap({ userLocation, qiblaBearing, isDark, size }: MiniMapProps) {
+const MiniMap = memo(function MiniMap({ userLocation, isDark, size }: MiniMapProps) {
   const { t } = useLanguageStore();
   const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
   const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
-  const textColor = isDark ? TEXT_LIGHT : TEXT_DARK;
   const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
 
   const userLon = userLocation?.longitude ?? 0;
@@ -613,7 +601,8 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
         });
         if (!nextFound) {
           const fajrIndex = updated.findIndex((entry) => entry.key === 'Fajr');
-          if (fajrIndex >= 0) updated[fajrIndex] = { ...updated[fajrIndex], isNext: true };
+          const fajrEntry = updated[fajrIndex];
+          if (fajrIndex >= 0 && fajrEntry) updated[fajrIndex] = { ...fajrEntry, isNext: true };
         }
         return updated;
       });
@@ -646,11 +635,13 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
         setHijriDate(`${hijri.day} ${hijri.month.ar} ${hijri.date.split('-')[0]}`);
 
         const formatTime = (time: string): string => {
-          const clean = time.split(' ')[0];
+          const clean = time.split(' ')[0] ?? time;
           const [h, m] = clean.split(':').map(Number);
-          const period = h >= 12 ? t('pm') : t('am');
-          const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-          return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
+          const hours = h ?? 0;
+          const minutes = m ?? 0;
+          const period = hours >= 12 ? t('pm') : t('am');
+          const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+          return `${hour12}:${String(minutes).padStart(2, '0')} ${period}`;
         };
 
         const now = new Date();
@@ -658,13 +649,15 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
         const rawEntries = prayerKeys.map((key) => ({
           key,
           label: t(key.toLowerCase() as 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha'),
-          rawTime: timings[key],
+          rawTime: timings[key] ?? '',
         }));
 
         let nextFound = false;
         const entries: PrayerTimeEntry[] = rawEntries.map((e) => {
-          const clean = e.rawTime.split(' ')[0];
-          const [h24, m] = clean.split(':').map(Number);
+          const clean = e.rawTime.split(' ')[0] ?? e.rawTime;
+          const [h24Raw, mRaw] = clean.split(':').map(Number);
+          const h24 = h24Raw ?? 0;
+          const m = mRaw ?? 0;
           const prayerDate = new Date();
           prayerDate.setHours(h24, m, 0, 0);
 
@@ -682,7 +675,7 @@ const PrayerTimes = memo(function PrayerTimes({ location, isDark }: PrayerTimesP
         if (!nextFound && entries.length > 0) {
           const fajrEntry = entries.find((e) => e.key === 'Fajr');
           if (fajrEntry) fajrEntry.isNext = true;
-          else entries[0].isNext = true;
+          else if (entries[0]) entries[0].isNext = true;
         }
 
         setPrayerTimes(entries);

@@ -112,7 +112,8 @@ export const ColorThemePicker = memo(function ColorThemePicker({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const uri = result.assets[0].uri;
+        const uri = result.assets[0]?.uri;
+        if (!uri) return;
         setPreviewImage(uri);
         setPreviewBackground('custom');
         if (onSelectBackground) {

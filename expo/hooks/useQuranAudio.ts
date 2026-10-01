@@ -4,16 +4,29 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { Audio, type AVPlaybackStatus } from 'expo-av';
 import { InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av/build/Audio.types';
+import { useQuery } from '@tanstack/react-query';
 import createContextHook from '@nkzw/create-context-hook';
 
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useQuranStore } from '@/hooks/useQuranStore';
 import { useReciterStore } from '@/hooks/useReciterStore';
 import type { SurahMeta } from '@/utils/quranData';
+import {
+  clampPageNumber,
+  clampSurahNumber,
+  fetchPageVerses,
+  fetchSurahVerses,
+  type SurahTextResult,
+} from '@/utils/quranApi';
 import { getQuranRecitationUrl, type ReciterId } from '@/utils/ttsService';
 import { stopAudio as stopYasAI } from '@/utils/yasAI';
 
 export type RepeatMode = 'none' | 'surah';
+
+/** هدف جلب النص: سورة كاملة أو صفحة مصحفية */
+export type QuranTextTarget =
+  | { kind: 'surah'; number: number }
+  | { kind: 'page'; number: number };
 
 export interface QuranAudioState {
   currentSurah: SurahMeta | null;
@@ -53,6 +66,51 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
   const [duration, setDuration] = useState<number>(0);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('none');
   const [error, setError] = useState<string | null>(null);
+  const [textTarget, setTextTarget] = useState<QuranTextTarget | null>(null);
+
+  // —— جلب نصوص القرآن (الجسر الوحيد بين API والشاشات) ——
+  // React Query يتكفل بالتخزين المؤقت (النصوص لا تتغير) وإعادة المحاولة.
+  const {
+    data: textData,
+    isLoading: isTextLoading,
+    isError: hasTextError,
+    isFetching: isTextFetching,
+    refetch: refetchText,
+  } = useQuery<SurahTextResult>({
+    queryKey: textTarget
+      ? ['quran-text', textTarget.kind, textTarget.number]
+      : ['quran-text', 'idle'],
+    queryFn: () => {
+      if (!textTarget) throw new Error('No text target');
+      return textTarget.kind === 'page'
+        ? fetchPageVerses(textTarget.number)
+        : fetchSurahVerses(textTarget.number);
+    },
+    enabled: textTarget !== null,
+    staleTime: Infinity,
+    gcTime: 30 * 60 * 1000,
+    retry: 2,
+  });
+
+  const surahText: SurahTextResult | null = textTarget ? textData ?? null : null;
+  const isLoadingText: boolean = textTarget !== null && isTextLoading;
+  const isTextError: boolean = textTarget !== null && hasTextError;
+
+  const loadSurahText = useCallback((surahNumber: number): void => {
+    setTextTarget({ kind: 'surah', number: clampSurahNumber(surahNumber) });
+  }, []);
+
+  const loadPageText = useCallback((pageNumber: number): void => {
+    setTextTarget({ kind: 'page', number: clampPageNumber(pageNumber) });
+  }, []);
+
+  const retryText = useCallback((): void => {
+    void refetchText();
+  }, [refetchText]);
+
+  const clearText = useCallback((): void => {
+    setTextTarget(null);
+  }, []);
 
   const soundRef = useRef<Audio.Sound | null>(null);
   const currentSurahRef = useRef<SurahMeta | null>(null);
@@ -383,5 +441,13 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
     toggleRepeat,
     isCurrentSurah,
     dismissError,
-  }), [currentSurah, isPlaying, isLoading, position, duration, repeatMode, error, playSurah, togglePlayPause, stop, stopAndClear, seekTo, toggleRepeat, isCurrentSurah, dismissError]);
+    surahText,
+    isLoadingText,
+    isTextError,
+    isTextFetching,
+    loadSurahText,
+    loadPageText,
+    retryText,
+    clearText,
+  }), [currentSurah, isPlaying, isLoading, position, duration, repeatMode, error, playSurah, togglePlayPause, stop, stopAndClear, seekTo, toggleRepeat, isCurrentSurah, dismissError, surahText, isLoadingText, isTextError, isTextFetching, loadSurahText, loadPageText, retryText, clearText]);
 });

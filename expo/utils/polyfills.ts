@@ -12,7 +12,7 @@ declare global {
 }
 
 if (typeof requestIdleCallback === 'undefined') {
-  (global as any).requestIdleCallback = (
+  (globalThis as any).requestIdleCallback = (
     callback: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
     options?: { timeout: number }
   ) => {
@@ -27,7 +27,7 @@ if (typeof requestIdleCallback === 'undefined') {
 }
 
 if (typeof cancelIdleCallback === 'undefined') {
-  (global as any).cancelIdleCallback = (id: number) => {
+  (globalThis as any).cancelIdleCallback = (id: number) => {
     clearTimeout(id);
   };
 }

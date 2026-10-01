@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   ScrollView,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, X } from 'lucide-react-native';
@@ -25,7 +24,6 @@ import { createShadow } from '@/utils/shadowUtils';
 
 // ── Design tokens ──────────────────────────────────────────────
 const GOLD = '#D4A853';
-const DEEP_GREEN = '#1B4332';
 const DARK_BG = '#1B1F2E';
 const DARK_CARD = '#232838';
 const DARK_BORDER = '#2D3142';

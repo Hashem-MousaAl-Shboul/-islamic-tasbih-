@@ -28,6 +28,7 @@ import { useReciterStore } from '@/hooks/useReciterStore';
 import { useQuranStore, type LastReadPosition } from '@/hooks/useQuranStore';
 import { useQuranAudio } from '@/hooks/useQuranAudio';
 import { RECITER_NAMES, type ReciterId } from '@/utils/ttsService';
+import { fetchSurahList } from '@/utils/quranApi';
 import {
   SURAHS,
   JUZ_STARTS,
@@ -53,29 +54,7 @@ const IVORY = '#F7F4EE';
 
 type QuranViewMode = 'surah' | 'juz' | 'page' | 'hizb';
 
-interface ApiSurah {
-  number: number;
-  name: string;
-  englishName: string;
-  englishNameTranslation: string;
-  numberOfAyahs: number;
-  revelationType: string;
-}
-
-// API Fetching
-async function fetchAllSurahs(): Promise<SurahMeta[]> {
-  const response = await fetch('https://api.alquran.cloud/v1/surah');
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
-  const json = await response.json();
-  return (json.data as ApiSurah[]).map((s) => ({
-    number: s.number,
-    name: s.name,
-    englishName: s.englishName,
-    englishTranslation: s.englishNameTranslation,
-    revelationType: s.revelationType === 'Medinan' ? 'Medinan' : 'Meccan',
-    numberOfAyahs: s.numberOfAyahs,
-  }));
-}
+// جلب السور من المصدر الموحّد (utils/quranApi.ts) — الرابط محفوظ هناك فقط
 
 // Sub-components
 const QuranBookIllustration = React.memo(function QuranBookIllustration() {
@@ -360,7 +339,7 @@ export default function QuranScreen() {
 
   const { data: surahs, isLoading: surahsLoading, isError: surahsError } = useQuery<SurahMeta[]>({
     queryKey: ['quran-surahs'],
-    queryFn: fetchAllSurahs,
+    queryFn: fetchSurahList,
     staleTime: Infinity,
     gcTime: 60 * 60 * 1000,
     retry: 2,
@@ -410,7 +389,8 @@ export default function QuranScreen() {
   }, [activeMode, surahList]);
 
   const handleOpenSurahByNumber = useCallback((surahNum: number, ayahNum?: number) => {
-    const surah = getSurahByNumber(surahNum) ?? SURAHS[0];
+    const surah = getSurahByNumber(surahNum);
+    if (!surah) return;
     handleOpenReader(surah, ayahNum);
   }, [handleOpenReader]);
 

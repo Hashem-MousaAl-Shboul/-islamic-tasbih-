@@ -263,7 +263,7 @@ class TTSService {
 
       for (let i = 0; i < phrases.length; i++) {
         if (!this.isPlaying) break;
-        const seg = phrases[i];
+        const seg = phrases[i] ?? '';
         console.log(`[TTS] Segment ${i + 1}/${phrases.length}: ${seg.substring(0, 50)}...`);
         await this.speakOnce(seg, base);
         if (i < phrases.length - 1) {
@@ -294,7 +294,7 @@ class TTSService {
           break;
         }
         console.log(`[TTS] Speaking item ${i + 1}/${texts.length}`);
-        await this.speak(texts[i]);
+        await this.speak(texts[i] ?? '');
         if (i < texts.length - 1 && this.isProcessingQueue) {
           await new Promise(resolve => setTimeout(resolve, delayBetween));
         }

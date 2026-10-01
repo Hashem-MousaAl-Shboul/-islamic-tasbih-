@@ -10,15 +10,12 @@ import {
   TextInput,
   View,
   Image,
-  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
-import { Moon, Star } from "lucide-react-native";
-
-const { width, height } = Dimensions.get("window");
+import { Star } from "lucide-react-native";
 
 const mosqueImage = require("@/assets/images/mosque-silhouette.png");
 

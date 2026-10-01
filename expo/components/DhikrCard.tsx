@@ -79,9 +79,9 @@ function withAlpha(color: string, alpha: number): string {
   }
 
   if (/^[0-9A-Fa-f]{3}$/.test(normalizedColor)) {
-    const r = parseInt(normalizedColor[0] + normalizedColor[0], 16);
-    const g = parseInt(normalizedColor[1] + normalizedColor[1], 16);
-    const b = parseInt(normalizedColor[2] + normalizedColor[2], 16);
+    const r = parseInt(normalizedColor.charAt(0) + normalizedColor.charAt(0), 16);
+    const g = parseInt(normalizedColor.charAt(1) + normalizedColor.charAt(1), 16);
+    const b = parseInt(normalizedColor.charAt(2) + normalizedColor.charAt(2), 16);
 
     return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
   }

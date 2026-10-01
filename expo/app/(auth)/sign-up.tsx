@@ -8,14 +8,12 @@ import {
   ScrollView,
   Text,
 } from "react-native";
-import { useRouter } from "expo-router";
 
 import { AuthShell, authStyles } from "@/components/AuthShell";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { useLanguageStore } from "@/hooks/useLanguageStore";
 
 export default function SignUp() {
-  const router = useRouter();
   const { t } = useLanguageStore();
 
   const { signInWithGoogle, isLoading } = useAuthStore();

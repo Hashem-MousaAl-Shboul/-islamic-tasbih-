@@ -1,12 +1,12 @@
-import React, { useCallback, useMemo, useState, memo, useEffect, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Platform, Alert, useWindowDimensions,
   Modal, TextInput, FlatList, Animated, Dimensions
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  Plus, X, Check, Minus, RotateCcw, Lock,
+  Plus, X, Check, Minus, RotateCcw,
   Moon, TrendingUp, ChevronLeft
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -21,7 +21,7 @@ import { ThemedBackground } from '@/components/ThemedBackground';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/utils/soundService';
 import { ttsService } from '@/utils/ttsService';
-import { androidTextFix, androidRipple } from '@/utils/androidOptimizations';
+import { androidTextFix } from '@/utils/androidOptimizations';
 
 const { width: _SCREEN_WIDTH } = Dimensions.get('window');
 const GOLD = '#D4A853';
@@ -197,10 +197,6 @@ export default function TasbihScreen() {
     setShowAddModal(false);
     setNewTasbih({ arabicText: '', transliteration: '', translation: '', targetCount: 33, color: '#2D8B6F', category: 'custom' });
   }, []);
-
-  const handleLockedSpeak = useCallback(() => {
-    Alert.alert(t('comingSoon'), t('featureComingSoon'));
-  }, [t]);
 
   const predefinedColors = useMemo(() => ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'], []);
   const counterSize = Math.max(184, Math.min(220, windowDimensions.width - 96, windowDimensions.height * 0.28));

@@ -438,8 +438,9 @@ export const [TasbihProvider, useTasbihStore] = createContextHook<TasbihStore>((
     
     if (selectedItemId === id) {
       const activeItems = tasbihItems.filter(item => !item.isDeleted && item.id !== id);
-      if (activeItems.length > 0) {
-        setSelectedItemId(activeItems[0].id);
+      const firstActive = activeItems[0];
+      if (firstActive) {
+        setSelectedItemId(firstActive.id);
       }
     }
   }, [selectedItemId, tasbihItems]);

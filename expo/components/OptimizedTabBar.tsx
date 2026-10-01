@@ -96,15 +96,19 @@ const OptimizedTabBar = memo(function OptimizedTabBar({ state, descriptors, navi
   return (
     <View style={styles.wrapper} testID="optimized-tab-bar">
       <View style={[styles.tabBar, barStyle]} testID="tab-bar-shell">
-        {state.routes.map((route, index) => (
-          <TabItem
-            key={route.key}
-            route={route}
-            descriptor={descriptors[route.key]}
-            navigation={navigation}
-            isFocused={state.index === index}
-          />
-        ))}
+        {state.routes.map((route, index) => {
+          const descriptor = descriptors[route.key];
+          if (!descriptor) return null;
+          return (
+            <TabItem
+              key={route.key}
+              route={route}
+              descriptor={descriptor}
+              navigation={navigation}
+              isFocused={state.index === index}
+            />
+          );
+        })}
       </View>
     </View>
   );

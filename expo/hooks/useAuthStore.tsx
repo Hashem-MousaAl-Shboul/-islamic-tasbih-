@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -15,7 +15,7 @@ import Constants from 'expo-constants';
 import createContextHook from '@nkzw/create-context-hook';
 
 import { supabase, isSupabaseConfigured } from '@/utils/supabase';
-import type { Session, User } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 
 // تجنب استدعاء جلسة المصادقة على الويب داخل iframe لمنع أخطاء الأمان Cross-Origin
 if (Platform.OS !== 'web') {
@@ -27,14 +27,6 @@ if (Platform.OS !== 'web') {
 }
 
 const extra = Constants.expoConfig?.extra;
-
-const DEFAULT_GOOGLE_WEB_CLIENT_ID =
-  '876532173264-rb5a1kr14oq3k7us1bevpcsd58umhjhl.apps.googleusercontent.com';
-
-const GOOGLE_WEB_CLIENT_ID =
-  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
-  extra?.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
-  DEFAULT_GOOGLE_WEB_CLIENT_ID;
 
 export type AuthProfile = {
   uid: string;
@@ -407,7 +399,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
           const code = url.searchParams.get('code');
           if (code) {
             console.log('[Auth] Exchanging code for session...');
-            const { data: sessionData, error: exchangeError } =
+            const { error: exchangeError } =
               await supabase.auth.exchangeCodeForSession(code);
             if (exchangeError) throw exchangeError;
             console.log('[Auth] Session created successfully via code exchange');

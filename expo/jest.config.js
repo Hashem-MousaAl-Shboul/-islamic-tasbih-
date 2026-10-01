@@ -4,7 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
 
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|@expo|@unimodules|unimodules|sentry-expo|native-base|react-clone-referenced-element|@react-native-community|@react-navigation|lucide-react-native)/)',
+    'node_modules/(?!(react-native|@react-native|expo(nent)?|@expo(nent)?|expo-modules-core|@unimodules|unimodules|sentry-expo|native-base|react-clone-referenced-element|@react-native-community|@react-navigation|lucide-react-native)/)',
   ],
 
   testMatch: [

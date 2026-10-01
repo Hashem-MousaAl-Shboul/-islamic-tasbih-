@@ -1,4 +1,4 @@
-import { Redirect, Stack, useSegments } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuthStore } from '@/hooks/useAuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -6,9 +6,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 export default function AuthLayout() {
   const theme = useTheme();
   const { user, isLoading } = useAuthStore();
-  const segments = useSegments();
-
-  const isVerifyScreen = (segments as string[]).includes('verify-email');
 
   if (isLoading) {
     return (

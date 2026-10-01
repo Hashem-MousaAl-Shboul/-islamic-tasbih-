@@ -1,6 +1,5 @@
 import { Platform, Linking, Share, Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import * as StoreReview from 'expo-store-review';
 import Constants from 'expo-constants';
 import i18n from '@/constants/translations';
 
@@ -390,8 +389,9 @@ export const fastArrayFilter = <T>(
 ): T[] => {
   const result: T[] = [];
   for (let i = 0; i < array.length; i++) {
-    if (predicate(array[i])) {
-      result.push(array[i]);
+    const item = array[i];
+    if (item !== undefined && predicate(item)) {
+      result.push(item);
     }
   }
   return result;

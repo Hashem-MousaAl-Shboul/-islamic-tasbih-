@@ -9,7 +9,7 @@ const TEXT_MUTED = '#8A9B91';
 interface ErrorBoundaryState { hasError: boolean; errorMessage: string | null }
 
 export class ErrorBoundary extends React.Component<React.PropsWithChildren, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false, errorMessage: null };
+  override state: ErrorBoundaryState = { hasError: false, errorMessage: null };
 
   static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -17,7 +17,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
     return { hasError: true, errorMessage: message };
   }
 
-  componentDidCatch(error: unknown, info: React.ErrorInfo) {
+  override componentDidCatch(error: unknown, info: React.ErrorInfo) {
     console.error('[ErrorBoundary] componentDidCatch', error, info.componentStack);
   }
 
@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
     this.setState({ hasError: false, errorMessage: null });
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <View style={styles.container} testID="error-boundary">
