@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sabbah",
     "slug": "islamic-dhikr",
-    "version": "1.12.0",
+    "version": "1.13.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sabbah",
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1B4332"
       },
-      "versionCode": 128,
+      "versionCode": 129,
       "targetSdkVersion": 35,
       "package": "app.islamicdhikr.sabbah",
       "permissions": [
