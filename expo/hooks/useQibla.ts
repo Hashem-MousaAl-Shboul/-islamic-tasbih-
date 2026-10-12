@@ -1,10 +1,4 @@
-
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useState } from 'react';
 
 import {
   ActivityIndicator,
@@ -17,8 +11,7 @@ import {
   Platform,
 } from 'react-native';
 
-import * as Location from 'expo-location';
-import * as Haptics from 'expo-haptics';
+import { useQibla } from '@/hooks/useQibla';
 
 const COLORS = {
   green: '#1B4332',
@@ -31,121 +24,14 @@ const COLORS = {
   red: '#B45353',
 };
 
-const KAABA = {
-  latitude: 21.422487,
-  longitude: 39.826206,
-};
+type CompassQuality = 'high' | 'medium' | 'low' | 'unavailable';
 
-type Coordinates = {
-  latitude: number;
-  longitude: number;
-};
-
-type CompassQuality =
-  | 'high'
-  | 'medium'
-  | 'low'
-  | 'unknown';
-
-type HeadingSubscription = {
-  remove: () => void;
-};
-
-function normalizeAngle(angle: number): number {
-  return ((angle % 360) + 360) % 360;
-}
-
-function getAngularDifference(
-  target: number,
-  current: number,
-): number {
-  return ((target - current + 540) % 360) - 180;
-}
-
-function getQiblaBearing(
-  coordinates: Coordinates,
-): number {
-  const toRadians = (degrees: number) =>
-    (degrees * Math.PI) / 180;
-
-  const toDegrees = (radians: number) =>
-    (radians * 180) / Math.PI;
-
-  const latitude = toRadians(coordinates.latitude);
-  const kaabaLatitude = toRadians(KAABA.latitude);
-
-  const longitudeDifference = toRadians(
-    KAABA.longitude - coordinates.longitude,
-  );
-
-  const y = Math.sin(longitudeDifference);
-
-  const x =
-    Math.cos(latitude) * Math.tan(kaabaLatitude) -
-    Math.sin(latitude) * Math.cos(longitudeDifference);
-
-  return normalizeAngle(toDegrees(Math.atan2(y, x)));
-}
-
-function getDistanceToKaaba(
-  coordinates: Coordinates,
-): number {
-  const earthRadiusKm = 6371;
-
-  const toRadians = (degrees: number) =>
-    (degrees * Math.PI) / 180;
-
-  const latitude1 = toRadians(coordinates.latitude);
-  const latitude2 = toRadians(KAABA.latitude);
-
-  const latitudeDifference = toRadians(
-    KAABA.latitude - coordinates.latitude,
-  );
-
-  const longitudeDifference = toRadians(
-    KAABA.longitude - coordinates.longitude,
-  );
-
-  const a =
-    Math.sin(latitudeDifference / 2) ** 2 +
-    Math.cos(latitude1) *
-      Math.cos(latitude2) *
-      Math.sin(longitudeDifference / 2) ** 2;
-
-  const safeA = Math.min(1, Math.max(0, a));
-
-  return (
-    2 *
-    earthRadiusKm *
-    Math.atan2(
-      Math.sqrt(safeA),
-      Math.sqrt(1 - safeA),
-    )
-  );
-}
-
-function getCompassQuality(
-  accuracy: number,
-): CompassQuality {
-  if (!Number.isFinite(accuracy) || accuracy < 0) {
-    return 'unknown';
-  }
-
-  if (Platform.OS === 'android') {
-    if (accuracy === 3) return 'high';
-    if (accuracy === 2) return 'medium';
-    if (accuracy === 1) return 'low';
-    return 'unknown';
-  }
-
-  if (accuracy <= 15) return 'high';
-  if (accuracy <= 30) return 'medium';
-
-  return 'low';
-}
-
-function formatDistance(distanceKm: number): string {
-  if (!Number.isFinite(distanceKm) || distanceKm < 0) {
+function formatDistance(distanceKm: number | null): string {
+  if (
+    distanceKm === null ||
+    !Number.isFinite(distanceKm) ||
+    distanceKm < 0
+  ) {
     return 'غير متاحة';
   }
 
@@ -156,276 +42,58 @@ function formatDistance(distanceKm: number): string {
   return `${Math.round(distanceKm).toLocaleString('en-US')} كم`;
 }
 
+function getQualityText(quality: CompassQuality): string {
+  switch (quality) {
+    case 'high':
+      return 'جيدة';
+    case 'medium':
+      return 'متوسطة';
+    case 'low':
+      return 'ضعيفة';
+    default:
+      return 'غير متاحة';
+  }
+}
+
 export default function QiblaScreen() {
-  const [coordinates, setCoordinates] =
-    useState<Coordinates | null>(null);
+  const {
+    location,
+    qiblaBearing,
+    distanceToKaaba,
+    heading,
+    accuracy,
+    isAligned,
+    isLoadingLocation,
+    error,
+    permissionDenied,
+    refreshLocation,
+  } = useQibla();
 
-  const [qiblaBearing, setQiblaBearing] =
-    useState<number | null>(null);
-
-  const [distanceKm, setDistanceKm] =
-    useState<number | null>(null);
-
-  const [heading, setHeading] =
-    useState<number | null>(null);
-
-  const [compassAccuracy, setCompassAccuracy] =
-    useState<CompassQuality>('unknown');
-
-  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const [error, setError] = useState<string | null>(null);
-  const [permissionDenied, setPermissionDenied] =
-    useState(false);
-
-  const headingSubscriptionRef =
-    useRef<HeadingSubscription | null>(null);
-
-  const headingStartingRef = useRef(false);
-  const locationRequestRef = useRef(false);
-  const mountedRef = useRef(true);
-  const previousAlignedRef = useRef(false);
 
   const relativeBearing =
     qiblaBearing !== null && heading !== null
-      ? getAngularDifference(qiblaBearing, heading)
+      ? ((qiblaBearing - heading + 540) % 360) - 180
       : 0;
 
-  const isAligned =
-    heading !== null &&
-    qiblaBearing !== null &&
-    Math.abs(relativeBearing) <= 5;
-
-  // تشغيل حساس البوصلة مرة واحدة بعد منح إذن الموقع.
-  const startHeading = useCallback(async () => {
-    if (
-      Platform.OS === 'web' ||
-      headingSubscriptionRef.current ||
-      headingStartingRef.current
-    ) {
-      return;
-    }
-
-    headingStartingRef.current = true;
-
-    try {
-      const permission =
-        await Location.getForegroundPermissionsAsync();
-
-      if (
-        permission.status !== 'granted' ||
-        !mountedRef.current
-      ) {
-        return;
-      }
-
-      const subscription =
-        await Location.watchHeadingAsync((result) => {
-          if (!mountedRef.current) return;
-
-          const trueHeading = result.trueHeading;
-          const magneticHeading = result.magHeading;
-
-          const rawHeading =
-            Number.isFinite(trueHeading) && trueHeading >= 0
-              ? trueHeading
-              : magneticHeading;
-
-          if (
-            !Number.isFinite(rawHeading) ||
-            rawHeading < 0
-          ) {
-            return;
-          }
-
-          setHeading(normalizeAngle(rawHeading));
-          setCompassAccuracy(
-            getCompassQuality(result.accuracy),
-          );
-        });
-
-      if (mountedRef.current) {
-        headingSubscriptionRef.current = subscription;
-      } else {
-        subscription.remove();
-      }
-    } catch {
-      if (mountedRef.current) {
-        setError((current) =>
-          current ??
-          'تعذر تشغيل حساس البوصلة. تأكد من دعم الهاتف لهذه الميزة.',
-        );
-      }
-    } finally {
-      headingStartingRef.current = false;
-    }
-  }, []);
-
-  // تحديد الموقع وحساب اتجاه القبلة والمسافة.
-  const loadLocation = useCallback(
-    async (manual = false) => {
-      if (locationRequestRef.current) return;
-
-      locationRequestRef.current = true;
-
-      if (manual) {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
-
-      setError(null);
-      setPermissionDenied(false);
-
-      try {
-        if (Platform.OS === 'web') {
-          throw new Error(
-            'افتح تطبيق Sabbah على هاتفك لاستخدام حساس البوصلة.',
-          );
-        }
-
-        const servicesEnabled =
-          await Location.hasServicesEnabledAsync();
-
-        if (!servicesEnabled) {
-          throw new Error(
-            'فعّل خدمة الموقع في إعدادات الهاتف ثم حاول مجددًا.',
-          );
-        }
-
-        let permission =
-          await Location.getForegroundPermissionsAsync();
-
-        if (permission.status !== 'granted') {
-          permission =
-            await Location.requestForegroundPermissionsAsync();
-        }
-
-        if (permission.status !== 'granted') {
-          if (mountedRef.current) {
-            setPermissionDenied(true);
-            setError(
-              'يلزم السماح بالوصول إلى الموقع لحساب اتجاه القبلة.',
-            );
-          }
-
-          return;
-        }
-
-        const position =
-          await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.High,
-          });
-
-        const nextCoordinates: Coordinates = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-
-        if (
-          !Number.isFinite(nextCoordinates.latitude) ||
-          !Number.isFinite(nextCoordinates.longitude) ||
-          Math.abs(nextCoordinates.latitude) > 90 ||
-          Math.abs(nextCoordinates.longitude) > 180
-        ) {
-          throw new Error(
-            'تعذر الحصول على إحداثيات موقع صالحة.',
-          );
-        }
-
-        const nextBearing =
-          getQiblaBearing(nextCoordinates);
-
-        const nextDistance =
-          getDistanceToKaaba(nextCoordinates);
-
-        if (
-          !Number.isFinite(nextBearing) ||
-          !Number.isFinite(nextDistance)
-        ) {
-          throw new Error(
-            'تعذر حساب اتجاه القبلة. حاول مرة أخرى.',
-          );
-        }
-
-        if (mountedRef.current) {
-          setCoordinates(nextCoordinates);
-          setQiblaBearing(nextBearing);
-          setDistanceKm(nextDistance);
-        }
-
-        // لا تبدأ الحساس قبل الحصول على الإذن.
-        await startHeading();
-      } catch (caught) {
-        const message =
-          caught instanceof Error
-            ? caught.message
-            : 'حدث خطأ أثناء تحديد الموقع. حاول مرة أخرى.';
-
-        if (mountedRef.current) {
-          setError(message);
-        }
-      } finally {
-        locationRequestRef.current = false;
-
-        if (mountedRef.current) {
-          setIsLoading(false);
-          setIsRefreshing(false);
-        }
-      }
-    },
-    [startHeading],
-  );
-
-  useEffect(() => {
-    mountedRef.current = true;
-
-    void loadLocation();
-
-    return () => {
-      mountedRef.current = false;
-
-      headingSubscriptionRef.current?.remove();
-      headingSubscriptionRef.current = null;
-    };
-  }, [loadLocation]);
-
-  // تنبيه اهتزازي عند محاذاة الهاتف مع القبلة.
-  useEffect(() => {
-    if (!isAligned) {
-      previousAlignedRef.current = false;
-      return;
-    }
-
-    if (!previousAlignedRef.current) {
-      previousAlignedRef.current = true;
-
-      Haptics.notificationAsync(
-        Haptics.NotificationFeedbackType.Success,
-      ).catch(() => {});
-    }
-  }, [isAligned]);
-
-  const refresh = useCallback(() => {
-    void loadLocation(true);
-  }, [loadLocation]);
-
-  const qualityText: Record<CompassQuality, string> = {
-    high: 'جيدة',
-    medium: 'متوسطة',
-    low: 'ضعيفة',
-    unknown: 'غير معروفة',
-  };
-
   const qualityColor =
-    compassAccuracy === 'high'
+    accuracy === 'high'
       ? COLORS.greenLight
-      : compassAccuracy === 'medium'
+      : accuracy === 'medium'
         ? '#A66D13'
-        : compassAccuracy === 'low'
+        : accuracy === 'low'
           ? COLORS.red
           : COLORS.muted;
+
+  const refresh = useCallback(async () => {
+    setIsRefreshing(true);
+
+    try {
+      await refreshLocation();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refreshLocation]);
 
   const directionLabels = [
     { label: 'N', angle: 0 },
@@ -445,9 +113,7 @@ export default function QiblaScreen() {
             <Text style={styles.headerIconText}>۞</Text>
           </View>
 
-          <Text style={styles.headerTitle}>
-            اتجاه القبلة
-          </Text>
+          <Text style={styles.headerTitle}>اتجاه القبلة</Text>
 
           <Text style={styles.headerSubtitle}>
             توجّه إلى بيت الله الحرام
@@ -483,9 +149,7 @@ export default function QiblaScreen() {
                   styles.compassDial,
                   {
                     transform: [
-                      {
-                        rotate: `${-(heading ?? 0)}deg`,
-                      },
+                      { rotate: `${-(heading ?? 0)}deg` },
                     ],
                   },
                 ]}
@@ -566,13 +230,9 @@ export default function QiblaScreen() {
 
                 <View style={styles.centerDivider} />
 
-                <Text style={styles.centerArabic}>
-                  القبلة
-                </Text>
+                <Text style={styles.centerArabic}>القبلة</Text>
 
-                <Text style={styles.centerEnglish}>
-                  QIBLA
-                </Text>
+                <Text style={styles.centerEnglish}>QIBLA</Text>
               </View>
             </View>
 
@@ -581,24 +241,16 @@ export default function QiblaScreen() {
 
           <View style={styles.headingReadout}>
             <View style={styles.readoutItem}>
-              <Text style={styles.readoutLabel}>
-                اتجاه الهاتف
-              </Text>
-
+              <Text style={styles.readoutLabel}>اتجاه الهاتف</Text>
               <Text style={styles.readoutValue}>
-                {heading === null
-                  ? '—'
-                  : `${Math.round(heading)}°`}
+                {heading === null ? '—' : `${Math.round(heading)}°`}
               </Text>
             </View>
 
             <View style={styles.readoutDivider} />
 
             <View style={styles.readoutItem}>
-              <Text style={styles.readoutLabel}>
-                اتجاه القبلة
-              </Text>
-
+              <Text style={styles.readoutLabel}>اتجاه القبلة</Text>
               <Text style={styles.readoutValue}>
                 {qiblaBearing === null
                   ? '—'
@@ -625,9 +277,7 @@ export default function QiblaScreen() {
 
             <View style={styles.alignmentCopy}>
               <Text style={styles.alignmentTitle}>
-                {isAligned
-                  ? 'تمت المحاذاة'
-                  : 'زاوية التصحيح'}
+                {isAligned ? 'تمت المحاذاة' : 'زاوية التصحيح'}
               </Text>
 
               <Text style={styles.alignmentSubtitle}>
@@ -650,11 +300,9 @@ export default function QiblaScreen() {
         </View>
 
         <View style={styles.infoCard}>
-          <Text style={styles.sectionTitle}>
-            معلومات الموقع
-          </Text>
+          <Text style={styles.sectionTitle}>معلومات الموقع</Text>
 
-          {isLoading ? (
+          {isLoadingLocation ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator color={COLORS.green} />
               <Text style={styles.loadingText}>
@@ -667,44 +315,35 @@ export default function QiblaScreen() {
                 <Text style={styles.infoLabel}>
                   المسافة إلى الكعبة
                 </Text>
-
                 <Text style={styles.infoValue}>
-                  {distanceKm === null
-                    ? '—'
-                    : formatDistance(distanceKm)}
+                  {formatDistance(distanceToKaaba)}
                 </Text>
               </View>
 
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>
-                  دقة البوصلة
-                </Text>
-
+                <Text style={styles.infoLabel}>دقة البوصلة</Text>
                 <Text
                   style={[
                     styles.infoValue,
                     { color: qualityColor },
                   ]}
                 >
-                  {qualityText[compassAccuracy]}
+                  {getQualityText(accuracy)}
                 </Text>
               </View>
 
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>
-                  الموقع
-                </Text>
-
+                <Text style={styles.infoLabel}>الموقع</Text>
                 <Text style={styles.infoValue}>
-                  {coordinates
-                    ? `${coordinates.latitude.toFixed(4)}, ${coordinates.longitude.toFixed(4)}`
+                  {location
+                    ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
                     : 'غير متاح'}
                 </Text>
               </View>
             </>
           )}
 
-          {compassAccuracy === 'low' && (
+          {accuracy === 'low' && (
             <View style={styles.warningBox}>
               <Text style={styles.warningText}>
                 دقة البوصلة منخفضة. ابتعد عن المعادن ومصادر
@@ -716,14 +355,29 @@ export default function QiblaScreen() {
 
           {error && (
             <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
+              <Text style={styles.errorText}>
+                {error === 'permission'
+                  ? 'يلزم السماح بالوصول إلى الموقع لحساب اتجاه القبلة.'
+                  : error === 'location'
+                    ? 'تعذر تحديد موقعك. تحقق من خدمة الموقع ثم حاول مجددًا.'
+                    : error}
+              </Text>
 
               {permissionDenied && (
                 <Text style={styles.errorHint}>
-                  امنح التطبيق إذن الموقع من إعدادات الهاتف،
-                  ثم اضغط على تحديث الموقع.
+                  امنح التطبيق إذن الموقع من إعدادات الهاتف، ثم
+                  اضغط على تحديث الموقع.
                 </Text>
               )}
+            </View>
+          )}
+
+          {Platform.OS === 'web' && (
+            <View style={styles.warningBox}>
+              <Text style={styles.warningText}>
+                حساس البوصلة في هذه الشاشة مخصص للاستخدام على
+                أجهزة Android وiOS.
+              </Text>
             </View>
           )}
 
@@ -763,18 +417,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.ivory,
   },
-
   scrollContent: {
     paddingHorizontal: 18,
     paddingTop: 18,
     paddingBottom: 36,
   },
-
   header: {
     alignItems: 'center',
     marginBottom: 22,
   },
-
   headerIcon: {
     width: 54,
     height: 54,
@@ -784,24 +435,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
   },
-
   headerIconText: {
     color: COLORS.gold,
     fontSize: 31,
   },
-
   headerTitle: {
     color: COLORS.green,
     fontSize: 25,
     fontWeight: '800',
   },
-
   headerSubtitle: {
     color: COLORS.muted,
     fontSize: 14,
     marginTop: 5,
   },
-
   mainCard: {
     backgroundColor: COLORS.white,
     borderRadius: 26,
@@ -812,26 +459,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 16,
   },
-
   statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
-
   statusText: {
     color: COLORS.green,
     fontSize: 13,
     fontWeight: '700',
   },
-
   compassOuter: {
     width: 278,
     height: 278,
@@ -839,7 +482,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 8,
   },
-
   compassRing: {
     width: 260,
     height: 260,
@@ -851,7 +493,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
   },
-
   compassDial: {
     position: 'absolute',
     width: 238,
@@ -860,36 +501,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   tickPosition: {
     position: 'absolute',
     width: 238,
     height: 238,
     alignItems: 'center',
   },
-
   tick: {
     width: 2,
     borderRadius: 2,
     backgroundColor: '#B9B4A7',
   },
-
   majorTick: {
     height: 12,
     backgroundColor: COLORS.greenLight,
   },
-
   minorTick: {
     height: 6,
   },
-
   directionPosition: {
     position: 'absolute',
     width: 238,
     height: 238,
     alignItems: 'center',
   },
-
   directionLabel: {
     position: 'absolute',
     top: 18,
@@ -897,7 +532,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-
   centerPoint: {
     width: 116,
     height: 116,
@@ -908,21 +542,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   arrowArea: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   qiblaArrow: {
     width: 30,
     height: 40,
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
-
   arrowHead: {
     width: 0,
     height: 0,
@@ -933,7 +564,6 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderBottomColor: COLORS.gold,
   },
-
   arrowStem: {
     width: 5,
     height: 15,
@@ -941,7 +571,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     marginTop: -1,
   },
-
   centerDivider: {
     width: 34,
     height: 1,
@@ -949,20 +578,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 5,
   },
-
   centerArabic: {
     color: COLORS.white,
     fontSize: 15,
     fontWeight: '800',
   },
-
   centerEnglish: {
     color: '#D9E3D9',
     fontSize: 8,
     letterSpacing: 2,
     marginTop: 2,
   },
-
   northPointer: {
     position: 'absolute',
     top: -1,
@@ -975,7 +601,6 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderBottomColor: COLORS.gold,
   },
-
   headingReadout: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -988,30 +613,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-
   readoutItem: {
     flex: 1,
     alignItems: 'center',
     gap: 4,
   },
-
   readoutLabel: {
     color: COLORS.muted,
     fontSize: 12,
   },
-
   readoutValue: {
     color: COLORS.green,
     fontSize: 23,
     fontWeight: '800',
   },
-
   readoutDivider: {
     width: 1,
     height: 38,
     backgroundColor: COLORS.border,
   },
-
   alignmentPanel: {
     width: '100%',
     flexDirection: 'row',
@@ -1022,7 +642,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 14,
   },
-
   alignmentIcon: {
     width: 40,
     height: 40,
@@ -1030,36 +649,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   alignmentIconText: {
     color: COLORS.green,
     fontSize: 23,
     fontWeight: '800',
   },
-
   alignmentCopy: {
     flex: 1,
     gap: 4,
   },
-
   alignmentTitle: {
     color: COLORS.green,
     fontSize: 14,
     fontWeight: '800',
   },
-
   alignmentSubtitle: {
     color: COLORS.muted,
     fontSize: 11,
     lineHeight: 17,
   },
-
   alignmentDegrees: {
     color: COLORS.green,
     fontSize: 20,
     fontWeight: '800',
   },
-
   infoCard: {
     backgroundColor: COLORS.white,
     borderRadius: 22,
@@ -1068,7 +681,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-
   sectionTitle: {
     color: COLORS.green,
     fontSize: 17,
@@ -1076,7 +688,6 @@ const styles = StyleSheet.create({
     marginBottom: 13,
     textAlign: 'right',
   },
-
   loadingRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1084,12 +695,10 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 10,
   },
-
   loadingText: {
     color: COLORS.muted,
     fontSize: 13,
   },
-
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1099,12 +708,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0EDE6',
     gap: 10,
   },
-
   infoLabel: {
     color: COLORS.muted,
     fontSize: 13,
   },
-
   infoValue: {
     color: COLORS.green,
     fontSize: 13,
@@ -1112,35 +719,30 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     flexShrink: 1,
   },
-
   warningBox: {
     backgroundColor: '#FFF5DE',
     borderRadius: 12,
     padding: 12,
     marginTop: 12,
   },
-
   warningText: {
     color: '#805B1D',
     fontSize: 12,
     lineHeight: 19,
     textAlign: 'right',
   },
-
   errorBox: {
     backgroundColor: '#FCEAEA',
     borderRadius: 12,
     padding: 12,
     marginTop: 12,
   },
-
   errorText: {
     color: COLORS.red,
     fontSize: 12,
     lineHeight: 19,
     textAlign: 'right',
   },
-
   errorHint: {
     color: COLORS.red,
     fontSize: 11,
@@ -1148,7 +750,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'right',
   },
-
   refreshButton: {
     backgroundColor: COLORS.green,
     minHeight: 48,
@@ -1158,21 +759,17 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 18,
   },
-
   refreshButtonText: {
     color: COLORS.white,
     fontSize: 14,
     fontWeight: '800',
   },
-
   buttonPressed: {
     opacity: 0.82,
   },
-
   buttonDisabled: {
     opacity: 0.65,
   },
-
   footerText: {
     color: COLORS.muted,
     fontSize: 12,
