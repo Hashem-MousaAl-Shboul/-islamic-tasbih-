@@ -1,0 +1,26 @@
+diff --git a/dist/cjs/modules/useResponderEvents/ResponderTouchHistoryStore.js b/dist/cjs/modules/useResponderEvents/ResponderTouchHistoryStore.js
+index b596e16eb65e8101176d85eaa68742e58d8bdadc..eb6ddd955fa7400751ecfb87133cb91014c9fe9d 100644
+--- a/dist/cjs/modules/useResponderEvents/ResponderTouchHistoryStore.js
++++ b/dist/cjs/modules/useResponderEvents/ResponderTouchHistoryStore.js
+@@ -162,7 +162,7 @@ class ResponderTouchHistoryStore {
+         if (__DEV__) {
+           var activeRecord = touchBank[touchHistory.indexOfSingleActiveTouch];
+           if (!(activeRecord != null && activeRecord.touchActive)) {
+-            console.error('Cannot find single active touch.');
++            console.warn('Touch history: unpaired touch end (benign, dev-only).');
+           }
+         }
+       }
+diff --git a/dist/modules/useResponderEvents/ResponderTouchHistoryStore.js b/dist/modules/useResponderEvents/ResponderTouchHistoryStore.js
+index 6f47ae6aa0188238460607ae60d5e9273fa6400b..26370daa33f4af32f0da154a09dc8db0b270896f 100644
+--- a/dist/modules/useResponderEvents/ResponderTouchHistoryStore.js
++++ b/dist/modules/useResponderEvents/ResponderTouchHistoryStore.js
+@@ -158,7 +158,7 @@ export class ResponderTouchHistoryStore {
+         if (__DEV__) {
+           var activeRecord = touchBank[touchHistory.indexOfSingleActiveTouch];
+           if (!(activeRecord != null && activeRecord.touchActive)) {
+-            console.error('Cannot find single active touch.');
++            console.warn('Touch history: unpaired touch end (benign, dev-only).');
+           }
+         }
+       }

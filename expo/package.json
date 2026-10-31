@@ -93,5 +93,8 @@
         "listUnknownPackages": false
       }
     }
+  },
+  "patchedDependencies": {
+    "react-native-web@0.21.4": "patches/react-native-web@0.21.4.patch"
   }
 }
