@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import type { ParamListBase, Route } from '@react-navigation/native';
+import type { BottomTabBarProps } from 'expo-router/tabs';
+import type { Route } from 'expo-router/react-navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
@@ -17,11 +17,12 @@ type TabDescriptor = BottomTabBarProps['descriptors'][string];
 interface TabItemProps {
   route: TabRoute;
   descriptor: TabDescriptor;
-  navigation: BottomTabBarProps['navigation'];
+  emitter: BottomTabBarProps['emitter'];
+  navigateToTab: BottomTabBarProps['navigateToTab'];
   isFocused: boolean;
 }
 
-const TabItem = memo(function TabItem({ route, descriptor, navigation, isFocused }: TabItemProps): React.ReactElement {
+const TabItem = memo(function TabItem({ route, descriptor, emitter, navigateToTab, isFocused }: TabItemProps): React.ReactElement {
   const scale = useRef<Animated.Value>(new Animated.Value(1)).current;
   const focus = useRef<Animated.Value>(new Animated.Value(isFocused ? 1 : 0)).current;
   const options = descriptor.options;
@@ -41,15 +42,15 @@ const TabItem = memo(function TabItem({ route, descriptor, navigation, isFocused
   }, [focus, isFocused]);
 
   const onPress = useCallback((): void => {
-    const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+    const event = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
     if (isFocused || event.defaultPrevented) return;
     if (Platform.OS !== 'web') void Haptics.selectionAsync().catch(() => {});
-    navigation.navigate(route.name as keyof ParamListBase);
-  }, [isFocused, navigation, route.key, route.name]);
+    navigateToTab(route.key);
+  }, [emitter, isFocused, navigateToTab, route.key]);
 
   const onLongPress = useCallback((): void => {
-    navigation.emit({ type: 'tabLongPress', target: route.key });
-  }, [navigation, route.key]);
+    emitter.emit({ type: 'tabLongPress', target: route.key });
+  }, [emitter, route.key]);
 
   const iconColor = isFocused ? Colors.secondary : Colors.light.textSecondary;
   const icon = options.tabBarIcon?.({ focused: isFocused, color: iconColor, size: ICON_SIZE });
@@ -84,7 +85,7 @@ const TabItem = memo(function TabItem({ route, descriptor, navigation, isFocused
   );
 });
 
-const OptimizedTabBar = memo(function OptimizedTabBar({ state, descriptors, navigation }: BottomTabBarProps): React.ReactElement {
+const OptimizedTabBar = memo(function OptimizedTabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps): React.ReactElement {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const barStyle = useMemo(() => ({
@@ -104,7 +105,8 @@ const OptimizedTabBar = memo(function OptimizedTabBar({ state, descriptors, navi
               key={route.key}
               route={route}
               descriptor={descriptor}
-              navigation={navigation}
+              emitter={emitter}
+              navigateToTab={navigateToTab}
               isFocused={state.index === index}
             />
           );

@@ -44,10 +44,9 @@ export function useImmersiveMode(): void {
       if (!mod || cancelled) return;
 
       try {
-        // Set behavior to overlay-swipe so the bar overlays content
-        // instead of pushing it up, and appears on swipe.
-        await mod.setBehaviorAsync('overlay-swipe');
         // Hide the navigation bar entirely.
+        // (SDK 58 removed setBehaviorAsync — overlay behavior is now the
+        // default when the bar is hidden via setVisibilityAsync.)
         await mod.setVisibilityAsync('hidden');
       } catch (e) {
         console.log('[ImmersiveMode] Failed to apply immersive mode:', e);

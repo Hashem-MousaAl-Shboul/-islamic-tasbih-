@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import { Play, Pause, Square, Volume2, RotateCcw } from 'lucide-react-native';
 import { getQuranRecitationUrl, getAvailableReciters, type ReciterId, RECITER_NAMES } from '@/utils/ttsService';

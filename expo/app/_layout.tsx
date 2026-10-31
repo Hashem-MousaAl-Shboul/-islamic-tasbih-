@@ -3,7 +3,7 @@ import "@/utils/polyfills";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 
-import React, { useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 
 import { ActivityIndicator, View } from "react-native";
 

@@ -468,7 +468,7 @@ export default function QuranScreen() {
             <View style={styles.loadingContainer}>
               <Text style={[styles.errorText, androidTextFix]}>{t('errorLoadingVerses')}</Text>
             </View>
-          ) : null
+          ) : undefined
         }
         contentContainerStyle={[
           styles.listContent,

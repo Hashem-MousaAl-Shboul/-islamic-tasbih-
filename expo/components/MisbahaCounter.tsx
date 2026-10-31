@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 const MISBAHA_IMAGE = require('@/assets/images/misbaha-hand.jpg');

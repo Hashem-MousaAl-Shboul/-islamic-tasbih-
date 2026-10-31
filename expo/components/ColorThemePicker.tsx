@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -20,6 +20,8 @@ import { useTheme, ColorThemeKey } from '@/theme/ThemeProvider';
 import { Colors } from '@/constants/colors';
 import i18n from '@/constants/translations';
 import type { BackgroundThemeKey } from '@/hooks/useTasbihStore';
+
+const ABSOLUTE_FILL = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 };
 
 interface ColorThemePickerProps {
   visible: boolean;
@@ -371,18 +373,18 @@ const styles = StyleSheet.create({
     }),
   },
   previewGradient: {
-    ...StyleSheet.absoluteFillObject,
+    ...ABSOLUTE_FILL,
   },
   previewImageWrapper: {
-    ...StyleSheet.absoluteFillObject,
+    ...ABSOLUTE_FILL,
   },
   previewImage: {
-    ...StyleSheet.absoluteFillObject,
+    ...ABSOLUTE_FILL,
     width: '100%',
     height: '100%',
   },
   previewOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...ABSOLUTE_FILL,
   },
   previewContent: {
     flex: 1,
@@ -496,12 +498,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   customImageThumb: {
-    ...StyleSheet.absoluteFillObject,
+    ...ABSOLUTE_FILL,
     width: '100%',
     height: '100%',
   },
   customImageOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...ABSOLUTE_FILL,
     backgroundColor: 'rgba(0,0,0,0.2)',
   },
   colorPreview: {

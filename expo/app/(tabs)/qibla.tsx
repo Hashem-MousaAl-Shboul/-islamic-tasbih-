@@ -1048,7 +1048,7 @@ const styles = StyleSheet.create({
   compassGlow: {
     position: 'absolute',
     backgroundColor: 'rgba(212,168,83,0.12)',
-    ...StyleSheet.absoluteFillObject as any,
+    ...{ position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 } as any,
     alignSelf: 'center',
   },
   compassOuterRing: {
