@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
-import { Audio, type AVPlaybackStatus } from 'expo-av';
-import { InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av/build/Audio.types';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer, type AudioStatus } from 'expo-audio';
 import { useQuery } from '@tanstack/react-query';
 import createContextHook from '@nkzw/create-context-hook';
 
@@ -43,14 +42,13 @@ const LOADING_TIMEOUT_MS = 15_000;
 const PROGRESS_UPDATE_INTERVAL_MS = 500;
 const POSITION_UPDATE_THRESHOLD_MS = 200;
 
-async function disposeSound(sound: Audio.Sound | null): Promise<void> {
-  if (!sound) return;
-  sound.setOnPlaybackStatusUpdate(null);
+async function disposeSound(player: AudioPlayer | null): Promise<void> {
+  if (!player) return;
   try {
-    await sound.stopAsync();
+    player.pause();
   } catch {}
   try {
-    await sound.unloadAsync();
+    player.remove();
   } catch {}
 }
 
@@ -112,7 +110,8 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
     setTextTarget(null);
   }, []);
 
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<AudioPlayer | null>(null);
+  const statusSubRef = useRef<{ remove: () => void } | null>(null);
   const currentSurahRef = useRef<SurahMeta | null>(null);
   const activeReciterRef = useRef<ReciterId | null>(null);
   const repeatModeRef = useRef<RepeatMode>('none');
@@ -136,14 +135,12 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
   const configureAudio = useCallback(async (): Promise<void> => {
     if (Platform.OS === 'web') return;
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-      shouldDuckAndroid: true,
-      interruptionModeAndroid: InterruptionModeAndroid.DuckOthers,
-      interruptionModeIOS: InterruptionModeIOS.DuckOthers,
-      playThroughEarpieceAndroid: false,
+    await setAudioModeAsync({
+      allowsRecording: false,
+      playsInSilentMode: true,
+      shouldPlayInBackground: true,
+      interruptionMode: 'duckOthers',
+      shouldRouteThroughEarpiece: false,
     });
   }, []);
 
@@ -163,26 +160,32 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
   const releaseCurrentSound = useCallback(async (): Promise<void> => {
     clearLoadingTimeout();
+    const sub = statusSubRef.current;
+    statusSubRef.current = null;
+    try { sub?.remove(); } catch {}
     const sound = soundRef.current;
     soundRef.current = null;
     await disposeSound(sound);
   }, [clearLoadingTimeout]);
 
-  const failOperation = useCallback((operationId: number, sound: Audio.Sound): void => {
+  const failOperation = useCallback((operationId: number, sound: AudioPlayer): void => {
     if (!isMountedRef.current || operationId !== operationIdRef.current || soundRef.current !== sound) return;
     ++operationIdRef.current;
     clearLoadingTimeout();
+    const sub = statusSubRef.current;
+    statusSubRef.current = null;
+    try { sub?.remove(); } catch {}
     soundRef.current = null;
     void disposeSound(sound);
     resetPlaybackState(true);
     setError(tRef.current('audioNetworkError'));
   }, [clearLoadingTimeout, resetPlaybackState]);
 
-  const createStatusHandler = useCallback((operationId: number, sound: Audio.Sound) => {
-    return (status: AVPlaybackStatus): void => {
+  const createStatusHandler = useCallback((operationId: number, sound: AudioPlayer) => {
+    return (status: AudioStatus): void => {
       if (!isMountedRef.current || operationId !== operationIdRef.current || soundRef.current !== sound) return;
       if (!status.isLoaded) {
-        if ('error' in status && status.error) failOperation(operationId, sound);
+        if (status.error) failOperation(operationId, sound);
         return;
       }
 
@@ -192,9 +195,9 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
         setIsLoading(false);
       }
 
-      const nextIsPlaying = Boolean(status.isPlaying);
-      const nextPosition = status.positionMillis ?? 0;
-      const nextDuration = status.durationMillis ?? 0;
+      const nextIsPlaying = Boolean(status.playing);
+      const nextPosition = (status.currentTime ?? 0) * 1000;
+      const nextDuration = (status.duration ?? 0) * 1000;
       isPlayingRef.current = nextIsPlaying;
       setIsPlaying((previous) => previous === nextIsPlaying ? previous : nextIsPlaying);
       if (!isSeekingRef.current) {
@@ -212,10 +215,10 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
 
       void (async (): Promise<void> => {
         try {
-          await sound.setPositionAsync(0);
+          await sound.seekTo(0);
           if (operationId !== operationIdRef.current || soundRef.current !== sound) return;
           setPosition(0);
-          await sound.playAsync();
+          sound.play();
         } catch {
           failOperation(operationId, sound);
         }
@@ -234,17 +237,17 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       const sound = soundRef.current;
       try {
         if (isPlayingRef.current) {
-          await sound.pauseAsync();
+          sound.pause();
           isPlayingRef.current = false;
           if (isMountedRef.current) setIsPlaying(false);
         } else {
-          const status = await sound.getStatusAsync();
-          if (!status.isLoaded) return;
-          if ((status.durationMillis ?? 0) > 0 && status.positionMillis >= (status.durationMillis ?? 0)) {
-            await sound.setPositionAsync(0);
+          if (!sound.isLoaded) return;
+          const durationMillis = (sound.duration ?? 0) * 1000;
+          if (durationMillis > 0 && (sound.currentTime ?? 0) * 1000 >= durationMillis) {
+            await sound.seekTo(0);
             if (isMountedRef.current) setPosition(0);
           }
-          await sound.playAsync();
+          sound.play();
           isPlayingRef.current = true;
           if (isMountedRef.current) {
             setIsPlaying(true);
@@ -284,24 +287,18 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       await configureAudio();
       if (!isMountedRef.current || operationId !== operationIdRef.current) return;
 
-      const sound = new Audio.Sound();
+      const sound = createAudioPlayer(
+        { uri: audioUrl },
+        { updateInterval: PROGRESS_UPDATE_INTERVAL_MS }
+      );
       soundRef.current = sound;
-      sound.setOnPlaybackStatusUpdate(createStatusHandler(operationId, sound));
+      statusSubRef.current = sound.addListener('playbackStatusUpdate', createStatusHandler(operationId, sound));
       loadingTimeoutRef.current = setTimeout(() => {
         loadingTimeoutRef.current = null;
         failOperation(operationId, sound);
       }, LOADING_TIMEOUT_MS);
 
-      await sound.loadAsync(
-        { uri: audioUrl },
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 1,
-          progressUpdateIntervalMillis: PROGRESS_UPDATE_INTERVAL_MS,
-        },
-        false
-      );
+      sound.play();
 
       if (!isMountedRef.current || operationId !== operationIdRef.current || soundRef.current !== sound) {
         await disposeSound(sound);
@@ -332,18 +329,18 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
     if (!sound || !currentSurahRef.current || isLoadingRef.current) return;
     try {
       if (isPlayingRef.current) {
-        await sound.pauseAsync();
+        sound.pause();
         isPlayingRef.current = false;
         if (isMountedRef.current) setIsPlaying(false);
         return;
       }
-      const status = await sound.getStatusAsync();
-      if (!status.isLoaded) return;
-      if ((status.durationMillis ?? 0) > 0 && status.positionMillis >= (status.durationMillis ?? 0)) {
-        await sound.setPositionAsync(0);
+      if (!sound.isLoaded) return;
+      const durationMillis = (sound.duration ?? 0) * 1000;
+      if (durationMillis > 0 && (sound.currentTime ?? 0) * 1000 >= durationMillis) {
+        await sound.seekTo(0);
         if (isMountedRef.current) setPosition(0);
       }
-      await sound.playAsync();
+      sound.play();
       isPlayingRef.current = true;
       if (isMountedRef.current) {
         setIsPlaying(true);
@@ -374,14 +371,13 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
     const sound = soundRef.current;
     if (!sound || isLoadingRef.current) return;
     try {
-      const status = await sound.getStatusAsync();
-      if (!status.isLoaded) return;
-      const maxPosition = status.durationMillis ?? duration;
+      if (!sound.isLoaded) return;
+      const maxPosition = (sound.duration ?? duration / 1000) * 1000;
       const requested = Number.isFinite(millis) ? millis : 0;
       const safePosition = Math.max(0, Math.min(requested, maxPosition));
       isSeekingRef.current = true;
       setPosition(safePosition);
-      await sound.setPositionAsync(safePosition);
+      await sound.seekTo(safePosition / 1000);
     } finally {
       isSeekingRef.current = false;
     }
@@ -419,6 +415,9 @@ export const [QuranAudioProvider, useQuranAudio] = createContextHook(() => {
       isMountedRef.current = false;
       ++operationIdRef.current;
       clearLoadingTimeout();
+      const sub = statusSubRef.current;
+      statusSubRef.current = null;
+      try { sub?.remove(); } catch {}
       const sound = soundRef.current;
       soundRef.current = null;
       void disposeSound(sound);

@@ -18,7 +18,6 @@
         "expo-asset": "~58.0.19",
         "expo-audio": "~58.0.10",
         "expo-auth-session": "~58.0.16",
-        "expo-av": "~16.0.8",
         "expo-blur": "~58.0.5",
         "expo-build-properties": "~58.0.11",
         "expo-clipboard": "~58.0.4",
@@ -1202,8 +1201,6 @@
     "expo-audio": ["expo-audio@58.0.10", "", { "peerDependencies": { "expo": "*", "expo-asset": "*", "react": "*", "react-native": "*" } }, "sha512-GoOyd1JAb7l/bJ/UNc5QIrXqSK9QrEFF3ahjdONGt8V6PN3RXRsTcOJDMN6RmDc9kb0XPP34DJIxEd/ushH1RQ=="],
 
     "expo-auth-session": ["expo-auth-session@58.0.16", "", { "dependencies": { "expo-application": "~58.1.2", "expo-constants": "~58.0.14", "expo-crypto": "~58.0.7", "expo-linking": "~58.0.15", "expo-web-browser": "~58.0.7", "invariant": "^2.2.4" }, "peerDependencies": { "react": "*", "react-native": "*" } }, "sha512-82sLhNa2GgIqpjN0GhMZFWcF+3Jec0zHuLsdNc0sMljfUb7YnuXUFdcy2yawp93p/P7MB+9BG/XMWSJ1CffTHQ=="],
-
-    "expo-av": ["expo-av@16.0.8", "", { "peerDependencies": { "expo": "*", "react": "*", "react-native": "*", "react-native-web": "*" }, "optionalPeers": ["react-native-web"] }, "sha512-cmVPftGR/ca7XBgs7R6ky36lF3OC0/MM/lpgX/yXqfv0jASTsh7AYX9JxHCwFmF+Z6JEB1vne9FDx4GiLcGreQ=="],
 
     "expo-blur": ["expo-blur@58.0.5", "", { "peerDependencies": { "expo": "*", "react": "*", "react-native": "*" } }, "sha512-l8MEObIh0opwIUf+SD9MfqD0JnOirGuetAW/V3phXQRJaTPKLtb0IukgyLmnOsfWMAWTdJrcl5l/2ezcDHrkHQ=="],
 
