@@ -291,7 +291,7 @@ const AnimatedDial = memo(function AnimatedDial({
       toValue: rotation,
       duration: 150,
       easing: Easing.linear,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
   }, [rotation, rotateAnim]);
 

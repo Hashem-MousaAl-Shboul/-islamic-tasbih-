@@ -35,7 +35,7 @@ const TabItem = memo(function TabItem({ route, descriptor, emitter, navigateToTa
   useEffect(() => {
     Animated.spring(focus, {
       toValue: isFocused ? 1 : 0,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
       tension: 90,
       friction: 11,
     }).start();
@@ -60,8 +60,8 @@ const TabItem = memo(function TabItem({ route, descriptor, emitter, navigateToTa
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      onPressIn={() => Animated.spring(scale, { toValue: 0.92, useNativeDriver: true }).start()}
-      onPressOut={() => Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start()}
+      onPressIn={() => Animated.spring(scale, { toValue: 0.92, useNativeDriver: Platform.OS !== 'web' }).start()}
+      onPressOut={() => Animated.spring(scale, { toValue: 1, useNativeDriver: Platform.OS !== 'web' }).start()}
       android_ripple={androidRipple('rgba(212,168,83,0.14)', true, 28)}
       style={styles.tabItem}
       testID={`tab-${route.name}`}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
 import { Play, Pause, Square, SkipBack, SkipForward, Volume2 } from 'lucide-react-native';
 import { yasAI } from '@/utils/yasAI';
 
@@ -42,7 +42,7 @@ export const AudioProgressBar: React.FC<AudioProgressBarProps> = ({ isVisible, o
     Animated.timing(slideAnim, {
       toValue: isVisible ? 0 : 100,
       duration: 300,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
   }, [isVisible, slideAnim]);
 

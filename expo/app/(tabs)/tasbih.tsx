@@ -91,7 +91,7 @@ export default function TasbihScreen() {
 
   const triggerPulse = useCallback(() => {
     pulseAnim.setValue(0.94);
-    Animated.spring(pulseAnim, { toValue: 1, tension: 400, friction: 10, useNativeDriver: true }).start();
+    Animated.spring(pulseAnim, { toValue: 1, tension: 400, friction: 10, useNativeDriver: Platform.OS !== 'web' }).start();
   }, [pulseAnim]);
 
   const handleIncrement = useCallback(() => {

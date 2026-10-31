@@ -87,12 +87,12 @@ export default function WelcomeScreen() {
         Animated.timing(anim.fade, {
           toValue: 1,
           duration: 350,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(anim.slide, {
           toValue: 0,
           duration: 350,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ])
     );
@@ -102,25 +102,25 @@ export default function WelcomeScreen() {
         Animated.timing(iconOpacity, {
           toValue: 1,
           duration: 450,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(iconScale, {
           toValue: 1,
           tension: 80,
           friction: 8,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ]),
       Animated.parallel([
         Animated.timing(titleFade, {
           toValue: 1,
           duration: 500,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(titleSlide, {
           toValue: 0,
           duration: 500,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ]),
       Animated.stagger(120, cardSequence),
@@ -128,12 +128,12 @@ export default function WelcomeScreen() {
         Animated.timing(buttonFade, {
           toValue: 1,
           duration: 400,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(buttonSlide, {
           toValue: 0,
           duration: 400,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ]),
     ]).start();
@@ -146,13 +146,13 @@ export default function WelcomeScreen() {
       Animated.timing(buttonScale, {
         toValue: 0.94,
         duration: 80,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.spring(buttonScale, {
         toValue: 1,
         tension: 200,
         friction: 10,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
 

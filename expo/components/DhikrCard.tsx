@@ -154,7 +154,7 @@ const DhikrCardComponent: React.FC<DhikrCardProps> = ({
         easing: isCompleted
           ? Easing.out(Easing.back(1.2))
           : Easing.out(Easing.quad),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }
     );
 
