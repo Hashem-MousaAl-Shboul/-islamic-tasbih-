@@ -7,12 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "sabbah",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1B4332"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.islamicdhikr.sabbah",
@@ -28,7 +22,6 @@
         "backgroundColor": "#1B4332"
       },
       "versionCode": 129,
-      "targetSdkVersion": 35,
       "package": "app.islamicdhikr.sabbah",
       "permissions": [
         "android.permission.VIBRATE",
@@ -41,16 +34,10 @@
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.READ_EXTERNAL_STORAGE"
-      ],
-      "edgeToEdgeEnabled": true
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
-    },
-    "notification": {
-      "icon": "./assets/images/icon.png",
-      "color": "#D4A853",
-      "androidMode": "default"
     },
     "plugins": [
       [
@@ -95,6 +82,9 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/images/icon.png",
+          "color": "#D4A853",
+          "androidMode": "default",
           "androidChannels": [
             {
               "id": "adhkar-reminders",
@@ -116,7 +106,18 @@
       "expo-font",
       "expo-image",
       "expo-sharing",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#1B4332",
+          "dark": {
+            "backgroundColor": "#1B4332"
+          }
+        }
+      ],
       "expo-status-bar",
       "expo-web-browser"
     ],
