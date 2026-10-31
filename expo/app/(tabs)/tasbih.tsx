@@ -7,7 +7,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Plus, X, Check, Minus, RotateCcw,
-  Moon, TrendingUp, ChevronLeft
+  Moon, TrendingUp, ChevronLeft,
+  Volume2, VolumeX, Lock
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -65,6 +66,7 @@ export default function TasbihScreen() {
     addCustomTasbih,
     deleteTasbih,
     restoreTasbih,
+    updateSettings,
   } = useTasbihStore();
 
   const selectedItem = useMemo(() => getSelectedItem(), [getSelectedItem]);
@@ -199,7 +201,14 @@ export default function TasbihScreen() {
   }, []);
 
   const predefinedColors = useMemo(() => ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'], []);
-  const misbahaWidth = Math.max(240, Math.min(300, windowDimensions.width - 72, windowDimensions.height * 0.34));
+
+  const handleToggleSound = useCallback(() => {
+    const next = !settings.soundEnabled;
+    updateSettings({ soundEnabled: next });
+    if (next && Platform.OS !== 'web') {
+      Haptics.selectionAsync().catch(() => {});
+    }
+  }, [settings.soundEnabled, updateSettings]);
 
   if (isLoading) {
     return (
@@ -264,37 +273,71 @@ export default function TasbihScreen() {
 
       <View style={styles.mainContent}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          <LinearGradient colors={[CARD_WHITE, IVORY]} style={styles.dhikrDisplay}>
-            <View style={styles.dhikrIconContainer}>
-              <View style={styles.dhikrIcon}><Moon size={20} color={DEEP_GREEN} /></View>
-            </View>
-            <Text style={[styles.mainArabicText, androidTextFix]}>{selectedItem.arabicText}</Text>
-            {settings.showTransliteration && (
-              <Text style={[styles.transliterationText, androidTextFix]}>{selectedItem.transliteration}</Text>
-            )}
-            {settings.showTranslation && (
-              <Text style={[styles.translationText, androidTextFix]}>{selectedItem.translation}</Text>
-            )}
-  
-          </LinearGradient>
+          <Animated.View style={[styles.heroWrap, { transform: [{ scale: pulseAnim }] }]}>
+            <MisbahaCounter
+              onPress={handleIncrement}
+              testID="increment-button"
+            />
+          </Animated.View>
+
+          <View style={styles.dhikrRow}>
+            <TouchableOpacity
+              style={styles.sideControl}
+              onPress={handleToggleSound}
+              activeOpacity={0.7}
+              testID="sound-toggle-button"
+              accessibilityRole="button"
+              accessibilityState={{ selected: settings.soundEnabled }}
+            >
+              <View style={[styles.sideCircle, settings.soundEnabled && styles.sideCircleActive]}>
+                {settings.soundEnabled
+                  ? <Volume2 size={20} color={DEEP_GREEN} />
+                  : <VolumeX size={20} color={TEXT_MUTED} />}
+              </View>
+              <Text style={[styles.sideLabel, androidTextFix]}>{t('sound') || 'الصوت'}</Text>
+            </TouchableOpacity>
+
+            <LinearGradient colors={[CARD_WHITE, IVORY]} style={styles.dhikrDisplay}>
+              <View style={styles.dhikrIconContainer}>
+                <View style={styles.dhikrIcon}><Moon size={20} color={DEEP_GREEN} /></View>
+              </View>
+              <Text style={[styles.mainArabicText, androidTextFix]}>{selectedItem.arabicText}</Text>
+              {settings.showTransliteration && (
+                <Text style={[styles.transliterationText, androidTextFix]}>{selectedItem.transliteration}</Text>
+              )}
+              {settings.showTranslation && (
+                <Text style={[styles.translationText, androidTextFix]}>{selectedItem.translation}</Text>
+              )}
+              <View style={[styles.listenPill, androidTextFix]} testID="listen-dhikr-pill">
+                <Lock size={11} color={TEXT_MUTED} />
+                <Text style={[styles.listenPillText, androidTextFix]}>{t('listenToDhikr') || 'استمع للذكر'}</Text>
+                <View style={styles.comingSoonBadgeMini}>
+                  <Text style={[styles.comingSoonBadgeMiniText, androidTextFix]}>تماً</Text>
+                </View>
+              </View>
+            </LinearGradient>
+
+            <TouchableOpacity
+              style={styles.sideControl}
+              onPress={handleReset}
+              activeOpacity={0.7}
+              testID="repeat-button"
+              accessibilityRole="button"
+            >
+              <View style={styles.sideCircle}>
+                <RotateCcw size={20} color={DEEP_GREEN} />
+              </View>
+              <Text style={[styles.sideLabel, androidTextFix]}>{t('reset') || 'إعادة'}</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.counterSection}>
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <MisbahaCounter
-                width={misbahaWidth}
-                onPress={handleIncrement}
-                testID="increment-button"
-              />
-            </Animated.View>
-
             {selectedItem.isCompleted && (
               <View style={[styles.completedBadge, { backgroundColor: selectedItem.color }]}>
                 <Check size={14} color="#FFFFFF" />
                 <Text style={[styles.completedText, androidTextFix]}>{t('completed')}</Text>
               </View>
             )}
-
-            <Text style={[styles.tapHint, androidTextFix]}>{t('tapToCount')}</Text>
 
             <View style={styles.progressBarContainer}>
               <View style={styles.progressBarTrack}>
@@ -461,11 +504,34 @@ const styles = StyleSheet.create({
   },
   addCardText: { fontSize: 11, fontWeight: '600' as const, color: GOLD, textAlign: 'center' },
   mainContent: { flex: 1 },
-  scrollContent: { paddingTop: 10, paddingBottom: 20, paddingHorizontal: 14 },
+  scrollContent: { paddingTop: 6, paddingBottom: 20, paddingHorizontal: 14 },
+  heroWrap: { marginHorizontal: -14, backgroundColor: IVORY },
+  dhikrRow: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 6,
+    marginTop: -64, zIndex: 2,
+  },
+  sideControl: { alignItems: 'center', gap: 3, marginTop: 6 },
+  sideCircle: {
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: CARD_WHITE, alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5,
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.04)',
+  },
+  sideCircleActive: {
+    backgroundColor: 'rgba(27,67,50,0.08)',
+    borderColor: 'rgba(27,67,50,0.2)',
+  },
+  sideLabel: { fontSize: 10, fontWeight: '600' as const, color: TEXT_MUTED, textAlign: 'center' },
+  listenPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.04)', marginTop: 6,
+  },
+  listenPillText: { fontSize: 11, fontWeight: '600' as const, color: TEXT_MUTED },
   dhikrDisplay: {
-    alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 18, marginBottom: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.07, shadowRadius: 12, elevation: 5,
+    flex: 1, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12,
+    borderRadius: 20, marginBottom: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 18, elevation: 8,
     borderWidth: 1, borderColor: 'rgba(212,168,83,0.1)',
   },
   dhikrIconContainer: { marginBottom: 6 },
@@ -473,10 +539,9 @@ const styles = StyleSheet.create({
   mainArabicText: { fontSize: 16, fontWeight: '700' as const, color: DEEP_GREEN, textAlign: 'center', marginBottom: 1, lineHeight: 24, paddingHorizontal: 6, alignSelf: 'stretch', writingDirection: 'rtl' as const },
   transliterationText: { fontSize: 11, fontWeight: '500' as const, color: DEEP_GREEN, opacity: 0.7, textAlign: 'center', marginTop: 1, lineHeight: 16, fontStyle: 'italic' },
   translationText: { fontSize: 10, fontWeight: '400' as const, color: TEXT_MUTED, textAlign: 'center', marginTop: 2, lineHeight: 16 },
-  counterSection: { alignItems: 'center', marginBottom: 6, marginTop: -4 },
+  counterSection: { alignItems: 'center', marginBottom: 6 },
   completedBadge: { marginTop: -6, marginBottom: 4, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 5, borderRadius: 14, gap: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4 },
   completedText: { fontSize: 12, fontWeight: '700' as const, color: '#FFFFFF' },
-  tapHint: { fontSize: 11, fontWeight: '500' as const, color: TEXT_MUTED, marginTop: 6 },
   progressBarContainer: { width: '100%', maxWidth: 240, marginTop: 8 },
   progressBarTrack: { height: 6, backgroundColor: 'rgba(0,0,0,0.06)', borderRadius: 3, overflow: 'hidden' },
   progressBarFill: { height: '100%', borderRadius: 3 },
