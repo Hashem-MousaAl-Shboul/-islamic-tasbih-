@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTasbihStore } from '@/hooks/useTasbihStore';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import TasbihCard from '@/components/TasbihCard';
-import BeadRingCounter from '@/components/BeadRingCounter';
+import MisbahaCounter from '@/components/MisbahaCounter';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
 import { ThemedBackground } from '@/components/ThemedBackground';
@@ -199,7 +199,7 @@ export default function TasbihScreen() {
   }, []);
 
   const predefinedColors = useMemo(() => ['#2D8B6F', '#3B7DD8', '#8B5CF6', '#D4A853', '#E05252', '#D4708F', '#0EA5C9', '#65A30D'], []);
-  const counterSize = Math.max(184, Math.min(220, windowDimensions.width - 96, windowDimensions.height * 0.28));
+  const misbahaWidth = Math.max(240, Math.min(300, windowDimensions.width - 72, windowDimensions.height * 0.34));
 
   if (isLoading) {
     return (
@@ -280,12 +280,8 @@ export default function TasbihScreen() {
 
           <View style={styles.counterSection}>
             <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <BeadRingCounter
-                count={selectedItem.count}
-                targetCount={selectedItem.targetCount}
-                size={counterSize}
-                beadColor="#1B5A6B"
-                activeColor="#2A8A9A"
+              <MisbahaCounter
+                width={misbahaWidth}
                 onPress={handleIncrement}
                 testID="increment-button"
               />
