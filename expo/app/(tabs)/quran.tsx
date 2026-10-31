@@ -43,14 +43,15 @@ import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
 import QuranMiniPlayer from '@/components/QuranMiniPlayer';
 
-// Colors & Design System
+// Colors & Design System — ثيم «القرآن» المرجعي (أخضر مريمي فاتح)
+const SAGE_BG = '#8FA892';
+const GREEN_DARK = '#3E6B54';
+const GREEN_HEADER = '#7C9E78';
+const CARD_WHITE = '#FFFFFF';
+const CREAM = '#FBFAF3';
+const TEXT_DARK = '#2F3B33';
+const TEXT_MUTED = '#7C8A7E';
 const GOLD = '#D4A853';
-const DARK_BG = '#1B1F2E';
-const CARD_BG = '#232838';
-const GOLD_CARD_BG = '#F5D088';
-const GOLD_CARD_TEXT = '#1B1F2E';
-const TEXT_MUTED = '#8A9B91';
-const IVORY = '#F7F4EE';
 
 type QuranViewMode = 'surah' | 'juz' | 'page' | 'hizb';
 
@@ -93,7 +94,7 @@ const LastReadCard = React.memo(function LastReadCard({
       <View style={lastReadStyles.content}>
         <View style={lastReadStyles.textSection}>
           <View style={lastReadStyles.badge}>
-            <BookOpen size={14} color={GOLD_CARD_TEXT} />
+            <BookOpen size={14} color={CARD_WHITE} />
             <Text style={[lastReadStyles.badgeText, androidTextFix]}>
               {t('lastRead')}
             </Text>
@@ -116,7 +117,7 @@ const LastReadCard = React.memo(function LastReadCard({
             <Text style={[lastReadStyles.buttonText, androidTextFix]}>
               {t('backToReading')}
             </Text>
-            <ChevronLeft size={16} color={IVORY} />
+            <ChevronLeft size={16} color={GREEN_DARK} />
           </TouchableOpacity>
         </View>
         <QuranBookIllustration />
@@ -196,6 +197,7 @@ const SurahItem = React.memo(function SurahItem({
       testID={`quran-surah-${surah.number}`}
     >
       <View style={surahStyles.numberBadge}>
+        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
         <Text style={[surahStyles.numberText, androidTextFix]}>{surah.number}</Text>
       </View>
       <View style={surahStyles.textSection}>
@@ -218,11 +220,11 @@ const SurahItem = React.memo(function SurahItem({
         accessibilityLabel={`${t('playSurah')} ${surah.name}`}
       >
         {isLoadingAudio ? (
-          <ActivityIndicator size="small" color={DARK_BG} />
+          <ActivityIndicator size="small" color={CARD_WHITE} />
         ) : isPlaying ? (
-          <Pause size={18} color={DARK_BG} fill={DARK_BG} />
+          <Pause size={18} color={CARD_WHITE} fill={CARD_WHITE} />
         ) : (
-          <Play size={18} color={DARK_BG} fill={DARK_BG} />
+          <Play size={18} color={CARD_WHITE} fill={CARD_WHITE} />
         )}
       </TouchableOpacity>
     </TouchableOpacity>
@@ -246,6 +248,7 @@ const JuzItem = React.memo(function JuzItem({
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
+        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
         <Text style={[surahStyles.numberText, androidTextFix]}>{juz.number}</Text>
       </View>
       <View style={surahStyles.textSection}>
@@ -277,6 +280,7 @@ const HizbItem = React.memo(function HizbItem({
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
+        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
         <Text style={[surahStyles.numberText, androidTextFix]}>{hizb.number}</Text>
       </View>
       <View style={surahStyles.textSection}>
@@ -306,6 +310,7 @@ const PageItem = React.memo(function PageItem({
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
+        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
         <Text style={[surahStyles.numberText, androidTextFix]}>{pageNum}</Text>
       </View>
       <View style={surahStyles.textSection}>
@@ -439,7 +444,7 @@ export default function QuranScreen() {
           onPress={() => setShowReciterPicker(true)}
           activeOpacity={0.7}
         >
-          <Volume2 size={16} color={GOLD} />
+          <Volume2 size={16} color={GREEN_DARK} />
           <Text style={[styles.reciterBarText, androidTextFix]} numberOfLines={1}>
             {RECITER_NAMES[currentReciter]}
           </Text>
@@ -461,7 +466,7 @@ export default function QuranScreen() {
         ListEmptyComponent={
           surahsLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={GOLD} />
+              <ActivityIndicator size="large" color={CARD_WHITE} />
               <Text style={[styles.loadingText, androidTextFix]}>{t('loading')}</Text>
             </View>
           ) : surahsError ? (
@@ -533,7 +538,7 @@ export default function QuranScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: DARK_BG,
+    backgroundColor: SAGE_BG,
   },
   listHeader: {
     paddingTop: 20,
@@ -547,50 +552,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(212,168,83,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
     gap: 8,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(212,168,83,0.2)',
+    borderColor: 'rgba(62,107,84,0.25)',
   },
   reciterBarText: {
     fontSize: 13,
     fontWeight: '600',
-    color: GOLD,
+    color: GREEN_DARK,
   },
   loadingContainer: {
     paddingVertical: 40,
     alignItems: 'center',
   },
   loadingText: {
-    color: TEXT_MUTED,
+    color: CARD_WHITE,
     fontSize: 14,
     marginTop: 12,
   },
   errorText: {
-    color: '#E57373',
+    color: '#FFFFFF',
     fontSize: 14,
     textAlign: 'center',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(47,59,51,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   modalContent: {
-    backgroundColor: CARD_BG,
+    backgroundColor: CARD_WHITE,
     borderRadius: 20,
     padding: 20,
     width: '100%',
     maxWidth: 360,
     maxHeight: 400,
     borderWidth: 1,
-    borderColor: 'rgba(212,168,83,0.15)',
+    borderColor: 'rgba(62,107,84,0.15)',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -599,16 +604,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(0,0,0,0.07)',
   },
   modalTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: TEXT_DARK,
   },
   modalClose: {
     fontSize: 14,
-    color: GOLD,
+    color: GREEN_DARK,
     fontWeight: '600',
   },
   reciterOption: {
@@ -621,19 +626,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   reciterOptionActive: {
-    backgroundColor: 'rgba(212,168,83,0.15)',
+    backgroundColor: 'rgba(62,107,84,0.1)',
   },
   reciterOptionText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: TEXT_DARK,
     writingDirection: 'rtl',
   },
   reciterOptionTextActive: {
-    color: GOLD,
+    color: GREEN_DARK,
     fontWeight: '700',
   },
   checkMark: {
-    color: GOLD,
+    color: GREEN_DARK,
     fontSize: 18,
     fontWeight: '700',
   },
@@ -641,11 +646,11 @@ const styles = StyleSheet.create({
 
 const lastReadStyles = StyleSheet.create({
   container: {
-    backgroundColor: GOLD_CARD_BG,
+    backgroundColor: GREEN_HEADER,
     borderRadius: 22,
     padding: 18,
     marginBottom: 20,
-    ...createShadow({ offsetY: 4, opacity: 0.12, blur: 12, elevation: 5 }),
+    ...createShadow({ offsetY: 4, opacity: 0.18, blur: 14, elevation: 6 }),
     overflow: 'hidden',
   },
   content: {
@@ -660,7 +665,7 @@ const lastReadStyles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(27,31,46,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.22)',
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -670,19 +675,19 @@ const lastReadStyles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: GOLD_CARD_TEXT,
+    color: CARD_WHITE,
   },
   surahLabel: {
     fontSize: 13,
     fontWeight: '500',
-    color: GOLD_CARD_TEXT,
-    opacity: 0.7,
+    color: CARD_WHITE,
+    opacity: 0.85,
     marginBottom: 2,
   },
   surahName: {
     fontSize: 24,
     fontWeight: '700',
-    color: GOLD_CARD_TEXT,
+    color: CARD_WHITE,
     writingDirection: 'rtl',
     textAlign: 'left',
     marginBottom: 4,
@@ -690,23 +695,23 @@ const lastReadStyles = StyleSheet.create({
   surahNameTransliteration: {
     fontSize: 14,
     fontWeight: '500',
-    color: GOLD_CARD_TEXT,
-    opacity: 0.8,
+    color: CARD_WHITE,
+    opacity: 0.9,
     marginBottom: 14,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(27,31,46,0.85)',
+    backgroundColor: CREAM,
     borderRadius: 14,
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     gap: 6,
   },
   buttonText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: IVORY,
+    fontWeight: '700',
+    color: GREEN_DARK,
   },
 });
 
@@ -784,7 +789,11 @@ const tabsStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
-    paddingHorizontal: 4,
+    backgroundColor: CARD_WHITE,
+    borderRadius: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    ...createShadow({ offsetY: 2, opacity: 0.08, blur: 10, elevation: 3 }),
   },
   tab: {
     flex: 1,
@@ -799,15 +808,15 @@ const tabsStyles = StyleSheet.create({
     color: TEXT_MUTED,
   },
   activeTabText: {
-    color: GOLD,
+    color: GREEN_DARK,
     fontWeight: '700',
   },
   activeIndicator: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 2,
     width: 24,
     height: 3,
-    backgroundColor: GOLD,
+    backgroundColor: GREEN_DARK,
     borderRadius: 1.5,
   },
 });
@@ -816,18 +825,16 @@ const surahStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_BG,
+    backgroundColor: CARD_WHITE,
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginVertical: 4,
+    ...createShadow({ offsetY: 2, opacity: 0.06, blur: 8, elevation: 2 }),
   },
   numberBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: GOLD,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -835,7 +842,7 @@ const surahStyles = StyleSheet.create({
   numberText: {
     fontSize: 13,
     fontWeight: '700',
-    color: GOLD,
+    color: GREEN_DARK,
   },
   textSection: {
     flex: 1,
@@ -844,7 +851,7 @@ const surahStyles = StyleSheet.create({
   arabicName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: TEXT_DARK,
     writingDirection: 'rtl',
     textAlign: 'left',
     marginBottom: 2,
@@ -870,19 +877,18 @@ const surahStyles = StyleSheet.create({
     color: TEXT_MUTED,
   },
   playButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: GOLD,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: GREEN_DARK,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
   },
   playButtonActive: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: GREEN_HEADER,
   },
   separator: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    height: 0,
   },
 });

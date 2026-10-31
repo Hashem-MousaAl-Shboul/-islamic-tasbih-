@@ -36,12 +36,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { androidTextFix } from '@/utils/androidOptimizations';
 import { createShadow } from '@/utils/shadowUtils';
 
-const GOLD = '#D4A853';
-const DEEP_GREEN = '#1B4332';
-const DARK_BG = '#1B1F2E';
-const CARD_BG = '#232838';
-const CARD_BORDER = 'rgba(212,168,83,0.15)';
-const IVORY = '#F7F4EE';
+// ثيم «القرآن» المرجعي (أخضر مريمي فاتح)
+const GREEN_DARK = '#3E6B54';
+const GREEN_MUTED = '#8FA892';
+const READER_BG = '#F7F5EE';
+const CARD_WHITE = '#FFFFFF';
+const CARD_BORDER = 'rgba(62,107,84,0.15)';
+const TEXT_DARK = '#2F3B33';
+const TEXT_DISABLED = '#B9C4BA';
 
 export default function QuranReaderScreen() {
   const params = useLocalSearchParams<{ surah?: string; ayah?: string; page?: string }>();
@@ -218,7 +220,7 @@ export default function QuranReaderScreen() {
             style={styles.reciterButton}
             onPress={() => setShowReciterPicker(true)}
           >
-            <Volume2 size={16} color={GOLD} />
+            <Volume2 size={16} color={GREEN_DARK} />
             <Text style={[styles.reciterButtonText, androidTextFix]} numberOfLines={1}>
               {RECITER_NAMES[currentReciter]}
             </Text>
@@ -260,9 +262,9 @@ export default function QuranReaderScreen() {
             onPress={toggleRepeat}
           >
             {repeatMode === 'surah' ? (
-              <Repeat1 size={18} color={GOLD} />
+              <Repeat1 size={18} color={GREEN_DARK} />
             ) : (
-              <Repeat size={18} color={IVORY} />
+              <Repeat size={18} color={GREEN_MUTED} />
             )}
           </TouchableOpacity>
 
@@ -273,8 +275,8 @@ export default function QuranReaderScreen() {
           >
             <Square
               size={18}
-              color={(!isThisSurahPlaying && !isLoadingAudio) ? '#687067' : IVORY}
-              fill={(!isThisSurahPlaying && !isLoadingAudio) ? '#687067' : IVORY}
+              color={(!isThisSurahPlaying && !isLoadingAudio) ? TEXT_DISABLED : GREEN_DARK}
+              fill={(!isThisSurahPlaying && !isLoadingAudio) ? TEXT_DISABLED : GREEN_DARK}
             />
           </TouchableOpacity>
 
@@ -284,11 +286,11 @@ export default function QuranReaderScreen() {
             disabled={isLoadingAudio}
           >
             {isLoadingAudio ? (
-              <ActivityIndicator size="small" color={DARK_BG} />
+              <ActivityIndicator size="small" color={CARD_WHITE} />
             ) : (isThisSurahPlaying && isPlaying) ? (
-              <Pause size={26} color={DARK_BG} fill={DARK_BG} />
+              <Pause size={26} color={CARD_WHITE} fill={CARD_WHITE} />
             ) : (
-              <Play size={26} color={DARK_BG} fill={DARK_BG} />
+              <Play size={26} color={CARD_WHITE} fill={CARD_WHITE} />
             )}
           </TouchableOpacity>
 
@@ -297,7 +299,7 @@ export default function QuranReaderScreen() {
             onPress={handleRestart}
             disabled={isLoadingAudio}
           >
-            <RotateCcw size={18} color={isLoadingAudio ? '#555' : IVORY} />
+            <RotateCcw size={18} color={isLoadingAudio ? TEXT_DISABLED : GREEN_DARK} />
           </TouchableOpacity>
 
           <View style={styles.controlButtonSpacer} />
@@ -361,7 +363,7 @@ function ReaderHeader({ title, onBack }: { title: string; onBack: () => void }) 
           onPress={onBack}
           activeOpacity={0.8}
         >
-          <ChevronLeft size={24} color="#FFFFFF" />
+          <ChevronLeft size={24} color={GREEN_DARK} />
         </TouchableOpacity>
         <View style={readerHeaderStyles.titleContainer}>
           <Text style={[readerHeaderStyles.title, androidTextFix]} numberOfLines={1}>
@@ -381,7 +383,7 @@ function ReaderHeader({ title, onBack }: { title: string; onBack: () => void }) 
 
 const readerHeaderStyles = StyleSheet.create({
   header: {
-    backgroundColor: DEEP_GREEN,
+    backgroundColor: CARD_WHITE,
     paddingBottom: 12,
     paddingHorizontal: 14,
     borderBottomLeftRadius: 20,
@@ -397,7 +399,7 @@ const readerHeaderStyles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(62,107,84,0.1)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
@@ -409,7 +411,7 @@ const readerHeaderStyles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700' as const,
-    color: '#FFFFFF',
+    color: TEXT_DARK,
     writingDirection: 'rtl',
     textAlign: 'center',
   },
@@ -423,13 +425,13 @@ const readerHeaderStyles = StyleSheet.create({
   ornamentLine: {
     width: 24,
     height: 1,
-    backgroundColor: GOLD,
-    opacity: 0.6,
+    backgroundColor: GREEN_DARK,
+    opacity: 0.5,
   },
   ornamentDiamond: {
     width: 5,
     height: 5,
-    backgroundColor: GOLD,
+    backgroundColor: GREEN_DARK,
     transform: [{ rotate: '45deg' }],
   },
   spacer: {
@@ -440,7 +442,7 @@ const readerHeaderStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: DARK_BG,
+    backgroundColor: READER_BG,
   },
   quranPageContainer: {
     paddingHorizontal: 16,
@@ -451,12 +453,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: DEEP_GREEN,
+    backgroundColor: CARD_WHITE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 16,
-    ...createShadow({ offsetY: -2, opacity: 0.15, blur: 8, elevation: 10 }),
+    ...createShadow({ offsetY: -2, opacity: 0.12, blur: 10, elevation: 10 }),
   },
   audioBarTop: {
     flexDirection: 'row' as const,
@@ -467,7 +469,7 @@ const styles = StyleSheet.create({
   reciterButton: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: 'rgba(212,168,83,0.15)',
+    backgroundColor: 'rgba(62,107,84,0.12)',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -477,12 +479,12 @@ const styles = StyleSheet.create({
   reciterButtonText: {
     fontSize: 12,
     fontWeight: '600' as const,
-    color: GOLD,
+    color: GREEN_DARK,
   },
   surahLabel: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: '#FFFFFF',
+    color: TEXT_DARK,
     writingDirection: 'rtl',
   },
   progressContainer: {
@@ -490,13 +492,13 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(47,59,51,0.12)',
     borderRadius: 2,
     marginBottom: 6,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: GOLD,
+    backgroundColor: GREEN_DARK,
     borderRadius: 2,
   },
   timeRow: {
@@ -504,7 +506,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between' as const,
   },
   timeText: {
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(47,59,51,0.6)',
     fontSize: 11,
   },
   controlsRow: {
@@ -517,14 +519,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(62,107,84,0.08)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
   controlButtonActive: {
-    backgroundColor: 'rgba(212,168,83,0.2)',
+    backgroundColor: 'rgba(62,107,84,0.18)',
     borderWidth: 1,
-    borderColor: 'rgba(212,168,83,0.4)',
+    borderColor: 'rgba(62,107,84,0.4)',
   },
   controlButtonSpacer: {
     width: 44,
@@ -534,7 +536,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: GOLD,
+    backgroundColor: GREEN_DARK,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
@@ -543,13 +545,13 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(47,59,51,0.5)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     padding: 24,
   },
   modalContent: {
-    backgroundColor: CARD_BG,
+    backgroundColor: CARD_WHITE,
     borderRadius: 20,
     padding: 20,
     width: '100%',
@@ -565,16 +567,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(0,0,0,0.07)',
   },
   modalTitle: {
     fontSize: 17,
     fontWeight: '700' as const,
-    color: '#FFFFFF',
+    color: TEXT_DARK,
   },
   modalClose: {
     fontSize: 14,
-    color: GOLD,
+    color: GREEN_DARK,
     fontWeight: '600' as const,
   },
   reciterOption: {
@@ -587,19 +589,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   reciterOptionActive: {
-    backgroundColor: 'rgba(212,168,83,0.15)',
+    backgroundColor: 'rgba(62,107,84,0.1)',
   },
   reciterOptionText: {
     fontSize: 15,
-    color: '#FFFFFF',
+    color: TEXT_DARK,
     writingDirection: 'rtl',
   },
   reciterOptionTextActive: {
-    color: GOLD,
+    color: GREEN_DARK,
     fontWeight: '700' as const,
   },
   checkMark: {
-    color: GOLD,
+    color: GREEN_DARK,
     fontSize: 18,
     fontWeight: '700' as const,
   },
