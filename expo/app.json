@@ -118,8 +118,7 @@
           }
         }
       ],
-      "expo-status-bar",
-      "expo-web-browser"
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true
