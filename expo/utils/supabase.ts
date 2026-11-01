@@ -5,8 +5,8 @@ import Constants from 'expo-constants';
 
 const extra = Constants.expoConfig?.extra;
 
-const DEFAULT_SUPABASE_URL = 'https://qaqvmaqoykfrmdcavblv.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_M9iqhGgJdGBqCUHkntpH6w_g06tMifr';
+const DEFAULT_SUPABASE_URL = 'https://ghmamkapipasxkurfgqs.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_5XiSCTNunz56RQFiaVz1_w_qPfdTcz5';
 
 const supabaseUrl =
   process.env.EXPO_PUBLIC_SUPABASE_URL ||
