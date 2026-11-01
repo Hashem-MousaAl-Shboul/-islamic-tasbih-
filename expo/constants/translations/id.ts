@@ -500,4 +500,8 @@ accountCreationError: 'Terjadi kesalahan saat membuat akun',
 emailAlreadyInUse: 'Email ini sudah digunakan',
 weakPassword: 'Kata sandi lemah, silakan pilih kata sandi yang lebih kuat',
 continueWithGoogle: 'Lanjutkan dengan Google',
+  updateAvailableTitle: 'Pembaruan Baru Tersedia',
+  updateAvailableBody: 'Kami menyarankan memperbarui untuk fitur dan perbaikan terbaru. Instalasi dilakukan melalui Google Play.',
+  updateNow: 'Perbarui Sekarang',
+  updateLater: 'Nanti',
 };

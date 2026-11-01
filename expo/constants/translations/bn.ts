@@ -500,4 +500,8 @@ accountCreationError: 'অ্যাকাউন্ট তৈরি করার 
 emailAlreadyInUse: 'এই ইমেইলটি ইতিমধ্যে ব্যবহৃত হচ্ছে',
 weakPassword: 'পাসওয়ার্ড দুর্বল, অনুগ্রহ করে একটি শক্তিশালী পাসওয়ার্ড চয়ন করুন',
 continueWithGoogle: 'Google এর সাথে চালিয়ে যান',
+  updateAvailableTitle: 'নতুন আপডেট উপলব্ধ',
+  updateAvailableBody: 'সর্বশেষ বৈশিষ্ট্য ও সংশোধনী পেতে আপডেট করার সুপারিশ করা হয়। ইনস্টল Google Play এর মাধ্যমে হবে।',
+  updateNow: 'এখনই আপডেট করুন',
+  updateLater: 'পরে',
 };

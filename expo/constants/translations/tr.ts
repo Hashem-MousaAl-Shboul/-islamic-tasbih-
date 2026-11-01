@@ -500,4 +500,8 @@ accountCreationError: 'Hesap oluşturulurken bir hata oluştu',
 emailAlreadyInUse: 'Bu e-posta zaten kullanımda',
 weakPassword: 'Şifre zayıf, lütfen daha güçlü bir şifre seçin',
 continueWithGoogle: 'Google ile Devam Et',
+  updateAvailableTitle: 'Yeni Güncelleme Mevcut',
+  updateAvailableBody: 'En son özellikler ve düzeltmeler için güncellemenizi öneririz. Kurulum Google Play üzerinden yapılır.',
+  updateNow: 'Şimdi Güncelle',
+  updateLater: 'Daha sonra',
 };

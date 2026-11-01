@@ -497,4 +497,8 @@ export interface TranslationKeys {
   emailAlreadyInUse: string;
   weakPassword: string;
   continueWithGoogle: string;
+  updateAvailableTitle: string;
+  updateAvailableBody: string;
+  updateNow: string;
+  updateLater: string;
 }

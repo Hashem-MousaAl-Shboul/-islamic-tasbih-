@@ -500,4 +500,8 @@ accountCreationError: 'Ocurrió un error al crear la cuenta',
 emailAlreadyInUse: 'Este correo electrónico ya está en uso',
 weakPassword: 'La contraseña es débil, por favor elija una más fuerte',
 continueWithGoogle: 'Continuar con Google',
+  updateAvailableTitle: 'Nueva actualización disponible',
+  updateAvailableBody: 'Te recomendamos actualizar para obtener las últimas funciones y correcciones. La instalación se realiza a través de Google Play.',
+  updateNow: 'Actualizar ahora',
+  updateLater: 'Más tarde',
 };

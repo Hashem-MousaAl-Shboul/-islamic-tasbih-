@@ -500,4 +500,8 @@ accountCreationError: 'Une erreur s\'est produite lors de la création du compte
 emailAlreadyInUse: 'Cet e-mail est déjà utilisé',
 weakPassword: 'Le mot de passe est faible, veuillez en choisir un plus fort',
 continueWithGoogle: 'Continuer avec Google',
+  updateAvailableTitle: 'Nouvelle mise à jour disponible',
+  updateAvailableBody: 'Nous vous recommandons de mettre à jour pour obtenir les dernières fonctionnalités et corrections. L’installation se fait via Google Play.',
+  updateNow: 'Mettre à jour',
+  updateLater: 'Plus tard',
 };

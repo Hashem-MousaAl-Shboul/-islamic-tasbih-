@@ -500,4 +500,8 @@ accountCreationError: 'اکاؤنٹ بناتے وقت خرابی پیش آگئی
 emailAlreadyInUse: 'یہ ای میل پہلے سے استعمال میں ہے',
 weakPassword: 'پاس ورڈ کمزور ہے، براہ کرم مضبوط پاس ورڈ منتخب کریں',
 continueWithGoogle: 'Google کے ساتھ جاری رکھیں',
+  updateAvailableTitle: 'نیا اپڈیٹ دستیاب ہے',
+  updateAvailableBody: 'تازہ خصوصیات اور اصلاحات کے لیے اپڈیٹ کی سفارش کی جاتی ہے۔ انسٹالیشن Google Play کے ذریعے ہوگی۔',
+  updateNow: 'ابھی اپڈیٹ کریں',
+  updateLater: 'بعد میں',
 };

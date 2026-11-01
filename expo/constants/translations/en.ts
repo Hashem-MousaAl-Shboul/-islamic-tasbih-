@@ -500,4 +500,8 @@ accountCreationError: 'An error occurred while creating account',
 emailAlreadyInUse: 'This email is already in use',
 weakPassword: 'Password is weak, please choose a stronger password',
 continueWithGoogle: 'Continue with Google',
+  updateAvailableTitle: 'New Update Available',
+  updateAvailableBody: 'We recommend updating to get the latest features and fixes. Installation happens via Google Play.',
+  updateNow: 'Update Now',
+  updateLater: 'Later',
 };

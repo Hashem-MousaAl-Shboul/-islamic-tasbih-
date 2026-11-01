@@ -501,4 +501,8 @@ accountCreationError: 'Ralat berlaku semasa membuat akaun',
 emailAlreadyInUse: 'E-mel ini sudah digunakan',
 weakPassword: 'Kata laluan lemah, sila pilih kata laluan yang lebih kuat',
 continueWithGoogle: 'Teruskan dengan Google',
+  updateAvailableTitle: 'Kemas Kini Baharu Tersedia',
+  updateAvailableBody: 'Kami mengesyorkan kemas kini untuk mendapatkan fungsi dan pembetulan terkini. Pemasangan dibuat melalui Google Play.',
+  updateNow: 'Kemas Kini Sekarang',
+  updateLater: 'Kemudian',
 };

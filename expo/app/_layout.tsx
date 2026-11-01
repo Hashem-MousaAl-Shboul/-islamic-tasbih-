@@ -15,6 +15,8 @@ import { AppProviders } from "@/components/AppProviders";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useImmersiveMode } from "@/hooks/useImmersiveMode";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import UpdatePrompt from "@/components/UpdatePrompt";
+import { useAppUpdateCheck } from "@/hooks/useAppUpdateCheck";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -22,6 +24,7 @@ function RootLayoutNav() {
   const tokens = useTheme();
   const { isRTL } = useLanguageStore();
   const { isLoading } = useAuthStore();
+  const updateCheck = useAppUpdateCheck();
 
   useEffect(() => {
     if (!isLoading) {
@@ -105,6 +108,13 @@ function RootLayoutNav() {
             }}
           />
         </Stack>
+        <UpdatePrompt
+          visible={updateCheck.visible}
+          mandatory={updateCheck.mandatory}
+          message={updateCheck.message}
+          onUpdate={updateCheck.performUpdate}
+          onDismiss={updateCheck.dismiss}
+        />
       </View>
     </>
   );

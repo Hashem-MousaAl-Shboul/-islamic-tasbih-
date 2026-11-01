@@ -500,4 +500,8 @@ accountCreationError: 'حدث خطأ أثناء إنشاء الحساب',
 emailAlreadyInUse: 'هذا البريد الإلكتروني مستخدم بالفعل',
 weakPassword: 'كلمة المرور ضعيفة، يرجى اختيار كلمة مرور أقوى',
 continueWithGoogle: 'المتابعة باستخدام Google',
+  updateAvailableTitle: 'تحديث جديد متاح',
+  updateAvailableBody: 'نوصي بتحديث التطبيق للحصول على أحدث الميزات والإصلاحات. يتم التثبيت عبر متجر Google Play.',
+  updateNow: 'تحديث الآن',
+  updateLater: 'لاحقًا',
 };
