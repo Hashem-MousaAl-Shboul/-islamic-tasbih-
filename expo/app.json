@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sabbah",
     "slug": "islamic-dhikr",
-    "version": "1.13.01",
+    "version": "1.13.02",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sabbah",
