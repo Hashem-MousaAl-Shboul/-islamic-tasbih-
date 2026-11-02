@@ -5,6 +5,7 @@ import Constants from 'expo-constants';
 import i18n from '@/constants/translations';
 import { useTasbihStore } from './useTasbihStore';
 import { useLanguageStore } from './useLanguageStore';
+import { syncRemoteReminders } from '@/utils/remoteReminders';
 
 const NOTIF_TAG = '[Notifications]';
 const ACCENT_COLOR = '#D4A853';
@@ -200,8 +201,39 @@ export function useNotifications(): NotificationsHook {
     } = settings;
 
     if (!notificationsEnabled) {
+      void syncRemoteReminders(
+        {
+          notificationsEnabled: false,
+          morningReminderEnabled,
+          morningReminderTime,
+          eveningReminderEnabled,
+          eveningReminderTime,
+        },
+        t,
+      );
       await cancelReminder(MORNING_REMINDER_ID);
       await cancelReminder(EVENING_REMINDER_ID);
+      return;
+    }
+
+    // Prefer server-side push reminders (they survive reboots and OEM app
+    // killers). When remote registration is unavailable (web, Expo Go,
+    // offline, no push token), fall back to local scheduled notifications.
+    const remoteRegistered = await syncRemoteReminders(
+      {
+        notificationsEnabled,
+        morningReminderEnabled,
+        morningReminderTime,
+        eveningReminderEnabled,
+        eveningReminderTime,
+      },
+      t,
+    );
+
+    if (remoteRegistered) {
+      await cancelReminder(MORNING_REMINDER_ID);
+      await cancelReminder(EVENING_REMINDER_ID);
+      console.log(NOTIF_TAG, 'Remote push reminders active — local schedules cancelled');
       return;
     }
 
@@ -236,6 +268,28 @@ export function useNotifications(): NotificationsHook {
     if (Platform.OS === 'web') return;
     if (isExpoGo()) return;
     void ensureAndroidChannel();
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    if (isExpoGo()) return;
+    void (async () => {
+      const remoteOk = await syncRemoteReminders(
+        {
+          notificationsEnabled: settings.notificationsEnabled,
+          morningReminderEnabled: settings.morningReminderEnabled,
+          morningReminderTime: settings.morningReminderTime,
+          eveningReminderEnabled: settings.eveningReminderEnabled,
+          eveningReminderTime: settings.eveningReminderTime,
+        },
+        t,
+      );
+      if (remoteOk) {
+        await cancelReminder(MORNING_REMINDER_ID);
+        await cancelReminder(EVENING_REMINDER_ID);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
