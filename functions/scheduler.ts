@@ -11,6 +11,11 @@ import { DurableObject } from "cloudflare:workers";
 
 const SWEEP_INTERVAL_MS = 15 * 60_000;
 
+/** Hard cap on stored device registrations — prevents unbounded table growth. */
+const MAX_REGISTRATIONS = 5000;
+/** Largest request body the routes will accept. */
+const MAX_BODY_BYTES = 16_384;
+
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const ANDROID_CHANNEL_ID = "adhkar-reminders";
 const ACCENT_COLOR = "#D4A853";
@@ -62,7 +67,18 @@ function str(value: unknown, maxLen: number, fallback = ""): string {
   return value.slice(0, maxLen);
 }
 
+// Expo push tokens come in two shapes: ExponentPushToken[uuid] (Expo Go /
+// older clients) and ExpoPushToken[hex] (EAS builds). Anything else is garbage.
+const EXPO_PUSH_TOKEN_RE = /^Expo(nent)?PushToken\[[A-Za-z0-9_-]{8,}\]$/;
+
+function isValidPushToken(token: string): boolean {
+  return EXPO_PUSH_TOKEN_RE.test(token);
+}
+
 export class RemindersScheduler extends DurableObject<Env> {
+  /** In-memory sliding-window rate limiter: key -> hit timestamps. */
+  private rateHits = new Map<string, number[]>();
+
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.ctx.storage.sql.exec(`
@@ -90,11 +106,38 @@ export class RemindersScheduler extends DurableObject<Env> {
 
   override async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    // Accept both the stripped sub-path (/register) and the public path
+    // (/reminders/register) depending on how the request was dispatched.
+    const path = url.pathname.replace(/^\/reminders/, "") || "/";
 
-    if (request.method === "POST" && url.pathname === "/register") {
-      const body = (await request.json()) as Record<string, unknown>;
+    if (request.method === "POST" && path === "/register") {
+      if (!this.allow(request, "register", 10, 5 * 60_000)) {
+        return Response.json({ ok: false, error: "too many requests" }, { status: 429 });
+      }
+      const raw = await request.text();
+      if (raw.length > MAX_BODY_BYTES) {
+        return Response.json({ ok: false, error: "payload too large" }, { status: 413 });
+      }
+      let body: Record<string, unknown>;
+      try {
+        body = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        return Response.json({ ok: false, error: "invalid JSON body" }, { status: 400 });
+      }
       const token = str(body.pushToken, 512);
       if (!token) return Response.json({ ok: false, error: "pushToken is required" }, { status: 400 });
+      if (!isValidPushToken(token)) {
+        return Response.json({ ok: false, error: "invalid pushToken format" }, { status: 400 });
+      }
+      // Enforce the registration cap for new tokens only; existing devices
+      // keep being able to update their schedule.
+      const exists =
+        this.ctx.storage.sql
+          .exec("SELECT 1 FROM registrations WHERE push_token = ? LIMIT 1", token)
+          .toArray().length > 0;
+      if (!exists && this.activeCount() >= MAX_REGISTRATIONS) {
+        return Response.json({ ok: false, error: "registration limit reached" }, { status: 429 });
+      }
 
       const morning: SlotConfig = this.parseSlot(body.morning, 6, 0);
       const evening: SlotConfig = this.parseSlot(body.evening, 18, 0);
@@ -142,10 +185,24 @@ export class RemindersScheduler extends DurableObject<Env> {
       return Response.json({ ok: true });
     }
 
-    if (request.method === "POST" && url.pathname === "/unregister") {
-      const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    if (request.method === "POST" && path === "/unregister") {
+      if (!this.allow(request, "unregister", 10, 5 * 60_000)) {
+        return Response.json({ ok: false, error: "too many requests" }, { status: 429 });
+      }
+      const raw = await request.text();
+      if (raw.length > MAX_BODY_BYTES) {
+        return Response.json({ ok: false, error: "payload too large" }, { status: 413 });
+      }
+      let body: Record<string, unknown>;
+      try {
+        body = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        body = {};
+      }
       const token = str(body.pushToken, 512);
-      this.ctx.storage.sql.exec("DELETE FROM registrations WHERE push_token = ?", token);
+      if (isValidPushToken(token)) {
+        this.ctx.storage.sql.exec("DELETE FROM registrations WHERE push_token = ?", token);
+      }
       const count = this.activeCount();
       if (count === 0) {
         await this.env.DO.deleteAlarm("RemindersScheduler", this.ownId());
@@ -153,10 +210,27 @@ export class RemindersScheduler extends DurableObject<Env> {
       return Response.json({ ok: true });
     }
 
-    if (request.method === "POST" && url.pathname === "/test") {
-      const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    if (request.method === "POST" && path === "/test") {
+      // Strictly limited: a test push reaches an arbitrary device, so it must
+      // not be usable to spam.
+      if (!this.allow(request, "test", 5, 60 * 60_000)) {
+        return Response.json({ ok: false, error: "too many requests" }, { status: 429 });
+      }
+      const raw = await request.text();
+      if (raw.length > MAX_BODY_BYTES) {
+        return Response.json({ ok: false, error: "payload too large" }, { status: 413 });
+      }
+      let body: Record<string, unknown>;
+      try {
+        body = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        body = {};
+      }
       const token = str(body.pushToken, 512);
       if (!token) return Response.json({ ok: false, error: "pushToken is required" }, { status: 400 });
+      if (!isValidPushToken(token)) {
+        return Response.json({ ok: false, error: "invalid pushToken format" }, { status: 400 });
+      }
       const delay = clampInt(body.delaySeconds, 1, 3600, 10);
       // A test alarm overwrites the sweep alarm; onAlarm always re-arms the
       // sweep afterwards, so this is safe.
@@ -165,17 +239,9 @@ export class RemindersScheduler extends DurableObject<Env> {
       return Response.json({ ok: true, firesAt: Date.now() + delay * 1000 });
     }
 
-    if (request.method === "GET" && url.pathname === "/list") {
-      const rows = this.ctx.storage.sql
-        .exec(
-          "SELECT push_token, user_id, locale, morning_enabled, morning_hour, morning_minute, evening_enabled, evening_hour, evening_minute, tz_offset_minutes, last_morning_key, last_evening_key, updated_at FROM registrations ORDER BY updated_at DESC",
-        )
-        .toArray();
-      const alarm = await this.env.DO.getAlarm("RemindersScheduler", this.ownId());
-      return Response.json({ ok: true, count: rows.length, nextAlarmAt: alarm, registrations: rows });
-    }
-
-    return new Response("not found", { status: 404 });
+    // No public listing endpoint: registration data is per-device and must
+    // never be readable by third parties.
+    return new Response(`not found: ${request.method} ${path}`, { status: 404 });
   }
 
   async onAlarm(info: { scheduledTime: number; retryCount: number; isRetry: boolean }): Promise<void> {
@@ -242,6 +308,26 @@ export class RemindersScheduler extends DurableObject<Env> {
       await this.ensureAlarmArmed();
     }
     void info;
+  }
+
+  /** Sliding-window limiter. Returns false when the caller is over quota. */
+  private allow(request: Request, action: string, limit: number, windowMs: number): boolean {
+    const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+    const key = `${action}:${ip}`;
+    const now = Date.now();
+    const hits = (this.rateHits.get(key) ?? []).filter((t) => now - t < windowMs);
+    if (hits.length >= limit) {
+      this.rateHits.set(key, hits);
+      return false;
+    }
+    hits.push(now);
+    this.rateHits.set(key, hits);
+    if (this.rateHits.size > 2000) {
+      for (const [k, v] of this.rateHits) {
+        if (!v.some((t) => now - t < windowMs)) this.rateHits.delete(k);
+      }
+    }
+    return true;
   }
 
   private parseSlot(raw: unknown, fallbackHour: number, fallbackMinute: number): SlotConfig {

@@ -4,9 +4,12 @@
 // sweeping every 15 minutes and sending pushes via the Expo Push API):
 //   POST /reminders/register   { pushToken, userId?, locale?, tzOffsetMinutes, morning, evening }
 //   POST /reminders/unregister { pushToken }
-//   POST /reminders/test       { pushToken, delaySeconds? }
-//   GET  /reminders/list       (debug: current registrations + next alarm)
+//   POST /reminders/test       { pushToken, delaySeconds? }   (rate-limited)
 //   GET  /ping
+//
+// All reminder routes validate the Expo push-token format, enforce body-size
+// and per-IP rate limits, and cap total registrations. There is intentionally
+// no listing/inspection endpoint — registration data stays private.
 
 export { RemindersScheduler } from "./scheduler";
 
@@ -21,6 +24,8 @@ const CORS_HEADERS: Record<string, string> = {
 type Env = { DO: Fetcher };
 
 function dispatchToScheduler(request: Request, env: Env, path: string): Promise<Response> {
+  // The scheduler DO routes on the sub-path without the /reminders prefix
+  // (e.g. /register), so strip it before dispatching.
   const wrapped = new Request(`https://internal${path}`, request);
   wrapped.headers.set("X-Rork-DO-Class", DO_CLASS);
   wrapped.headers.set("X-Rork-DO-Id", "global");
@@ -40,7 +45,8 @@ export default {
     }
 
     if (url.pathname.startsWith("/reminders/")) {
-      const response = await dispatchToScheduler(request, env, url.pathname);
+      const subPath = url.pathname.slice("/reminders".length) || "/";
+      const response = await dispatchToScheduler(request, env, subPath);
       const headers = new Headers(response.headers);
       for (const [key, value] of Object.entries(CORS_HEADERS)) headers.set(key, value);
       return new Response(response.body, { status: response.status, headers });

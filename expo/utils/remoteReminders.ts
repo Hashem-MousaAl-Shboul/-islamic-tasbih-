@@ -20,6 +20,7 @@ let cachedPushToken: string | null = null;
 let lastSyncAt = 0;
 
 const SYNC_DEBOUNCE_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 10_000;
 
 function getFunctionsUrl(): string {
   const fromEnv = process.env.EXPO_PUBLIC_RORK_FUNCTIONS_URL;
@@ -38,6 +39,17 @@ function getModule(): typeof import('@/hooks/notificationsNative') | null {
 
 function getProjectId(): string | undefined {
   return Constants.expoConfig?.extra?.eas?.projectId;
+}
+
+/** fetch with a hard timeout so a dead network never hangs the app. */
+async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export interface RemoteReminderSyncInput {
@@ -68,7 +80,7 @@ export async function syncRemoteReminders(
     const token = cachedPushToken;
     if (token) {
       cachedPushToken = null;
-      void fetch(`${getFunctionsUrl()}/reminders/unregister`, {
+      void fetchWithTimeout(`${getFunctionsUrl()}/reminders/unregister`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pushToken: token }),
@@ -106,7 +118,7 @@ export async function syncRemoteReminders(
     // Minutes east of UTC (e.g. Amman UTC+3 → 180).
     const tzOffsetMinutes = -new Date().getTimezoneOffset();
 
-    const response = await fetch(`${getFunctionsUrl()}/reminders/register`, {
+    const response = await fetchWithTimeout(`${getFunctionsUrl()}/reminders/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -147,7 +159,7 @@ export async function syncRemoteReminders(
 export async function sendRemoteTestPush(): Promise<boolean> {
   if (!cachedPushToken) return false;
   try {
-    const response = await fetch(`${getFunctionsUrl()}/reminders/test`, {
+    const response = await fetchWithTimeout(`${getFunctionsUrl()}/reminders/test`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pushToken: cachedPushToken, delaySeconds: 10 }),

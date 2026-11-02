@@ -115,6 +115,21 @@ function createProfileFromUser(supaUser: User): AuthProfile {
   };
 }
 
+/**
+ * Minimal local stand-in for a Supabase User — used for guest / demo
+ * / offline profiles where no real auth session exists.
+ */
+function makeLocalUser(id: string, email: string | null): User {
+  return {
+    id,
+    email: email ?? undefined,
+    aud: 'authenticated',
+    app_metadata: {},
+    user_metadata: {},
+    created_at: new Date().toISOString(),
+  };
+}
+
 const GUEST_STORAGE_KEY = '@sabbah_guest_user';
 
 const CLOUDINARY_CLOUD_NAME =
@@ -156,7 +171,7 @@ async function uploadImageToCloudinary(uri: string, userId: string): Promise<str
     }
   );
 
-  let data: any;
+  let data: { error?: { message?: string }; secure_url?: string } | null;
   try {
     data = await response.json();
   } catch {
@@ -227,7 +242,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         if (savedGuest && active) {
           const parsed = JSON.parse(savedGuest);
           setProfile(parsed);
-          setUser({ id: parsed.uid, email: parsed.email } as any);
+          setUser(makeLocalUser(parsed.uid, parsed.email));
           setIsLoading(false);
           return true;
         }
@@ -341,7 +356,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         };
         await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(demoProfile));
         setProfile(demoProfile);
-        setUser({ id: demoProfile.uid, email: demoProfile.email } as any);
+        setUser(makeLocalUser(demoProfile.uid, demoProfile.email));
         return;
       }
 
@@ -422,7 +437,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
       } else {
         console.warn('[Auth] WebBrowser did not return success. Result type:', result.type);
       }
-    } catch (e: any) {
+    } catch (e) {
       const message = getAuthErrorMessage(e);
       console.error('[Auth] Google sign-in catch block:', e);
       setError(message);
@@ -452,7 +467,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
           };
           await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(demoProfile));
           setProfile(demoProfile);
-          setUser({ id: demoProfile.uid, email: demoProfile.email } as any);
+          setUser(makeLocalUser(demoProfile.uid, demoProfile.email));
           return;
         }
 
@@ -462,7 +477,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         });
 
         if (signInError) throw signInError;
-      } catch (e: any) {
+      } catch (e) {
         const message = getAuthErrorMessage(e);
         console.error('[Auth] Email sign-in error:', e);
         setError(message);
@@ -499,7 +514,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
           };
           await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(demoProfile));
           setProfile(demoProfile);
-          setUser({ id: demoProfile.uid, email: demoProfile.email } as any);
+          setUser(makeLocalUser(demoProfile.uid, demoProfile.email));
           return;
         }
 
@@ -515,7 +530,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         });
 
         if (signUpError) throw signUpError;
-      } catch (e: any) {
+      } catch (e) {
         const message = getAuthErrorMessage(e);
         console.error('[Auth] Email sign-up error:', e);
         setError(message);
@@ -538,8 +553,8 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
       };
       await AsyncStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(guestProfile));
       setProfile(guestProfile);
-      setUser({ id: 'guest_user', email: null } as any);
-    } catch (e: any) {
+      setUser(makeLocalUser('guest_user', null));
+    } catch {
       setError('حدث خطأ أثناء الدخول كزائر.');
     }
   }, []);
@@ -579,7 +594,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         }
 
         // Update Supabase auth metadata
-        const updateData: Record<string, any> = {
+        const updateData: Record<string, string | null> = {
           full_name: cleanName,
           display_name: cleanName,
         };
@@ -593,7 +608,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         if (updateError) throw updateError;
 
         // Update profiles table
-        const profileUpdate: Record<string, any> = {
+        const profileUpdate: Record<string, string | null> = {
           name: cleanName,
           updated_at: new Date().toISOString(),
         };
@@ -611,7 +626,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         if (refreshedUser) {
           await persistProfile(refreshedUser, cleanName);
         }
-      } catch (e: any) {
+      } catch (e) {
         const message = getAuthErrorMessage(e);
         setError(message);
         throw new Error(message);
@@ -658,9 +673,9 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
 
         setError(null);
         return imageUrl;
-      } catch (error: any) {
+      } catch (error) {
         console.error('[Auth] Profile photo upload error:', error);
-        const message = error?.message || 'تعذر رفع الصورة. يرجى المحاولة مرة أخرى.';
+        const message = (error as { message?: string })?.message || 'تعذر رفع الصورة. يرجى المحاولة مرة أخرى.';
         setError(message);
         throw new Error(message);
       }
@@ -696,9 +711,9 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
       }
 
       setError(null);
-    } catch (error: any) {
+    } catch (error) {
       console.error('[Auth] Delete profile photo error:', error);
-      const message = error?.message || 'تعذر حذف صورة الملف الشخصي. يرجى المحاولة مرة أخرى.';
+      const message = (error as { message?: string })?.message || 'تعذر حذف صورة الملف الشخصي. يرجى المحاولة مرة أخرى.';
       setError(message);
       throw new Error(message);
     }
