@@ -77,6 +77,9 @@ function getAuthErrorMessage(
   if (message.includes('Email not confirmed')) {
     return 'يرجى تأكيد بريدك الإلكتروني أولاً.';
   }
+  if (message.includes('Unsupported provider') || message.includes('provider is not enabled')) {
+    return 'تسجيل الدخول بواسطة Google غير مفعّل حاليًا. استخدم تسجيل الدخول بالبريد الإلكتروني مؤقتًا.';
+  }
   if (message.includes('Password should be at least')) {
     return 'كلمة المرور يجب أن لا تقل عن 6 أحرف.';
   }
