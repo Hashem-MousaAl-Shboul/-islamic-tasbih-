@@ -374,6 +374,7 @@ export const en: TranslationKeys = {
   locationNeeded: 'Location Required',
   locationPermissionDenied: 'Location permission denied. Enable it in Settings to find Qibla direction.',
   compassUnavailable: 'Compass not available on this device',
+  sensorUnavailableHint: 'Compass sensor is not available on this device, but the Qibla direction and distance to the Kaaba are shown below.',
   enableLocation: 'Enable Location',
   findingQibla: 'Finding Qibla direction...',
   qiblaInfoTitle: 'Virtue of Facing Qibla',

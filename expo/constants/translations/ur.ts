@@ -374,6 +374,7 @@ export const ur: TranslationKeys = {
   locationNeeded: 'موقع کی ضرورت',
   locationPermissionDenied: 'موقع کی اجازت مسترد ہوگئی۔ قبلہ رخ معلوم کرنے کے لیے سیٹنگز میں فعال کریں۔',
   compassUnavailable: 'اس ڈیوائس پر کمپاس دستیاب نہیں',
+  sensorUnavailableHint: 'اس ڈیوائس پر قطب نما کا سینسر دستیاب نہیں، لیکن قبلے کی سمت اور کعبے کا فاصلہ نیچے دکھایا گیا ہے۔',
   enableLocation: 'موقع فعال کریں',
   findingQibla: 'قبلہ رخ تلاش کیا جا رہا ہے...',
   qiblaInfoTitle: 'قبلہ رخ ہونے کی فضیلت',

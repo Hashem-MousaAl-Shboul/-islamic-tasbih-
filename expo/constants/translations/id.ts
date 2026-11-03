@@ -374,6 +374,7 @@ export const id: TranslationKeys = {
   locationNeeded: 'Lokasi Diperlukan',
   locationPermissionDenied: 'Izin lokasi ditolak. Aktifkan di Pengaturan untuk menemukan arah Kiblat.',
   compassUnavailable: 'Kompas tidak tersedia di perangkat ini',
+  sensorUnavailableHint: 'Sensor kompas tidak tersedia di perangkat ini, tetapi arah Kiblat dan jarak ke Kabah ditampilkan di bawah.',
   enableLocation: 'Aktifkan Lokasi',
   findingQibla: 'Mencari arah Kiblat...',
   qiblaInfoTitle: 'Keutamaan Menghadap Kiblat',

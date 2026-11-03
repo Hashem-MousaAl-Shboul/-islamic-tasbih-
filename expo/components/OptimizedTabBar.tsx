@@ -91,7 +91,7 @@ const OptimizedTabBar = memo(function OptimizedTabBar({ state, descriptors, emit
   const barStyle = useMemo(() => ({
     backgroundColor: theme.mode === 'dark' ? 'rgba(23,28,41,0.98)' : 'rgba(255,253,249,0.98)',
     borderColor: theme.mode === 'dark' ? Colors.dark.border : Colors.light.border,
-    marginBottom: Math.max(insets.bottom, 8),
+    marginBottom: Math.max(insets.bottom, 16),
   }), [insets.bottom, theme.mode]);
 
   return (

@@ -374,6 +374,7 @@ export const fr: TranslationKeys = {
   locationNeeded: 'Localisation requise',
   locationPermissionDenied: 'Permission de localisation refusée. Activez-la dans les paramètres pour trouver la direction de la Qibla.',
   compassUnavailable: 'Boussole non disponible sur cet appareil',
+  sensorUnavailableHint: "Le capteur de boussole n'est pas disponible sur cet appareil, mais la direction de la Qibla et la distance vers la Kaaba sont affichées ci-dessous.",
   enableLocation: 'Activer la localisation',
   findingQibla: 'Recherche de la direction de la Qibla...',
   qiblaInfoTitle: 'Vertu de faire face à la Qibla',

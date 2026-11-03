@@ -372,6 +372,7 @@ export interface TranslationKeys {
   locationNeeded: string;
   locationPermissionDenied: string;
   compassUnavailable: string;
+  sensorUnavailableHint: string;
   enableLocation: string;
   findingQibla: string;
   qiblaInfoTitle: string;

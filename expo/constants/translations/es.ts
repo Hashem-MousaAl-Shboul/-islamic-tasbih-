@@ -374,6 +374,7 @@ export const es: TranslationKeys = {
   locationNeeded: 'Ubicación requerida',
   locationPermissionDenied: 'Permiso de ubicación denegado. Actívalo en Configuración para encontrar la dirección de la Qibla.',
   compassUnavailable: 'Brújula no disponible en este dispositivo',
+  sensorUnavailableHint: 'El sensor de brújula no está disponible en este dispositivo, pero la dirección de la Qibla y la distancia a la Kaaba se muestran abajo.',
   enableLocation: 'Activar ubicación',
   findingQibla: 'Buscando dirección de la Qibla...',
   qiblaInfoTitle: 'Virtud de mirar a la Qibla',

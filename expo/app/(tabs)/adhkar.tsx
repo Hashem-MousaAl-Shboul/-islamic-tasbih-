@@ -1615,7 +1615,7 @@ const styles = StyleSheet.create({
   flatListContent: {
     paddingHorizontal: 12,
     paddingTop: 12,
-    paddingBottom: 140,
+    paddingBottom: 148,
   },
 
   playAllProgress: {

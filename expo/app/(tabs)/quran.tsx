@@ -42,18 +42,57 @@ import { createShadow } from '@/utils/shadowUtils';
 import AdBanner from '@/components/AdBanner';
 import UnifiedHeader from '@/components/UnifiedHeader';
 import QuranMiniPlayer from '@/components/QuranMiniPlayer';
+import { useTheme } from '@/theme/ThemeProvider';
 
-// Colors & Design System — ثيم «القرآن» المرجعي (أخضر مريمي فاتح)
-const SAGE_BG = '#8FA892';
-const GREEN_DARK = '#3E6B54';
-const GREEN_HEADER = '#7C9E78';
-const CARD_WHITE = '#FFFFFF';
-const CREAM = '#FBFAF3';
-const TEXT_DARK = '#2F3B33';
-const TEXT_MUTED = '#7C8A7E';
+// Colors & Design System — هوية التطبيق الموحدة (أخضر داكن / ذهبي / كريمي)
+const GREEN_DARK = '#1B4332';
 const GOLD = '#D4A853';
+const CREAM = '#FBFAF3';
 
 type QuranViewMode = 'surah' | 'juz' | 'page' | 'hizb';
+
+interface ScreenPalette {
+  bg: string;
+  card: string;
+  border: string;
+  text: string;
+  muted: string;
+  /** لون بارز للعناصر التفاعلية والنصوص المميزة */
+  accent: string;
+  /** لون المحتوى فوق العنصر البارز */
+  onAccent: string;
+  /** خلفية شفافة للعناصر النشطة */
+  accentSoft: string;
+  /** لون الذهبي ولون المحتوى فوقه */
+  gold: string;
+  onGold: string;
+}
+
+const LIGHT_PALETTE: ScreenPalette = {
+  bg: '#F7F4EE',
+  card: '#FFFFFF',
+  border: '#D9E1DC',
+  text: '#173B2D',
+  muted: '#5D6F66',
+  accent: '#1B4332',
+  onAccent: '#FFFFFF',
+  accentSoft: 'rgba(27,67,50,0.08)',
+  gold: '#D4A853',
+  onGold: '#1B4332',
+};
+
+const DARK_PALETTE: ScreenPalette = {
+  bg: '#14251D',
+  card: '#232838',
+  border: '#353B4E',
+  text: '#FFFFFF',
+  muted: '#B9C3BD',
+  accent: '#D4A853',
+  onAccent: '#14251D',
+  accentSoft: 'rgba(212,168,83,0.12)',
+  gold: '#D4A853',
+  onGold: '#14251D',
+};
 
 // جلب السور من المصدر الموحّد (utils/quranApi.ts) — الرابط محفوظ هناك فقط
 
@@ -94,7 +133,7 @@ const LastReadCard = React.memo(function LastReadCard({
       <View style={lastReadStyles.content}>
         <View style={lastReadStyles.textSection}>
           <View style={lastReadStyles.badge}>
-            <BookOpen size={14} color={CARD_WHITE} />
+            <BookOpen size={14} color="#FFFFFF" />
             <Text style={[lastReadStyles.badgeText, androidTextFix]}>
               {t('lastRead')}
             </Text>
@@ -129,9 +168,11 @@ const LastReadCard = React.memo(function LastReadCard({
 const ViewModeTabs = React.memo(function ViewModeTabs({
   activeMode,
   onChange,
+  palette,
 }: {
   activeMode: QuranViewMode;
   onChange: (mode: QuranViewMode) => void;
+  palette: ScreenPalette;
 }) {
   const { t } = useLanguageStore();
 
@@ -146,7 +187,12 @@ const ViewModeTabs = React.memo(function ViewModeTabs({
   );
 
   return (
-    <View style={tabsStyles.container}>
+    <View
+      style={[
+        tabsStyles.container,
+        { backgroundColor: palette.card, borderColor: palette.border },
+      ]}
+    >
       {modes.map((mode) => {
         const isActive = activeMode === mode.key;
         return (
@@ -160,13 +206,16 @@ const ViewModeTabs = React.memo(function ViewModeTabs({
             <Text
               style={[
                 tabsStyles.tabText,
-                isActive && tabsStyles.activeTabText,
+                { color: palette.muted },
+                isActive && { color: palette.accent },
                 androidTextFix,
               ]}
             >
               {mode.label}
             </Text>
-            {isActive && <View style={tabsStyles.activeIndicator} />}
+            {isActive && (
+              <View style={[tabsStyles.activeIndicator, { backgroundColor: palette.accent }]} />
+            )}
           </TouchableOpacity>
         );
       })}
@@ -180,51 +229,60 @@ const SurahItem = React.memo(function SurahItem({
   onOpenReader,
   isPlaying,
   isLoadingAudio,
+  palette,
 }: {
   surah: SurahMeta;
   onPlay: (surah: SurahMeta) => void;
   onOpenReader: (surah: SurahMeta) => void;
   isPlaying: boolean;
   isLoadingAudio: boolean;
+  palette: ScreenPalette;
 }) {
   const { t } = useLanguageStore();
 
+  const buttonBg = isPlaying ? palette.gold : palette.accent;
+  const buttonFg = isPlaying ? palette.onGold : palette.onAccent;
+
   return (
     <TouchableOpacity
-      style={surahStyles.container}
+      style={[surahStyles.container, { backgroundColor: palette.card }]}
       onPress={() => onOpenReader(surah)}
       activeOpacity={0.7}
       testID={`quran-surah-${surah.number}`}
     >
       <View style={surahStyles.numberBadge}>
-        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
-        <Text style={[surahStyles.numberText, androidTextFix]}>{surah.number}</Text>
+        <Octagon size={38} color={palette.accent} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
+        <Text style={[surahStyles.numberText, { color: palette.accent }, androidTextFix]}>
+          {surah.number}
+        </Text>
       </View>
       <View style={surahStyles.textSection}>
-        <Text style={[surahStyles.arabicName, androidTextFix]}>{surah.name}</Text>
+        <Text style={[surahStyles.arabicName, { color: palette.text }, androidTextFix]}>
+          {surah.name}
+        </Text>
         <View style={surahStyles.metaRow}>
-          <Text style={[surahStyles.transliterationName, androidTextFix]}>
+          <Text style={[surahStyles.transliterationName, { color: palette.muted }, androidTextFix]}>
             {surah.englishName}
           </Text>
-          <Text style={surahStyles.dot}>•</Text>
-          <Text style={[surahStyles.ayahCount, androidTextFix]}>
+          <Text style={[surahStyles.dot, { color: palette.muted }]}>•</Text>
+          <Text style={[surahStyles.ayahCount, { color: palette.muted }, androidTextFix]}>
             {surah.numberOfAyahs} {t('ayahs')}
           </Text>
         </View>
       </View>
       <TouchableOpacity
-        style={[surahStyles.playButton, isPlaying && surahStyles.playButtonActive]}
+        style={[surahStyles.playButton, { backgroundColor: buttonBg }]}
         onPress={() => onPlay(surah)}
         activeOpacity={0.8}
         testID={`quran-play-surah-${surah.number}`}
         accessibilityLabel={`${t('playSurah')} ${surah.name}`}
       >
         {isLoadingAudio ? (
-          <ActivityIndicator size="small" color={CARD_WHITE} />
+          <ActivityIndicator size="small" color={buttonFg} />
         ) : isPlaying ? (
-          <Pause size={18} color={CARD_WHITE} fill={CARD_WHITE} />
+          <Pause size={18} color={buttonFg} fill={buttonFg} />
         ) : (
-          <Play size={18} color={CARD_WHITE} fill={CARD_WHITE} />
+          <Play size={18} color={buttonFg} fill={buttonFg} />
         )}
       </TouchableOpacity>
     </TouchableOpacity>
@@ -234,28 +292,32 @@ const SurahItem = React.memo(function SurahItem({
 const JuzItem = React.memo(function JuzItem({
   juz,
   onOpen,
+  palette,
 }: {
   juz: { number: number; startSurah: number; startAyah: number };
   onOpen: (surahNumber: number, ayahNumber?: number) => void;
+  palette: ScreenPalette;
 }) {
   const { t } = useLanguageStore();
   const surah = getSurahByNumber(juz.startSurah);
 
   return (
     <TouchableOpacity
-      style={surahStyles.container}
+      style={[surahStyles.container, { backgroundColor: palette.card }]}
       onPress={() => onOpen(juz.startSurah, juz.startAyah)}
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
-        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
-        <Text style={[surahStyles.numberText, androidTextFix]}>{juz.number}</Text>
+        <Octagon size={38} color={palette.accent} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
+        <Text style={[surahStyles.numberText, { color: palette.accent }, androidTextFix]}>
+          {juz.number}
+        </Text>
       </View>
       <View style={surahStyles.textSection}>
-        <Text style={[surahStyles.arabicName, androidTextFix]}>
+        <Text style={[surahStyles.arabicName, { color: palette.text }, androidTextFix]}>
           {t('juzNumber')} {juz.number}
         </Text>
-        <Text style={[surahStyles.transliterationName, androidTextFix]}>
+        <Text style={[surahStyles.transliterationName, { color: palette.muted }, androidTextFix]}>
           {surah?.name ?? ''} - {t('ayah')} {juz.startAyah}
         </Text>
       </View>
@@ -266,28 +328,32 @@ const JuzItem = React.memo(function JuzItem({
 const HizbItem = React.memo(function HizbItem({
   hizb,
   onOpen,
+  palette,
 }: {
   hizb: { number: number; startSurah: number; startAyah: number };
   onOpen: (surahNumber: number, ayahNumber?: number) => void;
+  palette: ScreenPalette;
 }) {
   const { t } = useLanguageStore();
   const surah = getSurahByNumber(hizb.startSurah);
 
   return (
     <TouchableOpacity
-      style={surahStyles.container}
+      style={[surahStyles.container, { backgroundColor: palette.card }]}
       onPress={() => onOpen(hizb.startSurah, hizb.startAyah)}
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
-        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
-        <Text style={[surahStyles.numberText, androidTextFix]}>{hizb.number}</Text>
+        <Octagon size={38} color={palette.accent} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
+        <Text style={[surahStyles.numberText, { color: palette.accent }, androidTextFix]}>
+          {hizb.number}
+        </Text>
       </View>
       <View style={surahStyles.textSection}>
-        <Text style={[surahStyles.arabicName, androidTextFix]}>
+        <Text style={[surahStyles.arabicName, { color: palette.text }, androidTextFix]}>
           {t('hizbNumber')} {hizb.number}
         </Text>
-        <Text style={[surahStyles.transliterationName, androidTextFix]}>
+        <Text style={[surahStyles.transliterationName, { color: palette.muted }, androidTextFix]}>
           {surah?.name ?? ''} - {t('ayah')} {hizb.startAyah}
         </Text>
       </View>
@@ -298,26 +364,30 @@ const HizbItem = React.memo(function HizbItem({
 const PageItem = React.memo(function PageItem({
   pageNum,
   onOpenPage,
+  palette,
 }: {
   pageNum: number;
   onOpenPage: (page: number) => void;
+  palette: ScreenPalette;
 }) {
   const { t } = useLanguageStore();
   return (
     <TouchableOpacity
-      style={surahStyles.container}
+      style={[surahStyles.container, { backgroundColor: palette.card }]}
       onPress={() => onOpenPage(pageNum)}
       activeOpacity={0.7}
     >
       <View style={surahStyles.numberBadge}>
-        <Octagon size={38} color={GREEN_DARK} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
-        <Text style={[surahStyles.numberText, androidTextFix]}>{pageNum}</Text>
+        <Octagon size={38} color={palette.accent} strokeWidth={1.3} style={StyleSheet.absoluteFill} />
+        <Text style={[surahStyles.numberText, { color: palette.accent }, androidTextFix]}>
+          {pageNum}
+        </Text>
       </View>
       <View style={surahStyles.textSection}>
-        <Text style={[surahStyles.arabicName, androidTextFix]}>
+        <Text style={[surahStyles.arabicName, { color: palette.text }, androidTextFix]}>
           {t('page')} {pageNum}
         </Text>
-        <Text style={[surahStyles.transliterationName, androidTextFix]}>
+        <Text style={[surahStyles.transliterationName, { color: palette.muted }, androidTextFix]}>
           {t('pageTab')} {pageNum} / {TOTAL_PAGES}
         </Text>
       </View>
@@ -329,6 +399,7 @@ const PageItem = React.memo(function PageItem({
 export default function QuranScreen() {
   const { t } = useLanguageStore();
   const router = useRouter();
+  const { mode } = useTheme();
   const { currentReciter, changeReciter } = useReciterStore();
   const { lastRead } = useQuranStore();
   const {
@@ -338,6 +409,11 @@ export default function QuranScreen() {
     playSurah,
     isCurrentSurah,
   } = useQuranAudio();
+
+  const palette = useMemo(
+    () => (mode === 'dark' ? DARK_PALETTE : LIGHT_PALETTE),
+    [mode]
+  );
 
   const [activeMode, setActiveMode] = useState<QuranViewMode>('surah');
   const [showReciterPicker, setShowReciterPicker] = useState<boolean>(false);
@@ -411,17 +487,18 @@ export default function QuranScreen() {
           onOpenReader={handleOpenReader}
           isPlaying={isThisPlaying}
           isLoadingAudio={isThisLoading}
+          palette={palette}
         />
       );
     }
     if (activeMode === 'juz') {
-      return <JuzItem juz={item} onOpen={handleOpenSurahByNumber} />;
+      return <JuzItem juz={item} onOpen={handleOpenSurahByNumber} palette={palette} />;
     }
     if (activeMode === 'hizb') {
-      return <HizbItem hizb={item} onOpen={handleOpenSurahByNumber} />;
+      return <HizbItem hizb={item} onOpen={handleOpenSurahByNumber} palette={palette} />;
     }
-    return <PageItem pageNum={item} onOpenPage={handleOpenPageReader} />;
-  }, [activeMode, handlePlaySurah, handleOpenReader, handleOpenSurahByNumber, handleOpenPageReader, isCurrentSurah, isPlaying, isLoading]);
+    return <PageItem pageNum={item} onOpenPage={handleOpenPageReader} palette={palette} />;
+  }, [activeMode, handlePlaySurah, handleOpenReader, handleOpenSurahByNumber, handleOpenPageReader, isCurrentSurah, isPlaying, isLoading, palette]);
 
   const keyExtractor = useCallback((item: any) => {
     if (activeMode === 'surah') return `surah-${item.number}`;
@@ -437,24 +514,33 @@ export default function QuranScreen() {
   const listHeader = useMemo(() => (
     <View style={styles.listHeader}>
       <LastReadCard lastRead={lastRead} onContinue={handleContinueReading} />
-      <ViewModeTabs activeMode={activeMode} onChange={setActiveMode} />
-      {activeMode === 'surah' && (
-        <TouchableOpacity
-          style={styles.reciterBar}
-          onPress={() => setShowReciterPicker(true)}
-          activeOpacity={0.7}
+      <ViewModeTabs activeMode={activeMode} onChange={setActiveMode} palette={palette} />
+      <TouchableOpacity
+        style={[
+          styles.reciterBar,
+          { backgroundColor: palette.card, borderColor: palette.border },
+        ]}
+        onPress={() => setShowReciterPicker(true)}
+        activeOpacity={0.7}
+        testID="quran-reciter-bar"
+      >
+        <Volume2 size={16} color={palette.accent} />
+        <Text
+          style={[styles.reciterBarText, { color: palette.accent }, androidTextFix]}
+          numberOfLines={1}
         >
-          <Volume2 size={16} color={GREEN_DARK} />
-          <Text style={[styles.reciterBarText, androidTextFix]} numberOfLines={1}>
-            {RECITER_NAMES[currentReciter]}
-          </Text>
-        </TouchableOpacity>
-      )}
+          {RECITER_NAMES[currentReciter]}
+        </Text>
+      </TouchableOpacity>
     </View>
-  ), [lastRead, handleContinueReading, activeMode, currentReciter]);
+  ), [lastRead, handleContinueReading, activeMode, currentReciter, palette]);
 
   return (
-    <View style={styles.container} testID="quran-screen" accessibilityLabel="Quran Screen">
+    <View
+      style={[styles.container, { backgroundColor: palette.bg }]}
+      testID="quran-screen"
+      accessibilityLabel="Quran Screen"
+    >
       <UnifiedHeader title={t('quranKareem')} testID="quran-header" />
 
       <FlatList
@@ -466,18 +552,22 @@ export default function QuranScreen() {
         ListEmptyComponent={
           surahsLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={CARD_WHITE} />
-              <Text style={[styles.loadingText, androidTextFix]}>{t('loading')}</Text>
+              <ActivityIndicator size="large" color={GOLD} />
+              <Text style={[styles.loadingText, { color: palette.muted }, androidTextFix]}>
+                {t('loading')}
+              </Text>
             </View>
           ) : surahsError ? (
             <View style={styles.loadingContainer}>
-              <Text style={[styles.errorText, androidTextFix]}>{t('errorLoadingVerses')}</Text>
+              <Text style={[styles.errorText, { color: palette.muted }, androidTextFix]}>
+                {t('errorLoadingVerses')}
+              </Text>
             </View>
           ) : undefined
         }
         contentContainerStyle={[
           styles.listContent,
-          hasMiniPlayer && { paddingBottom: 180 },
+          hasMiniPlayer ? { paddingBottom: 192 } : { paddingBottom: 112 },
         ]}
         showsVerticalScrollIndicator={false}
         overScrollMode="never"
@@ -495,11 +585,20 @@ export default function QuranScreen() {
         onRequestClose={() => setShowReciterPicker(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: palette.card, borderColor: palette.border },
+            ]}
+          >
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, androidTextFix]}>{t('selectReciterTitle')}</Text>
+              <Text style={[styles.modalTitle, { color: palette.text }, androidTextFix]}>
+                {t('selectReciterTitle')}
+              </Text>
               <TouchableOpacity onPress={() => setShowReciterPicker(false)}>
-                <Text style={[styles.modalClose, androidTextFix]}>{t('close')}</Text>
+                <Text style={[styles.modalClose, { color: palette.accent }, androidTextFix]}>
+                  {t('close')}
+                </Text>
               </TouchableOpacity>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -508,21 +607,22 @@ export default function QuranScreen() {
                   key={id}
                   style={[
                     styles.reciterOption,
-                    currentReciter === id && styles.reciterOptionActive,
+                    currentReciter === id && { backgroundColor: palette.accentSoft },
                   ]}
                   onPress={() => handleReciterSelect(id)}
                 >
                   <Text
                     style={[
                       styles.reciterOptionText,
-                      currentReciter === id && styles.reciterOptionTextActive,
+                      { color: palette.text },
+                      currentReciter === id && { color: palette.accent },
                       androidTextFix,
                     ]}
                   >
                     {RECITER_NAMES[id]}
                   </Text>
                   {currentReciter === id && (
-                    <Text style={styles.checkMark}>✓</Text>
+                    <Text style={[styles.checkMark, { color: palette.accent }]}>✓</Text>
                   )}
                 </TouchableOpacity>
               ))}
@@ -538,7 +638,7 @@ export default function QuranScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SAGE_BG,
+    backgroundColor: '#F7F4EE',
   },
   listHeader: {
     paddingTop: 20,
@@ -546,56 +646,49 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 100,
+    paddingBottom: 112,
   },
   reciterBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
     gap: 8,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(62,107,84,0.25)',
   },
   reciterBarText: {
     fontSize: 13,
     fontWeight: '600',
-    color: GREEN_DARK,
   },
   loadingContainer: {
     paddingVertical: 40,
     alignItems: 'center',
   },
   loadingText: {
-    color: CARD_WHITE,
     fontSize: 14,
     marginTop: 12,
   },
   errorText: {
-    color: '#FFFFFF',
     fontSize: 14,
     textAlign: 'center',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(47,59,51,0.5)',
+    backgroundColor: 'rgba(20,37,29,0.55)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   modalContent: {
-    backgroundColor: CARD_WHITE,
     borderRadius: 20,
     padding: 20,
     width: '100%',
     maxWidth: 360,
     maxHeight: 400,
     borderWidth: 1,
-    borderColor: 'rgba(62,107,84,0.15)',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -609,11 +702,9 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: TEXT_DARK,
   },
   modalClose: {
     fontSize: 14,
-    color: GREEN_DARK,
     fontWeight: '600',
   },
   reciterOption: {
@@ -625,20 +716,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 4,
   },
-  reciterOptionActive: {
-    backgroundColor: 'rgba(62,107,84,0.1)',
-  },
   reciterOptionText: {
     fontSize: 15,
-    color: TEXT_DARK,
     writingDirection: 'rtl',
   },
-  reciterOptionTextActive: {
-    color: GREEN_DARK,
-    fontWeight: '700',
-  },
   checkMark: {
-    color: GREEN_DARK,
     fontSize: 18,
     fontWeight: '700',
   },
@@ -646,7 +728,7 @@ const styles = StyleSheet.create({
 
 const lastReadStyles = StyleSheet.create({
   container: {
-    backgroundColor: GREEN_HEADER,
+    backgroundColor: GREEN_DARK,
     borderRadius: 22,
     padding: 18,
     marginBottom: 20,
@@ -665,7 +747,7 @@ const lastReadStyles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: 'rgba(212,168,83,0.25)',
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -675,19 +757,19 @@ const lastReadStyles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: CARD_WHITE,
+    color: '#F2E4C0',
   },
   surahLabel: {
     fontSize: 13,
     fontWeight: '500',
-    color: CARD_WHITE,
+    color: '#FFFFFF',
     opacity: 0.85,
     marginBottom: 2,
   },
   surahName: {
     fontSize: 24,
     fontWeight: '700',
-    color: CARD_WHITE,
+    color: '#FFFFFF',
     writingDirection: 'rtl',
     textAlign: 'left',
     marginBottom: 4,
@@ -695,7 +777,7 @@ const lastReadStyles = StyleSheet.create({
   surahNameTransliteration: {
     fontSize: 14,
     fontWeight: '500',
-    color: CARD_WHITE,
+    color: '#FFFFFF',
     opacity: 0.9,
     marginBottom: 14,
   },
@@ -789,10 +871,10 @@ const tabsStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
-    backgroundColor: CARD_WHITE,
     borderRadius: 16,
     paddingVertical: 4,
     paddingHorizontal: 6,
+    borderWidth: 1,
     ...createShadow({ offsetY: 2, opacity: 0.08, blur: 10, elevation: 3 }),
   },
   tab: {
@@ -805,18 +887,12 @@ const tabsStyles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: TEXT_MUTED,
-  },
-  activeTabText: {
-    color: GREEN_DARK,
-    fontWeight: '700',
   },
   activeIndicator: {
     position: 'absolute',
     bottom: 2,
     width: 24,
     height: 3,
-    backgroundColor: GREEN_DARK,
     borderRadius: 1.5,
   },
 });
@@ -825,7 +901,6 @@ const surahStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_WHITE,
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -842,7 +917,6 @@ const surahStyles = StyleSheet.create({
   numberText: {
     fontSize: 13,
     fontWeight: '700',
-    color: GREEN_DARK,
   },
   textSection: {
     flex: 1,
@@ -851,7 +925,6 @@ const surahStyles = StyleSheet.create({
   arabicName: {
     fontSize: 16,
     fontWeight: '700',
-    color: TEXT_DARK,
     writingDirection: 'rtl',
     textAlign: 'left',
     marginBottom: 2,
@@ -864,29 +937,22 @@ const surahStyles = StyleSheet.create({
   transliterationName: {
     fontSize: 13,
     fontWeight: '500',
-    color: TEXT_MUTED,
     textAlign: 'left',
   },
   dot: {
-    color: TEXT_MUTED,
     fontSize: 13,
   },
   ayahCount: {
     fontSize: 12,
     fontWeight: '400',
-    color: TEXT_MUTED,
   },
   playButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: GREEN_DARK,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
-  },
-  playButtonActive: {
-    backgroundColor: GREEN_HEADER,
   },
   separator: {
     height: 0,

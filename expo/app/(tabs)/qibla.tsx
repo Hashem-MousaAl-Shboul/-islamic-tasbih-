@@ -26,6 +26,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
+  Compass as CompassIcon,
 } from 'lucide-react-native';
 import { useLanguageStore } from '@/hooks/useLanguageStore';
 import { useQibla, type CompassAccuracy } from '@/hooks/useQibla';
@@ -42,9 +43,13 @@ import {
 import { androidTextFix } from '@/utils/androidOptimizations';
 import { createShadow, pointerEventsNone } from '@/utils/shadowUtils';
 import AdBanner from '@/components/AdBanner';
+import { Colors } from '@/constants/colors';
 
 const GOLD = '#D4A853';
 const DEEP_GREEN = '#1B4332';
+const SUCCESS = Colors.success; // #2D8B6F
+const WARNING = Colors.warning; // #C8902D
+const ERROR = Colors.error; // #C84F4F
 const DEEP_GREEN_DARK = '#134238';
 const DARK_CARD = '#232838';
 const DARK_BORDER = '#2D3142';
@@ -408,11 +413,11 @@ const AccuracyIndicator = memo(function AccuracyIndicator({ accuracy, magneticFi
   const config = useMemo(() => {
     switch (accuracy) {
       case 'high':
-        return { color: '#4CAF50', bgColor: 'rgba(76,175,80,0.12)', label: t('accuracyHigh'), dots: 3, icon: CheckCircle2 };
+        return { color: SUCCESS, bgColor: 'rgba(45,139,111,0.12)', label: t('accuracyHigh'), dots: 3, icon: CheckCircle2 };
       case 'medium':
-        return { color: '#FFC107', bgColor: 'rgba(255,193,7,0.12)', label: t('accuracyMedium'), dots: 2, icon: Gauge };
+        return { color: WARNING, bgColor: 'rgba(200,144,45,0.12)', label: t('accuracyMedium'), dots: 2, icon: Gauge };
       case 'low':
-        return { color: '#FF6B6B', bgColor: 'rgba(255,107,107,0.12)', label: t('accuracyLow'), dots: 1, icon: AlertTriangle };
+        return { color: ERROR, bgColor: 'rgba(200,79,79,0.12)', label: t('accuracyLow'), dots: 1, icon: AlertTriangle };
       default:
         return { color: '#888', bgColor: 'rgba(136,136,136,0.12)', label: t('accuracyUnavailable'), dots: 0, icon: XCircle };
     }
@@ -482,9 +487,9 @@ const CalibrationCard = memo(function CalibrationCard({ isDark }: CalibrationCar
   ], [t]);
 
   return (
-    <View style={[styles.calibrationCard, { backgroundColor: cardColor, borderColor: '#FFC107' }]}>
+    <View style={[styles.calibrationCard, { backgroundColor: cardColor, borderColor: WARNING }]}>
       <View style={styles.calibrationCardHeader}>
-        <AlertTriangle size={18} color="#FFC107" strokeWidth={2.2} />
+        <AlertTriangle size={18} color={WARNING} strokeWidth={2.2} />
         <Text style={styles.calibrationCardTitle}>{t('calibrateCompassTitle')}</Text>
       </View>
       {steps.map((step) => (
@@ -786,6 +791,33 @@ const ErrorState = memo(function ErrorState({ icon, title, message, buttonText, 
 });
 ErrorState.displayName = 'ErrorState';
 
+interface SensorUnavailableCardProps {
+  isDark: boolean;
+}
+
+const SensorUnavailableCard = memo(function SensorUnavailableCard({ isDark }: SensorUnavailableCardProps) {
+  const { t } = useLanguageStore();
+  const cardColor = isDark ? DARK_CARD : LIGHT_CARD;
+  const textColor = isDark ? TEXT_LIGHT : TEXT_DARK;
+  const mutedColor = isDark ? TEXT_MUTED_LIGHT : TEXT_MUTED_DARK;
+  const borderColor = isDark ? DARK_BORDER : LIGHT_BORDER;
+
+  return (
+    <View style={[styles.sensorUnavailableCard, { backgroundColor: cardColor, borderColor }]}>
+      <View style={styles.sensorUnavailableIcon}>
+        <CompassIcon size={34} color={GOLD} strokeWidth={1.5} />
+      </View>
+      <Text style={[styles.sensorUnavailableTitle, { color: textColor }]}>
+        {t('compassUnavailable')}
+      </Text>
+      <Text style={[styles.sensorUnavailableText, { color: mutedColor }]}>
+        {t('sensorUnavailableHint')}
+      </Text>
+    </View>
+  );
+});
+SensorUnavailableCard.displayName = 'SensorUnavailableCard';
+
 export default function QiblaScreen() {
   const { t } = useLanguageStore();
   const theme = useTheme();
@@ -842,7 +874,7 @@ export default function QiblaScreen() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: insets.bottom + 92 },
+          { paddingBottom: insets.bottom + 104 },
         ]}
         showsVerticalScrollIndicator={false}
         bounces={!showCompass}
@@ -873,7 +905,7 @@ export default function QiblaScreen() {
           />
         ) : error && !location ? (
           <ErrorState
-            icon={<AlertCircle size={40} color="#FF6B6B" strokeWidth={1.5} />}
+            icon={<AlertCircle size={40} color={ERROR} strokeWidth={1.5} />}
             title={t('error')}
             message={t('retry')}
             buttonText={t('retry')}
@@ -883,14 +915,18 @@ export default function QiblaScreen() {
         ) : (
           <View style={styles.mainContent}>
             <View style={styles.compassSection}>
-              <Compass
-                heading={heading}
-                qiblaBearing={qiblaBearing}
-                isAligned={isAligned}
-                size={compassSize}
-                isDark={isDark}
-                theme={compassTheme}
-              />
+              {accuracy === 'unavailable' ? (
+                <SensorUnavailableCard isDark={isDark} />
+              ) : (
+                <Compass
+                  heading={heading}
+                  qiblaBearing={qiblaBearing}
+                  isAligned={isAligned}
+                  size={compassSize}
+                  isDark={isDark}
+                  theme={compassTheme}
+                />
+              )}
 
               <AccuracyIndicator accuracy={accuracy} magneticField={magneticField} isDark={isDark} />
 
@@ -1041,6 +1077,35 @@ const styles = StyleSheet.create({
     gap: 14,
     marginBottom: 16,
   },
+  sensorUnavailableCard: {
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 20,
+    gap: 8,
+    width: '100%',
+  },
+  sensorUnavailableIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(212,168,83,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  sensorUnavailableTitle: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    textAlign: 'center',
+    ...androidTextFix,
+  },
+  sensorUnavailableText: {
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: 'center',
+    ...androidTextFix,
+  },
   compassContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -1169,7 +1234,7 @@ const styles = StyleSheet.create({
   calibrationCardTitle: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: '#FFC107',
+    color: WARNING,
     ...androidTextFix,
   },
   calibrationStepRow: {
@@ -1182,7 +1247,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: 'rgba(255,193,7,0.15)',
+    backgroundColor: 'rgba(200,144,45,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -1190,7 +1255,7 @@ const styles = StyleSheet.create({
   calibrationStepNumText: {
     fontSize: 11,
     fontWeight: '800' as const,
-    color: '#FFC107',
+    color: WARNING,
     ...androidTextFix,
   },
   calibrationStepText: {

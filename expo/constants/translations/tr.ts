@@ -374,6 +374,7 @@ export const tr: TranslationKeys = {
   locationNeeded: 'Konum Gerekli',
   locationPermissionDenied: 'Konum izni reddedildi. Kıble yönünü bulmak için Ayarlar\'dan etkinleştirin.',
   compassUnavailable: 'Bu cihazda pusula mevcut değil',
+  sensorUnavailableHint: 'Pusula sensörü bu cihazda mevcut değil, ancak Kıble yönü ve Kâbe\'ye uzaklık aşağıda gösteriliyor.',
   enableLocation: 'Konumu Etkinleştir',
   findingQibla: 'Kıble yönü aranıyor...',
   qiblaInfoTitle: 'Kıbleye Yönelmenin Fazileti',

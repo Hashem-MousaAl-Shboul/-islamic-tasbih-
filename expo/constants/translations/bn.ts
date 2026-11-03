@@ -374,6 +374,7 @@ export const bn: TranslationKeys = {
   locationNeeded: 'অবস্থান প্রয়োজন',
   locationPermissionDenied: 'অবস্থান অনুমতি অস্বীকৃত। কিবলা দিক খুঁজতে সেটিংসে সক্ষম করুন।',
   compassUnavailable: 'এই ডিভাইসে কম্পাস নেই',
+  sensorUnavailableHint: 'এই ডিভাইসে কম্পাস সেন্সর নেই, তবে কিবলার দিক ও কাবার দূরত্ব নিচে দেখানো হয়েছে।',
   enableLocation: 'অবস্থান সক্ষম করুন',
   findingQibla: 'কিবলা দিক খোঁজা হচ্ছে...',
   qiblaInfoTitle: 'কিবলামুখী হওয়ার ফজিলত',

@@ -374,6 +374,7 @@ export const ar: TranslationKeys = {
   locationNeeded: 'يلزم تفعيل الموقع',
   locationPermissionDenied: 'تم رفض إذن الموقع. فعّله من الإعدادات لمعرفة اتجاه القبلة.',
   compassUnavailable: 'البوصلة غير متاحة على هذا الجهاز',
+  sensorUnavailableHint: 'مستشعر البوصلة غير متوفر على هذا الجهاز، لكن اتجاه القبلة والمسافة إلى الكعبة ظاهرة أدناه.',
   enableLocation: 'تفعيل الموقع',
   findingQibla: 'جاري تحديد اتجاه القبلة...',
   qiblaInfoTitle: 'فضل استقبال القبلة',
