@@ -12,20 +12,26 @@ export const ThemedBackground = memo(function ThemedBackground({ children, testI
   const theme = useTheme();
   const { backgroundTheme } = theme;
 
-  if (backgroundTheme.key === 'custom' && backgroundTheme.customImage) {
+  // ثيم «default» كريمي مخصص للوضع الفاتح؛ في الوضع الداكن نستبدل بالتدرج الداكن
+  const effectiveBackground =
+    theme.mode === 'dark' && backgroundTheme.key === 'default'
+      ? { ...backgroundTheme, type: 'gradient' as const, colors: ['#16213E', '#0F172A'] as const, contentTint: 'light' as const }
+      : backgroundTheme;
+
+  if (effectiveBackground.key === 'custom' && effectiveBackground.customImage) {
     return (
       <View style={styles.container} testID={testID}>
-        <Image source={{ uri: backgroundTheme.customImage }} style={styles.image as ImageStyle} resizeMode="cover" />
-        <View style={[styles.overlay, { backgroundColor: backgroundTheme.overlay }]} />
+        <Image source={{ uri: effectiveBackground.customImage }} style={styles.image as ImageStyle} resizeMode="cover" />
+        <View style={[styles.overlay, { backgroundColor: effectiveBackground.overlay }]} />
         {children}
       </View>
     );
   }
 
-  if (backgroundTheme.type === 'gradient' && backgroundTheme.colors) {
+  if (effectiveBackground.type === 'gradient' && effectiveBackground.colors) {
     return (
       <LinearGradient
-        colors={backgroundTheme.colors as [string, string]}
+        colors={effectiveBackground.colors as [string, string]}
         style={styles.container}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -37,7 +43,7 @@ export const ThemedBackground = memo(function ThemedBackground({ children, testI
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: backgroundTheme.colors?.[0] ?? theme.background }]} testID={testID}>
+    <View style={[styles.container, { backgroundColor: effectiveBackground.colors?.[0] ?? theme.background }]} testID={testID}>
       {children}
     </View>
   );
