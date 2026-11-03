@@ -32,7 +32,7 @@ function getFunctionsUrl(): string {
 function getModule(): typeof import('@/hooks/notificationsNative') | null {
   if (cachedModule !== null) return cachedModule;
   if (isExpoGo()) return null;
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   cachedModule = require('@/hooks/notificationsNative') as typeof import('@/hooks/notificationsNative');
   return cachedModule;
 }

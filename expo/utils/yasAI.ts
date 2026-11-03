@@ -454,7 +454,7 @@ export class YasAI {
   // محاولة مطابقة النص إلى معرف ذكر معروف
   private resolveDhikrIdFromText(text: string): string | null {
     const normalized = text.replace(/\s+/g, ' ').trim();
-    const heuristics: Array<{ id: string; test: (t: string) => boolean }> = [
+    const heuristics: { id: string; test: (t: string) => boolean }[] = [
       { id: 'ayat-kursi', test: (t) => t.includes('اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ') || t.includes('البقرة: 255') },
       { id: 'dua-1', test: (t) => t.includes('رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً') },
       { id: 'dua-2', test: (t) => t.includes('رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ') },

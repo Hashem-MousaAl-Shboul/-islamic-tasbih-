@@ -36,7 +36,7 @@ interface SurahEditionResponse {
   code: number;
   status: string;
   data: {
-    ayahs: Array<{ numberInSurah: number; text: string }>;
+    ayahs: { numberInSurah: number; text: string }[];
   };
 }
 
@@ -44,25 +44,25 @@ interface PageResponse {
   code: number;
   status: string;
   data: {
-    ayahs: Array<{
+    ayahs: {
       numberInSurah: number;
       text: string;
       surah?: { number: number; name?: string };
-    }>;
+    }[];
   };
 }
 
 interface SurahListResponse {
   code: number;
   status: string;
-  data: Array<{
+  data: {
     number: number;
     name: string;
     englishName: string;
     englishNameTranslation: string;
     numberOfAyahs: number;
     revelationType: string;
-  }>;
+  }[];
 }
 
 function buildUrl(path: string): string {

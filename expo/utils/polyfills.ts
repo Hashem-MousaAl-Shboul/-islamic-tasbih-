@@ -46,6 +46,7 @@ if (typeof cancelIdleCallback === 'undefined') {
 // ----------------------------------------------------------------------------
 if (Platform.OS === 'web') {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { AppRegistry } = require('react-native');
     const originalRunApplication = AppRegistry.runApplication;
     let currentRoot: any = null;
@@ -59,7 +60,7 @@ if (Platform.OS === 'web') {
       currentRoot = root;
       return root;
     };
-  } catch (e) {
+  } catch {
     // Non-fatal — will only matter on web
   }
 }
