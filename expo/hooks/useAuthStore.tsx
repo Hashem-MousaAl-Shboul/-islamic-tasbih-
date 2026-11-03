@@ -210,9 +210,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
             {
               id: supaUser.id,
               name: userProfile.name,
-              email: userProfile.email,
-              photo_url: userProfile.photoURL,
-              provider: userProfile.provider,
+              avatar_url: userProfile.photoURL,
               updated_at: new Date().toISOString(),
             },
             { onConflict: 'id' }
@@ -608,12 +606,16 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         if (updateError) throw updateError;
 
         // Update profiles table
-        const profileUpdate: Record<string, string | null> = {
+        const profileUpdate: {
+          name: string;
+          updated_at: string;
+          avatar_url?: string | null;
+        } = {
           name: cleanName,
           updated_at: new Date().toISOString(),
         };
         if (data.photoURL !== undefined) {
-          profileUpdate.photo_url = data.photoURL;
+          profileUpdate.avatar_url = data.photoURL;
         }
 
         await supabase
@@ -661,7 +663,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
         await supabase
           .from('profiles')
           .update({
-            photo_url: imageUrl,
+            avatar_url: imageUrl,
             updated_at: new Date().toISOString(),
           })
           .eq('id', currentUser.id);
@@ -700,7 +702,7 @@ export const [AuthProvider, useAuthStore] = createContextHook<AuthStore>(() => {
       await supabase
         .from('profiles')
         .update({
-          photo_url: null,
+          avatar_url: null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', currentUser.id);

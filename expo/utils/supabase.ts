@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
+import type { Database } from '@/types/database';
+
 const extra = Constants.expoConfig?.extra;
 
 const DEFAULT_SUPABASE_URL = 'https://ghmamkapipasxkurfgqs.supabase.co';
@@ -20,7 +22,7 @@ const supabaseAnonKey =
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-export const supabase = createClient(
+export const supabase = createClient<Database>(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-key',
   {
