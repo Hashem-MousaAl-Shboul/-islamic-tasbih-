@@ -1,7 +1,8 @@
 // functions/index.ts — entrypoint for the Sabbah backend.
 //
 // Routes for the daily adhkar reminder scheduler (Cloudflare Durable Object
-// sweeping every 15 minutes and sending pushes via the Expo Push API):
+// sweeping every 15 minutes, sending pushes via the Expo Push API, and
+// pruning device registrations that have been stale for 90 days):
 //   POST /reminders/register   { pushToken, userId?, locale?, tzOffsetMinutes, morning, evening }
 //   POST /reminders/unregister { pushToken }
 //   POST /reminders/test       { pushToken, delaySeconds? }   (rate-limited)

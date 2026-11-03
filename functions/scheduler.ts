@@ -5,11 +5,17 @@
 // alarm (env.DO.setAlarm). For each registration whose local time falls inside
 // the current sweep window, it sends a push through the Expo Push API, then
 // re-arms the alarm. Delivery is deduped per (token, slot, local date), so
-// alarm retries never double-send.
+// alarm retries never double-send. Once per day, the sweep also prunes
+// registrations whose device has not re-registered in 90 days.
 
 import { DurableObject } from "cloudflare:workers";
 
 const SWEEP_INTERVAL_MS = 15 * 60_000;
+
+/** Registrations not re-registered within this window are purged. */
+const STALE_AFTER_MS = 90 * 24 * 60 * 60_000;
+/** Stale-cleanup runs at most once per day, inside the regular sweep. */
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60_000;
 
 /** Hard cap on stored device registrations — prevents unbounded table growth. */
 const MAX_REGISTRATIONS = 5000;
@@ -245,6 +251,8 @@ export class RemindersScheduler extends DurableObject<Env> {
   }
 
   async onAlarm(info: { scheduledTime: number; retryCount: number; isRetry: boolean }): Promise<void> {
+    await this.cleanupStaleRegistrations();
+
     const pendingTest = await this.ctx.storage.get<{ token: string; at: number }>("test");
     if (pendingTest && typeof pendingTest.token === "string" && pendingTest.token.length > 0) {
       await this.ctx.storage.delete("test");
@@ -308,6 +316,31 @@ export class RemindersScheduler extends DurableObject<Env> {
       await this.ensureAlarmArmed();
     }
     void info;
+  }
+
+  /**
+   * Purges registrations from devices that have not re-registered in 90 days
+   * (app uninstalled without unregistering, etc.). Runs at most once per day
+   * inside the regular sweep to keep the table light.
+   */
+  private async cleanupStaleRegistrations(): Promise<void> {
+    const last = await this.ctx.storage.get<number>("lastCleanupAt");
+    const now = Date.now();
+    if (last && now - last < CLEANUP_INTERVAL_MS) return;
+
+    const cutoff = now - STALE_AFTER_MS;
+    const stale = this.ctx.storage.sql
+      .exec<{ n: number }>(
+        "SELECT COUNT(*) AS n FROM registrations WHERE updated_at < ?",
+        cutoff,
+      )
+      .toArray();
+    const count = stale[0]?.n ?? 0;
+    if (count > 0) {
+      this.ctx.storage.sql.exec("DELETE FROM registrations WHERE updated_at < ?", cutoff);
+      console.log(`[scheduler] pruned ${count} stale registration(s) older than 90 days`);
+    }
+    await this.ctx.storage.put("lastCleanupAt", now);
   }
 
   /** Sliding-window limiter. Returns false when the caller is over quota. */
